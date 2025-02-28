@@ -1,6 +1,7 @@
 import { type ProjectStage } from "@prisma/client";
 import { Building2, CircleUserRound, SearchIcon, UserRoundIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
@@ -237,9 +238,10 @@ export default function Companies() {
                 <p>Loading projects...</p>
               ) : projects?.projects && projects?.projects.length > 0 ? (
                 projects?.projects.map((project) => (
-                  <div
+                  <Link
+                    href={`/companies/${project.id}`}
                     key={project.id}
-                    className="rounded-xl border-2 border-white/10 bg-[#1E202A] p-6"
+                    className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
                   >
                     <div className="mb-4 flex gap-6">
                       {project.logo ? (
@@ -300,7 +302,7 @@ export default function Companies() {
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <p>No projects found matching your criteria.</p>

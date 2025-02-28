@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { api } from "~/utils/api";
 import { EntrepreneurForm } from "./entrepreneur-form";
+import Link from "next/link";
 
 export const EntrepreneurProfile = () => {
   const router = useRouter();
@@ -123,7 +124,10 @@ function ProjectCard({
   profileData: Entrepreneur & { state: State; country: Country };
 }) {
   return (
-    <div className="rounded-xl border-2 border-white/10 bg-[#1E202A] p-6">
+    <Link 
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
+      href={`/companies/${project.id}`}
+    >
       <div className="flex justify-between">
         <div className="flex gap-6">
           <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
@@ -193,6 +197,6 @@ function ProjectCard({
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

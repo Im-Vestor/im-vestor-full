@@ -14,6 +14,8 @@ export const projectRouter = createTRPCRouter({
           Entrepreneur: true,
           files: true,
           faqs: true,
+          state: true,
+          country: true,
         },
       });
     }),
