@@ -3,6 +3,9 @@ import { Roboto } from "next/font/google";
 
 import { api } from "~/utils/api";
 
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
+
 import { ClerkProvider } from "@clerk/nextjs";
 import Head from "next/head";
 import "~/styles/globals.css";
@@ -18,6 +21,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
       <Toaster />
+      <SpeedInsights />
+      <Analytics />
       <Head>
         <title>Imvestor</title>
         <meta name="description" content="Imvestor" />
