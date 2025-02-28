@@ -18,9 +18,50 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSignIn } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  const { isLoaded, signIn, setActive } = useSignIn();
+
+  const handleLogin = async () => {
+    console.log("Login button clicked");
+
+    if (!isLoaded) return;
+
+    setIsPending(true);
+
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        await router.push("/profile");
+      } else {
+        console.error(JSON.stringify(signInAttempt, null, 2));
+      }
+    } catch (err) {
+      if (isClerkAPIResponseError(err)) {
+        toast.error(
+          err.errors[0]?.message ?? "Failed to login. Please try again.",
+        );
+      } else {
+        toast.error("Failed to login. Please try again.");
+        console.error(JSON.stringify(err, null, 2));
+      }
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <>
@@ -143,7 +184,7 @@ export default function Home() {
               </div>
 
               <div className="row-span-1 rounded-2xl border-2 border-white/10 bg-[#2D2F3D] bg-opacity-30 p-6 backdrop-blur-md md:row-span-2">
-                <div className="flex flex-col items-center text-center justify-center h-full">
+                <div className="flex h-full flex-col items-center justify-center text-center">
                   <Briefcase className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
                     Seamless Negotiations
@@ -309,11 +350,15 @@ export default function Home() {
                   className="mt-8"
                   placeholder="Enter your email"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
                 <Input
                   className="mt-4"
                   placeholder="Password"
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <div className="mt-4 flex w-full items-center justify-between">
                   <Link
@@ -322,8 +367,8 @@ export default function Home() {
                   >
                     Forgot your password?
                   </Link>
-                  <Button>
-                    Login <ArrowRight />
+                  <Button onClick={handleLogin} disabled={isPending}>
+                    {isPending ? "Logging in..." : "Login"} <ArrowRight />
                   </Button>
                 </div>
               </div>
