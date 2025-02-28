@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProjectStage } from "@prisma/client";
+import { ProjectStage, Currency } from "@prisma/client";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -67,6 +67,9 @@ const companyFormSchema = z.object({
   annualRevenue: z.number().min(1, "Annual revenue is required"),
   investmentGoal: z.number().min(1, "Investment goal is required"),
   equity: z.number().optional(),
+  currency: z.nativeEnum(Currency, {
+    required_error: "Currency is required",
+  }),
   faqs: z
     .array(
       z.object({
@@ -128,6 +131,7 @@ export default function CreateCompany() {
       annualRevenue: 0,
       investmentGoal: 0,
       equity: 0,
+      currency: Currency.USD,
       faqs: [{ question: "", answer: "" }],
     },
   });
@@ -591,32 +595,61 @@ export default function CreateCompany() {
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="investmentGoal"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label className="font-normal text-neutral-200">
-                      Investment Goal*
-                    </Label>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        placeholder="Enter amount in USD"
-                        {...field}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || !isNaN(Number(value))) {
-                            field.onChange(Number(value));
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="investmentGoal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">
+                        Investment Goal*
+                      </Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="Enter amount in USD"
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || !isNaN(Number(value))) {
+                              field.onChange(Number(value));
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">
+                        Currency*
+                      </Label>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={Currency.USD}>$ USD</SelectItem>
+                            <SelectItem value={Currency.EUR}>€ EUR</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <h3 className="mt-2 text-lg">Company FAQ</h3>
               <div className="space-y-4">
                 {form.watch("faqs")?.map((_, index) => (

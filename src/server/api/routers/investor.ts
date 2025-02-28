@@ -1,5 +1,5 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import { UserType } from "@prisma/client";
+import { UserType, Currency } from "@prisma/client";
 import { z } from "zod";
 
 import {
@@ -33,6 +33,7 @@ export const investorRouter = createTRPCRouter({
         referralToken: z.string().optional(),
         email: z.string().email(),
         password: z.string().min(8),
+        currency: z.nativeEnum(Currency),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -90,6 +91,7 @@ export const investorRouter = createTRPCRouter({
           investmentNetWorth: input.investmentNetWorth,
           investmentAnnualIncome: input.investmentAnnualIncome,
           birthDate: input.birthDate,
+          currency: input.currency,
           userId: user.id,
         },
       });
@@ -107,6 +109,7 @@ export const investorRouter = createTRPCRouter({
         about: z.string().optional(),
         state: z.string().min(1),
         country: z.string().min(1),
+        currency: z.nativeEnum(Currency).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -120,6 +123,7 @@ export const investorRouter = createTRPCRouter({
           photo: input.photo,
           banner: input.banner,
           about: input.about,
+          currency: input.currency,
           state: {
             connect: {
               id: parseInt(input.state),

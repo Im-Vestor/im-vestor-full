@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
+import { Currency } from "@prisma/client";
 import { format } from "date-fns";
 import { ArrowLeft, ArrowRight, CalendarIcon } from "lucide-react";
 import { useRouter } from "next/router";
@@ -25,6 +26,13 @@ import { Label } from "~/components/ui/label";
 import { MultiSelect } from "~/components/ui/multi-select";
 import { PhoneInput } from "~/components/ui/phone-input";
 import { PopoverContent } from "~/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
 import { api } from "~/utils/api";
 
@@ -38,10 +46,17 @@ const formSchema = z
     mobileFone: z.string().min(1, "Mobile phone is required"),
     city: z.string().min(1, "City is required"),
     country: z.string().min(1, "Country is required"),
-    investmentMinValue: z.number().min(1, "Minimum investment value is required"),
-    investmentMaxValue: z.number().min(1, "Maximum investment value is required"),
+    investmentMinValue: z
+      .number()
+      .min(1, "Minimum investment value is required"),
+    investmentMaxValue: z
+      .number()
+      .min(1, "Maximum investment value is required"),
     investmentNetWorth: z.number().min(1, "Net worth is required"),
     investmentAnnualIncome: z.number().min(1, "Annual income is required"),
+    currency: z.nativeEnum(Currency, {
+      required_error: "Currency is required",
+    }),
     birthDate: z.date({
       required_error: "Birth date is required",
     }),
@@ -78,6 +93,7 @@ export default function SignupInvestor() {
       investmentMaxValue: 0,
       investmentNetWorth: 0,
       investmentAnnualIncome: 0,
+      currency: Currency.USD,
       birthDate: new Date(
         new Date().setFullYear(new Date().getFullYear() - 18),
       ),
@@ -411,6 +427,37 @@ export default function SignupInvestor() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="currency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">
+                          Currency*
+                        </Label>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select currency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={Currency.USD}>
+                                $ USD
+                              </SelectItem>
+                              <SelectItem value={Currency.EUR}>
+                                € EUR
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}

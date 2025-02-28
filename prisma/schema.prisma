@@ -88,6 +88,7 @@ model Investor {
     photo                  String?
     banner                 String?
     about                  String?
+    currency               Currency  @default(USD)
     state                  State?    @relation(fields: [stateId], references: [id])
     country                Country?  @relation(fields: [countryId], references: [id])
 
@@ -151,6 +152,7 @@ model Project {
     equity          Float?
     investmentGoal  Float
     logo            String?
+    currency        Currency      @default(USD)
     files           File[]
 
     createdAt DateTime @default(now())

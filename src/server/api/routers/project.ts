@@ -1,4 +1,4 @@
-import { type Prisma, ProjectStage } from "@prisma/client";
+import { type Prisma, ProjectStage, Currency } from "@prisma/client";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -138,6 +138,7 @@ export const projectRouter = createTRPCRouter({
         investmentGoal: z.number(),
         logo: z.string().optional(),
         sectorId: z.string(),
+        currency: z.nativeEnum(Currency),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -171,6 +172,7 @@ export const projectRouter = createTRPCRouter({
           equity: input.equity,
           investmentGoal: input.investmentGoal,
           logo: input.logo,
+          currency: input.currency,
           faqs: {
             create: input.faqs,
           },
@@ -207,6 +209,7 @@ export const projectRouter = createTRPCRouter({
         equity: z.number().optional(),
         investmentGoal: z.number().optional(),
         logo: z.string().optional(),
+        currency: z.nativeEnum(Currency).optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -245,6 +248,7 @@ export const projectRouter = createTRPCRouter({
           equity: input.equity,
           investmentGoal: input.investmentGoal,
           logo: input.logo,
+          currency: input.currency,
           faqs: {
             create: input.faqs,
           },

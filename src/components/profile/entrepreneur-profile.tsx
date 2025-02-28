@@ -1,5 +1,18 @@
-import { type Country, type State, type Entrepreneur, type Project } from "@prisma/client";
-import { ArrowRight, CircleUserRound, Loader2, MapPin, Pencil, User } from "lucide-react";
+import {
+  type Country,
+  type State,
+  type Entrepreneur,
+  type Project,
+} from "@prisma/client";
+import {
+  ArrowRight,
+  Building2,
+  CircleUserRound,
+  Loader2,
+  MapPin,
+  Pencil,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -10,11 +23,12 @@ import { EntrepreneurForm } from "./entrepreneur-form";
 export const EntrepreneurProfile = () => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
+  const { data: entrepreneur, isPending: isLoading } =
+    api.entrepreneur.getByUserId.useQuery();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center mt-32">
+      <div className="mt-32 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -22,9 +36,9 @@ export const EntrepreneurProfile = () => {
 
   if (isEditing) {
     return (
-      <EntrepreneurForm 
-        entrepreneur={entrepreneur} 
-        onCancel={() => setIsEditing(false)} 
+      <EntrepreneurForm
+        entrepreneur={entrepreneur}
+        onCancel={() => setIsEditing(false)}
       />
     );
   }
@@ -60,7 +74,8 @@ export const EntrepreneurProfile = () => {
         </Button>
       </div>
       <p className="mt-3 text-lg text-gray-400">
-        {entrepreneur?.companyRole ?? "Entrepreneur"}{entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ""}
+        {entrepreneur?.companyRole ?? "Entrepreneur"}
+        {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ""}
       </p>
       <p className="mt-1 flex items-center gap-1 text-gray-400">
         <MapPin className="mr-0.5 h-4 w-4" />
@@ -79,7 +94,12 @@ export const EntrepreneurProfile = () => {
             <ProjectCard
               key={project.id}
               project={project as Project & { state: State; country: Country }}
-              profileData={entrepreneur as Entrepreneur & { state: State; country: Country }}
+              profileData={
+                entrepreneur as Entrepreneur & {
+                  state: State;
+                  country: Country;
+                }
+              }
             />
           ))}
         </div>
@@ -93,7 +113,7 @@ export const EntrepreneurProfile = () => {
       </Button>
     </div>
   );
-}; 
+};
 
 function ProjectCard({
   project,
@@ -107,13 +127,19 @@ function ProjectCard({
       <div className="flex justify-between">
         <div className="flex gap-6">
           <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
-            <Image
-              src={project.logo ?? ""}
-              alt="Company Logo"
-              width={72}
-              height={72}
-              className="h-full w-full rounded-md object-cover"
-            />
+            {project.logo ? (
+              <Image
+                src={project.logo}
+                alt="Company Logo"
+                width={72}
+                height={72}
+                className="h-full w-full rounded-md object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center rounded-md bg-white/10">
+                <Building2 className="size-6 text-neutral-200" />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col">
@@ -121,9 +147,11 @@ function ProjectCard({
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-semibold">{project.name}</h3>
               </div>
-              <span className="text-white/70">
-                {project.state?.name}, {project.country?.name}
-              </span>
+              {project.state?.name && project.country?.name && (
+                <span className="text-white/70">
+                  {project.state?.name}, {project.country?.name}
+                </span>
+              )}
               <p>{project.quickSolution}</p>
             </div>
           </div>
@@ -131,13 +159,19 @@ function ProjectCard({
       </div>
       <hr className="my-6 border-white/10" />
       <div className="flex items-center gap-2">
-        <Image
-          src={profileData.photo ?? ""}
-          alt="Founder"
-          width={24}
-          height={24}
-          className="h-4 w-4 rounded-full object-cover text-white/50"
-        />
+        {profileData.photo ? (
+          <Image
+            src={profileData.photo}
+            alt="Founder"
+            width={24}
+            height={24}
+            className="h-4 w-4 rounded-full object-cover text-white/50"
+          />
+        ) : (
+          <div className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10">
+            <User className="size-4 text-neutral-200" />
+          </div>
+        )}
         <p className="text-sm font-light">
           Founded by
           <span className="text-[#EFD687]"> {profileData.firstName}</span>
