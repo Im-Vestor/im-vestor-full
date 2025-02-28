@@ -1,0 +1,203 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+enum Currency {
+    EUR
+    USD
+}
+
+model Country {
+    id           Int            @id @default(autoincrement())
+    name         String
+    numericCode  String
+    emoji        String
+    states       State[]
+    Investor     Investor[]
+    Entrepreneur Entrepreneur[]
+    Project      Project[]
+}
+
+model State {
+    id           Int            @id @default(autoincrement())
+    name         String
+    countryId    Int
+    country      Country        @relation(fields: [countryId], references: [id])
+    Investor     Investor[]
+    Entrepreneur Entrepreneur[]
+    Project      Project[]
+}
+
+model Area {
+    id         String    @id @default(uuid())
+    name       String
+    Investor   Investor? @relation(fields: [investorId], references: [id])
+    investorId String?
+    Project    Project[]
+}
+
+model Referral {
+    id       String   @id @default(uuid())
+    name     String
+    joinedAt DateTime @default(now())
+    user     User     @relation(fields: [userId], references: [id])
+    userId   String
+}
+
+enum UserType {
+    ENTREPRENEUR
+    INVESTOR
+    PARTNER
+    VC_GROUP
+    INCUBATOR
+}
+
+model User {
+    id           String        @id @default(uuid())
+    email        String
+    imageUrl     String?
+    referralCode String        @unique
+    referralId   String?
+    userType     UserType
+    investor     Investor?
+    entrepreneur Entrepreneur?
+    // partner      Partner?
+    // vcGroup      VcGroup?
+    // incubator    Incubator?
+
+    referrals Referral[]
+}
+
+model Investor {
+    id                     String    @id @default(uuid())
+    firstName              String
+    lastName               String
+    mobileFone             String?
+    fiscalCode             String?
+    investmentMinValue     Float
+    investmentMaxValue     Float
+    investmentNetWorth     Float
+    investmentAnnualIncome Float
+    birthDate              DateTime?
+    photo                  String?
+    banner                 String?
+    about                  String?
+    state                  State?    @relation(fields: [stateId], references: [id])
+    country                Country?  @relation(fields: [countryId], references: [id])
+
+    favoriteProjects Project[]
+    projectViews     ProjectView[]
+    areas            Area[]
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
+
+    stateId   Int?
+    countryId Int?
+}
+
+model Entrepreneur {
+    id          String    @id @default(uuid())
+    firstName   String
+    lastName    String
+    mobileFone  String?
+    companyName String?
+    companyRole String?
+    fiscalCode  String?
+    birthDate   DateTime?
+    photo       String?
+    banner      String?
+    about       String?
+    state       State?    @relation(fields: [stateId], references: [id])
+    country     Country?  @relation(fields: [countryId], references: [id])
+
+    projects Project[]
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
+
+    stateId   Int?
+    countryId Int?
+}
+
+enum ProjectStage {
+    PRE_SEED
+    SEED
+    SERIES_A
+    SERIES_B
+    SERIES_C
+    IPO
+}
+
+model Project {
+    id              String        @id @default(uuid())
+    name            String
+    quickSolution   String?
+    website         String?
+    foundationDate  DateTime?
+    stage           ProjectStage?
+    country         Country?      @relation(fields: [countryId], references: [id])
+    state           State?        @relation(fields: [stateId], references: [id])
+    about           String?
+    startInvestment Float?
+    investorSlots   Int?
+    annualRevenue   Float?
+    equity          Float?
+    investmentGoal  Float
+    logo            String?
+    files           File[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    faqs ProjectFaq[]
+
+    views ProjectView[]
+
+    Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
+    entrepreneurId String?
+
+    Investor   Investor? @relation(fields: [investorId], references: [id])
+    investorId String?
+
+    sector    Area   @relation(fields: [sectorId], references: [id])
+    sectorId  String
+    countryId Int?
+    stateId   Int?
+}
+
+model ProjectFaq {
+    id        String  @id @default(uuid())
+    question  String
+    answer    String
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+}
+
+model ProjectView {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+
+    investor   Investor? @relation(fields: [investorId], references: [id])
+    investorId String?
+
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+}
+
+model File {
+    id   String @id @default(uuid())
+    name String
+    type String
+    size Int
+    url  String
+
+    Project   Project? @relation(fields: [projectId], references: [id])
+    projectId String?
+}
