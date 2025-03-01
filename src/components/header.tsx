@@ -12,10 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { api } from "~/utils/api";
 
 export const Header = () => {
   const router = useRouter();
   const path = usePathname();
+
+  const { data: userDetails } = api.user.getUser.useQuery();
 
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
@@ -118,9 +121,9 @@ export const Header = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-4">
                 <span>{user?.firstName}</span>
-                {user?.imageUrl ? (
+                {userDetails?.imageUrl ? (
                   <Image
-                    src={user?.imageUrl ?? ""}
+                    src={userDetails?.imageUrl ?? ""}
                     alt="Profile"
                     width={24}
                     height={24}
