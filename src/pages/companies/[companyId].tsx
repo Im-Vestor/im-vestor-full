@@ -57,9 +57,9 @@ export default function CompanyDetails() {
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
-      <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-8 pt-6">
+      <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-8">
         {/* Company Header */}
-        <div className="flex items-start gap-8">
+        <div className="flex gap-8 items-center">
           <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg">
             {project.logo ? (
               <Image
@@ -84,7 +84,7 @@ export default function CompanyDetails() {
               </span>
             </div>
 
-            <p className="mt-2 text-lg text-white/80">
+            <p className="mt-1 text-white/60">
               {project.quickSolution ?? "No description available"}
             </p>
 
@@ -110,7 +110,7 @@ export default function CompanyDetails() {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="hover:underline"
                   >
                     {project.website}
                   </a>
@@ -125,7 +125,7 @@ export default function CompanyDetails() {
         {/* Company Details */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div>
-            <h2 className="text-xl font-semibold">About the Company</h2>
+            <h2 className="text-xl font-semibold">About</h2>
             <p className="mt-4 whitespace-pre-wrap text-white/80">
               {project.about ?? "No detailed description available."}
             </p>
@@ -136,12 +136,12 @@ export default function CompanyDetails() {
                 <Image
                   src={project.Entrepreneur.photo}
                   alt="Founder"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-full object-cover"
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
                   <User className="size-6 text-neutral-200" />
                 </div>
               )}
@@ -150,7 +150,9 @@ export default function CompanyDetails() {
                   {project.Entrepreneur?.firstName}{" "}
                   {project.Entrepreneur?.lastName}
                 </p>
-                <p className="text-sm text-white/70">Founder</p>
+                <p className="text-sm text-white/70">
+                  {project.Entrepreneur?.state?.name}, {project.Entrepreneur?.country?.name}
+                </p>
               </div>
             </div>
           </div>
@@ -233,7 +235,7 @@ export default function CompanyDetails() {
         {project.faqs && project.faqs.length > 0 && (
           <div className="mt-12">
             <h2 className="text-xl font-semibold">
-              Frequently Asked Questions
+              FAQ
             </h2>
             <div className="mt-4 space-y-6">
               {project.faqs.map((faq) => (

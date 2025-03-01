@@ -1,18 +1,18 @@
 import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProjectStage, Currency } from "@prisma/client";
+import { Currency, ProjectStage } from "@prisma/client";
 import { format } from "date-fns";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarIcon,
-  Loader2,
-  PlusIcon,
-  Trash2Icon,
+    ArrowLeft,
+    ArrowRight,
+    CalendarIcon,
+    Loader2,
+    PlusIcon,
+    Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -20,25 +20,25 @@ import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "~/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { PROJECT_STAGES } from "~/data/project-stages";
@@ -83,12 +83,14 @@ const companyFormSchema = z.object({
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
-export default function CreateCompany() {
+export default function EditCompany() {
   const router = useRouter();
+  const { id } = router.query;
   const { user } = useUser();
 
   const [country, setCountry] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const { data: countries, isLoading: isLoadingCountries } =
@@ -98,16 +100,23 @@ export default function CreateCompany() {
       countryId: country,
     });
 
-  const { mutateAsync: createCompany, isPending } =
-    api.project.create.useMutation({
+  const { data: project } = api.project.getById.useQuery(
+    { id: id as string },
+    {
+      enabled: !!id,
+    }
+  );
+
+  const { mutateAsync: updateCompany, isPending } =
+    api.project.update.useMutation({
       onSuccess: () => {
-        toast.success("Company created successfully!");
+        toast.success("Company updated successfully!");
         void router.push("/profile");
       },
       onError: (error) => {
-        toast.error("Failed to create company. Please try again.");
+        toast.error("Failed to update company. Please try again.");
         console.error(
-          "Create company error:",
+          "Update company error:",
           error instanceof Error ? error.message : "Unknown error",
         );
       },
@@ -136,6 +145,35 @@ export default function CreateCompany() {
     },
   });
 
+  useEffect(() => {
+    if (project && project.country && project.state) {
+      setCountry(project.country.id.toString());
+      form.reset({
+        name: project.name,
+        logo: project.logo ?? undefined,
+        quickSolution: project.quickSolution ?? "",
+        website: project.website ?? "",
+        foundationDate: project.foundationDate ?? new Date(),
+        sectorId: project.sector.id,
+        stage: project.stage ?? ProjectStage.PRE_SEED,
+        country: project.country.id.toString(),
+        state: project.state.id.toString(),
+        about: project.about ?? "",
+        startInvestment: project.startInvestment ?? 0,
+        investorSlots: project.investorSlots ?? 0,
+        annualRevenue: project.annualRevenue ?? 0,
+        investmentGoal: project.investmentGoal ?? 0,
+        equity: project.equity ?? 0,
+        currency: project.currency ?? Currency.USD,
+        faqs: project.faqs.map((faq) => ({
+          question: faq.question,
+          answer: faq.answer,
+        })),
+      });
+      setIsLoading(false);
+    }
+  }, [project, form]);
+
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -153,7 +191,20 @@ export default function CreateCompany() {
   };
 
   async function onSubmit(data: CompanyFormValues) {
-    await createCompany(data);
+    if (!id) return;
+    
+    await updateCompany({
+      id: id as string,
+      ...data,
+    });
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mt-32 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -170,7 +221,7 @@ export default function CreateCompany() {
               >
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
-              <h1 className="text-lg font-bold">Create Company</h1>
+              <h1 className="text-lg font-bold">Edit Company</h1>
               <FormField
                 control={form.control}
                 name="logo"
@@ -729,10 +780,10 @@ export default function CreateCompany() {
                 </Button>
                 <Button className="w-1/3" type="submit" disabled={isPending}>
                   {isPending ? (
-                    "Saving..."
+                    "Updating..."
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span>Save</span>
+                      <span>Update</span>
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   )}
@@ -744,4 +795,4 @@ export default function CreateCompany() {
       </div>
     </main>
   );
-}
+} 

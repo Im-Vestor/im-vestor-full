@@ -11,7 +11,12 @@ export const projectRouter = createTRPCRouter({
         where: { id: input.id },
         include: {
           sector: true,
-          Entrepreneur: true,
+          Entrepreneur: {
+            include: {
+              state: true,
+              country: true,
+            },
+          },
           files: true,
           faqs: true,
           state: true,

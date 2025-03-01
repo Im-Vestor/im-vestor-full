@@ -182,6 +182,14 @@ function ProjectCard({
             </div>
           </div>
         </div>
+        <Link
+          href={`/companies/edit/${project.id}`}
+          className="flex h-8 items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm hover:bg-white/10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Pencil className="mr-2 h-3.5 w-3.5" />
+          Edit
+        </Link>
       </div>
       <hr className="my-6 border-white/10" />
       <div className="flex items-center gap-2">

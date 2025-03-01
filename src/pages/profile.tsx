@@ -1,10 +1,19 @@
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { Header } from "~/components/header";
 import { EntrepreneurProfile } from "~/components/profile/entrepreneur-profile";
 import { InvestorProfile } from "~/components/profile/investor-profile";
 
 export default function Profile() {
-  const { user } = useUser();
+  const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      void router.push("/login");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">

@@ -19,6 +19,9 @@ export const entrepreneurRouter = createTRPCRouter({
             state: true,
             country: true,
           },
+          orderBy: {
+            createdAt: "desc",
+          },
         },
         country: true,
         state: true,
