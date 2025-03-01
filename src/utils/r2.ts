@@ -41,7 +41,7 @@ export async function uploadFileToBucket(file: File, userId: string) {
 
     return {
       ...res,
-      imageUrl: "https://r2.im-vestor.com/" + Key,
+      imageUrl: "https://imvestor.gustavofior.com/" + Key,
     };
   } catch (e) {
     throw e;

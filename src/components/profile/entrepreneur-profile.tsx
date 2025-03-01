@@ -45,73 +45,95 @@ export const EntrepreneurProfile = () => {
   }
 
   return (
-    <div className="rounded-lg border border-white/10 px-12 pb-20 pt-6">
-      <div className="flex items-center space-x-4">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB]">
-          {entrepreneur?.photo ? (
+    <div className={`rounded-lg border border-white/10 pb-20`}>
+      <div className="relative">
+        {entrepreneur?.banner ? (
+          <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
             <Image
-              src={entrepreneur.photo}
-              alt="Profile"
-              width={96}
-              height={96}
-              className="h-24 w-24 rounded-full object-cover"
+              src={entrepreneur.banner}
+              alt="Banner"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-t-md"
             />
-          ) : (
-            <User className="h-8 w-8 text-black" />
-          )}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-90%[#23242F]/70 to-[#23242F]/100" />
+          </div>
+        ) : (
+          <div className="h-24 w-full rounded-t-lg bg-transparent"/>
+        )}
+        
+        <div className="absolute bottom-0 left-12 translate-y-1/2">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A]">
+            {entrepreneur?.photo ? (
+              <Image
+                src={entrepreneur.photo}
+                alt="Profile"
+                width={96}
+                height={96}
+                className="h-24 w-24 rounded-full object-cover"
+              />
+            ) : (
+              <User className="h-8 w-8 text-black" />
+            )}
+          </div>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between">
-        <h2 className="text-3xl font-semibold">
-          {entrepreneur?.firstName + " " + entrepreneur?.lastName}
-        </h2>
+
+      <div className="px-12 pt-16">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-semibold">
+            {entrepreneur?.firstName + " " + entrepreneur?.lastName}
+          </h2>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            <Pencil className="h-4 w-4" />
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+        </div>
+        <p className="mt-3 text-lg text-gray-400">
+          {entrepreneur?.companyRole ?? "Entrepreneur"}
+          {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ""}
+        </p>
+        <p className="mt-1 flex items-center gap-1 text-gray-400">
+          <MapPin className="mr-0.5 h-4 w-4" />
+          {entrepreneur?.state && entrepreneur?.country
+            ? `${entrepreneur.state.name}, ${entrepreneur.country.name}`
+            : "Not specified"}
+        </p>
+        <h3 className="mt-12 font-semibold">About me</h3>
+        <p className="mt-3 text-gray-400">
+          {entrepreneur?.about ?? "No description"}
+        </p>
+        <h3 className="mt-12 font-semibold">Company</h3>
+        {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
+          <div className="mt-4 flex flex-col gap-4">
+            {entrepreneur?.projects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={
+                  project as Project & { state: State; country: Country }
+                }
+                profileData={
+                  entrepreneur as Entrepreneur & {
+                    state: State;
+                    country: Country;
+                  }
+                }
+              />
+            ))}
+          </div>
+        )}
         <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={() => setIsEditing(!isEditing)}
+          className="mt-4 md:w-1/3"
+          onClick={() => router.push("/create-company")}
         >
-          <Pencil className="h-4 w-4" />
-          {isEditing ? "Cancel" : "Edit"}
+          Add your Company
+          <ArrowRight className="ml-2" />
         </Button>
       </div>
-      <p className="mt-3 text-lg text-gray-400">
-        {entrepreneur?.companyRole ?? "Entrepreneur"}
-        {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ""}
-      </p>
-      <p className="mt-1 flex items-center gap-1 text-gray-400">
-        <MapPin className="mr-0.5 h-4 w-4" />
-        {entrepreneur?.state && entrepreneur?.country
-          ? `${entrepreneur.state.name}, ${entrepreneur.country.name}`
-          : "Not specified"}
-      </p>
-      <h3 className="mt-12 font-semibold">About me</h3>
-      <p className="mt-3 text-gray-400">
-        {entrepreneur?.about ?? "No description"}
-      </p>
-      <h3 className="mt-12 font-semibold">Company</h3>
-      {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
-        <div className="mt-4 flex flex-col gap-4">
-          {entrepreneur?.projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project as Project & { state: State; country: Country }}
-              profileData={
-                entrepreneur as Entrepreneur & {
-                  state: State;
-                  country: Country;
-                }
-              }
-            />
-          ))}
-        </div>
-      )}
-      <Button
-        className="mt-4 md:w-1/3"
-        onClick={() => router.push("/create-company")}
-      >
-        Add your Company
-        <ArrowRight className="ml-2" />
-      </Button>
     </div>
   );
 };
@@ -124,7 +146,7 @@ function ProjectCard({
   profileData: Entrepreneur & { state: State; country: Country };
 }) {
   return (
-    <Link 
+    <Link
       className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
       href={`/companies/${project.id}`}
     >

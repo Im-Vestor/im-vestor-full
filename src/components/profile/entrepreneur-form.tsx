@@ -383,7 +383,7 @@ const renderBannerUpload = (
             alt="Profile Banner"
             layout="fill"
             objectFit="cover"
-            className="transition-opacity duration-300 hover:opacity-75"
+            className="rounded-t-md transition-opacity duration-300 hover:opacity-75"
           />
         )}
       </div>
