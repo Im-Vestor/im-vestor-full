@@ -107,6 +107,15 @@ export const entrepreneurRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (input.photo) {
+        await ctx.db.user.update({
+          where: { id: input.userId },
+          data: {
+            imageUrl: input.photo,
+          },
+        });
+      }
+
       return ctx.db.entrepreneur.update({
         where: { userId: input.userId },
         data: {
