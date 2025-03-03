@@ -62,8 +62,8 @@ export const Header = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`${path === "/add-ons-store" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/add-ons-store")}
+            className={`${path === "/shop" ? "text-[#EFD687]" : ""}`}
+            onClick={() => router.push("/shop")}
           >
             Shop
           </Button>
@@ -91,8 +91,8 @@ export const Header = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`${path === "/add-ons-store" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/add-ons-store")}
+            className={`${path === "/shop" ? "text-[#EFD687]" : ""}`}
+            onClick={() => router.push("/shop")}
           >
             Shop
           </Button>
