@@ -24,7 +24,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <SpeedInsights />
       <Analytics />
       <Head>
-        <title>Imvestor</title>
+        <title>Im-Vestor</title>
         <meta name="description" content="Imvestor" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
