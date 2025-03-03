@@ -73,7 +73,7 @@ export const Header = () => {
             className={`${path === "/add-ons-store" ? "text-[#EFD687]" : ""}`}
             onClick={() => router.push("/add-ons-store")}
           >
-            Add-ons Store
+            Shop
           </Button>
         </div>
       )}
@@ -110,7 +110,7 @@ export const Header = () => {
             className={`${path === "/add-ons-store" ? "text-[#EFD687]" : ""}`}
             onClick={() => router.push("/add-ons-store")}
           >
-            Add-ons Store
+            Shop
           </Button>
         </div>
       )}
