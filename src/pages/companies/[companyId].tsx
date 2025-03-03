@@ -79,7 +79,7 @@ export default function CompanyDetails() {
           <div className="mt-2 flex-1">
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-semibold">{project.name}</h1>
-              <span className="rounded-full bg-[#323645] px-6 py-1 font-light">
+              <span className="rounded-full bg-[#EFD687] px-6 py-1 text-black">
                 {project.sector?.name ?? "Uncategorized"}
               </span>
             </div>
