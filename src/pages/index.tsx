@@ -3,7 +3,6 @@ import {
   ArrowRight,
   Briefcase,
   Compass,
-  Globe,
   Handshake,
   Instagram,
   Linkedin,
@@ -21,18 +20,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSignIn } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { LanguageSwitcher } from "~/components/ui/language-switcher";
+import { useTranslation } from "~/hooks/useTranslation";
 
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const t = useTranslation();
 
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const handleLogin = async () => {
-    console.log("Login button clicked");
-
     if (!isLoaded) return;
 
     setIsPending(true);
@@ -65,20 +65,14 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen bg-[#20222D]">
-        <div className="absolute -top-[480px] left-1/2 h-[500px] w-[300px] -translate-x-1/2 rounded-md bg-[#E5CD82]/20 blur-3xl md:w-[800px]" />
+      <main className="relative min-h-screen bg-[#20222D]">
+        <div className="absolute -top-[480px] left-1/2 h-[500px] w-[300px] -translate-x-1/2 rounded-full bg-[#E5CD82]/20 blur-3xl md:w-[800px]" />
         <header className="m-6 flex justify-end gap-2">
-          <Button
-            size="icon"
-            variant="outline"
-            className="border-2 border-white/10"
-          >
-            <Globe className="h-6 w-6" />
-          </Button>
+          <LanguageSwitcher />
           <Link href="/login">
             <Button variant="outline" className="border-2 border-white/10">
               <LogIn className="h-6 w-6" />
-              Sign In
+              {t("signIn")}
             </Button>
           </Link>
         </header>
@@ -90,17 +84,17 @@ export default function Home() {
             height={64}
           />
           <h3 className="mt-2 text-2xl font-medium">Im-Vestor</h3>
-          <h1 className="mt-8 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-5xl font-medium tracking-wide text-transparent md:text-7xl">
-            We mean Business!
+          <h1 className="mt-8 h-24 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-5xl font-medium tracking-wide text-transparent md:text-7xl">
+            {t("weMeanBusiness")}
           </h1>
           <h1 className="mt-4 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-3xl font-medium text-transparent">
-            Connecting entrepreneurs and investors
+            {t("connectingEntrepreneursAndInvestors")}
           </h1>
           <Button
             onClick={async () => await router.push("/signup")}
             className="mt-8 rounded-full hover:opacity-75"
           >
-            Get Started <ArrowDownRight />
+            {t("getStarted")} <ArrowDownRight />
           </Button>
           <hr className="mt-24 h-0.5 w-full max-w-4xl rounded-full bg-neutral-100 opacity-5" />
           <div className="mt-24">
@@ -146,7 +140,7 @@ export default function Home() {
           </div>
 
           <h1 className="mt-24 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-6xl font-medium tracking-wide text-transparent">
-            Why choose{" "}
+            {t("whyChooseImVestor")}{" "}
             <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text">
               Im-Vestor?
             </span>
@@ -157,16 +151,13 @@ export default function Home() {
                 <div className="flex flex-col items-center text-center">
                   <Compass className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
-                    Navigate your journey with Confidence
+                    {t("navigateConfidence")}
                   </h2>
                   <p className="mt-2 hidden text-gray-300 md:block">
-                    Whether you&apos;re a seasoned investor or a first-time
-                    entrepreneur, Im-Vestor provides resources to guide you
-                    through each stage of your business or investment journey.
+                    {t("navigateConfidenceDesc")}
                   </p>
                   <p className="mt-2 block text-gray-300 md:hidden">
-                    Whether you&apos;re a seasoned investor or a first-time
-                    entrepreneur, Im-Vestor is here!
+                    {t("navigateConfidenceShort")}
                   </p>
                 </div>
               </div>
@@ -174,12 +165,9 @@ export default function Home() {
                 <div className="flex flex-col items-center text-center">
                   <Handshake className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
-                    Smart Matching
+                    {t("smartMatching")}
                   </h2>
-                  <p className="mt-2 text-gray-300">
-                    Our AI-powered algorithm ensures you find the most relevant
-                    connections for your goals.
-                  </p>
+                  <p className="mt-2 text-gray-300">{t("smartMatchingDesc")}</p>
                 </div>
               </div>
 
@@ -187,17 +175,13 @@ export default function Home() {
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <Briefcase className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
-                    Seamless Negotiations
+                    {t("seamlessNegotiations")}
                   </h2>
                   <p className="mt-2 hidden text-gray-300 md:block">
-                    Investors and entrepreneurs can communicate directly through
-                    the platform, schedule meetings, and negotiate terms openly.
-                    Both parties stay informed, building trust and collaboration
-                    in order to make a deal and a long term partnership.
+                    {t("seamlessNegotiationsDesc")}
                   </p>
                   <p className="mt-2 block text-gray-300 md:hidden">
-                    Investors and entrepreneurs can communicate directly through
-                    the platform, schedule meetings, and negotiate terms openly.
+                    {t("seamlessNegotiationsShort")}
                   </p>
                 </div>
               </div>
@@ -215,12 +199,9 @@ export default function Home() {
                 <div className="flex flex-col items-center text-center">
                   <Zap className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
-                    Poke, Boost and Hyper Train
+                    {t("pokeBoost")}
                   </h2>
-                  <p className="mt-2 text-gray-300">
-                    Guarantee special addons in order to help your grow your
-                    profile.
-                  </p>
+                  <p className="mt-2 text-gray-300">{t("pokeBoostDesc")}</p>
                 </div>
               </div>
 
@@ -228,16 +209,13 @@ export default function Home() {
                 <div className="flex flex-col items-center text-center">
                   <ShieldCheck className="mx-auto h-12 w-12 text-[#E5CD82] md:mx-0" />
                   <h2 className="mt-4 text-2xl font-semibold text-[#E5CD82]">
-                    Your Investments, Protected
+                    {t("investmentsProtected")}
                   </h2>
                   <p className="mt-2 hidden text-gray-300 md:block">
-                    Im-Vestor prioritizes the safety of all users. We ensure all
-                    projects and investors are thoroughly vetted, creating a
-                    trusted environment for business to thrive.
+                    {t("investmentsProtectedDesc")}
                   </p>
                   <p className="mt-2 block text-gray-300 md:hidden">
-                    Im-Vestor prioritizes the safety of all users and a trusted
-                    environment for business to thrive.
+                    {t("investmentsProtectedShort")}
                   </p>
                 </div>
               </div>
@@ -255,12 +233,11 @@ export default function Home() {
             />
             <div className="relative z-10 mb-48">
               <h1 className="mx-4 mt-48 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-5xl font-medium tracking-wide md:mx-0">
-                Be part of the new Business{" "}
-                <span className="text-[#EFD687]">Revolution</span>
+                {t("businessRevolution")}{" "}
+                <span className="text-[#EFD687]">{t("revolution")}</span>
               </h1>
               <h3 className="mt-4 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-2xl font-medium tracking-wide">
-                <span className="text-[#EFD687]">Select your path</span> and
-                start your journey today!
+                {t("selectPath")}
               </h3>
               <div className="mt-8 p-6">
                 <div className="mx-auto flex max-w-4xl flex-col justify-center gap-4 md:flex-row">
@@ -272,12 +249,10 @@ export default function Home() {
                       height={180}
                     />
                     <h2 className="mt-4 text-xl font-semibold text-[#EFD687]">
-                      ENTREPRENEUR
+                      {t("entrepreneur")}
                     </h2>
                     <p className="mt-2 max-w-xs text-center text-gray-300">
-                      Secure funding from investors, and top VCs and accelerate
-                      your business growth. Whether you&apos;re a startup or a
-                      business incubator, we&apos;ve got you covered
+                      {t("entrepreneurDesc")}
                     </p>
                   </div>
                   <div className="flex flex-col items-center rounded-2xl border-2 border-white/10 bg-[#363848] bg-opacity-30 px-6 py-16 backdrop-blur-md">
@@ -289,12 +264,10 @@ export default function Home() {
                       className="mt-6"
                     />
                     <h2 className="mt-4 text-xl font-semibold text-[#EFD687]">
-                      INVESTOR
+                      {t("investor")}
                     </h2>
                     <p className="mt-2 max-w-xs text-center text-gray-300">
-                      Unlock exclusive access to high-quality startups,
-                      streamline your deal flow, and keep a close watch on the
-                      latest emerging companies.
+                      {t("investorDesc")}
                     </p>
                   </div>
                 </div>
@@ -306,21 +279,20 @@ export default function Home() {
             <div className="w-full md:w-1/2">
               <h3 className="bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-4xl font-medium tracking-wide text-transparent">
                 <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text text-transparent">
-                  Join
+                  {t("joinUsNow").split(" ")[0]}
                 </span>{" "}
-                us Now
+                {t("joinUsNow").split(" ").slice(1).join(" ")}
               </h3>
               <p className="mt-8 max-w-96 text-2xl tracking-wide text-gray-300">
-                Receive{" "}
+                {t("receiveUpdates")}{" "}
                 <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text text-transparent">
-                  exclusive updates
+                  {t("exclusiveUpdates")}
                 </span>{" "}
-                and be notified first-hand when Vestor is launched, and receive
-                a{" "}
+                {t("beNotified")}{" "}
                 <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text text-transparent">
-                  special gift
+                  {t("specialGift")}
                 </span>{" "}
-                for being among the first 🎁.
+                {t("forBeingFirst")} 🎁.
               </p>
             </div>
             <div className="w-full md:w-1/2">
@@ -332,30 +304,30 @@ export default function Home() {
                   height={180}
                 />
                 <h3 className="mt-4 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-2xl font-medium tracking-wide text-transparent">
-                  Take your special{" "}
+                  {t("takeYourSpecialGift").split(" ").slice(0, -1).join(" ")}{" "}
                   <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text text-transparent">
-                    gift!
+                    {t("takeYourSpecialGift").split(" ").slice(-1)[0]}
                   </span>
                 </h3>
                 <p className="mt-2 text-xs text-gray-300">
-                  Don&apos;t have an account?{" "}
+                  {t("dontHaveAccount")}{" "}
                   <Link
                     href="/signup"
                     className="text-[#F0D687] underline hover:opacity-70"
                   >
-                    Create one
+                    {t("createOne")}
                   </Link>
                 </p>
                 <Input
                   className="mt-8"
-                  placeholder="Enter your email"
+                  placeholder={t("enterYourEmail")}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <Input
                   className="mt-4"
-                  placeholder="Password"
+                  placeholder={t("password")}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -365,10 +337,10 @@ export default function Home() {
                     href="/reset-password"
                     className="text-xs underline hover:opacity-70"
                   >
-                    Forgot your password?
+                    {t("forgotPassword")}
                   </Link>
                   <Button onClick={handleLogin} disabled={isPending}>
-                    {isPending ? "Logging in..." : "Login"} <ArrowRight />
+                    {isPending ? t("loggingIn") : t("login")} <ArrowRight />
                   </Button>
                 </div>
               </div>
@@ -378,7 +350,7 @@ export default function Home() {
           <footer className="mx-auto mb-16 mt-32 w-full max-w-7xl px-12">
             <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
             <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">
-              <p>Follow us</p>
+              <p>{t("followUs")}</p>
               <Link href={"#"} className="hover:opacity-70">
                 <Linkedin className="ml-2 h-6 w-6" />
               </Link>
@@ -396,9 +368,9 @@ export default function Home() {
             <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
             <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">
               <Link href={"#"} className="hover:opacity-70">
-                <p>Terms & Conditions</p>
+                <p>{t("termsAndConditions")}</p>
               </Link>
-              <p>© 2024 Im-Vestor. All rights reserved.</p>
+              <p>{t("copyright")}</p>
             </div>
             <p className="mt-4 text-center text-xs text-gray-700">
               The material presented via this website is for informational

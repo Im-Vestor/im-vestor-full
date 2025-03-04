@@ -10,6 +10,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Head from "next/head";
 import "~/styles/globals.css";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "~/contexts/LanguageContext";
+
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "700"],
@@ -20,19 +22,21 @@ const roboto = Roboto({
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
-      <Toaster />
-      <SpeedInsights />
-      <Analytics />
-      <Head>
-        <title>Im-Vestor</title>
-        <meta name="description" content="Imvestor" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div
-        className={`${roboto.className} ${roboto.variable} bg-gradient-to-b from-[#20212B] to-[#252935] text-white`}
-      >
-        <Component {...pageProps} />
-      </div>
+      <LanguageProvider>
+        <Toaster />
+        <SpeedInsights />
+        <Analytics />
+        <Head>
+          <title>Im-Vestor</title>
+          <meta name="description" content="Imvestor" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <div
+          className={`${roboto.className} ${roboto.variable} bg-gradient-to-b from-[#20212B] to-[#252935] text-white`}
+        >
+          <Component {...pageProps} />
+        </div>
+      </LanguageProvider>
     </ClerkProvider>
   );
 };
