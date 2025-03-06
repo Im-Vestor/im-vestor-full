@@ -6,6 +6,7 @@ import { projectRouter } from "./routers/project";
 import { referralRouter } from "./routers/referral";
 import { entrepreneurRouter } from "./routers/entrepreneur";
 import { userRouter } from "./routers/user";
+import { adminRouter } from "./routers/admin";
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   referral: referralRouter,
   entrepreneur: entrepreneurRouter,
   user: userRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

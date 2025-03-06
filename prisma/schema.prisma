@@ -56,6 +56,7 @@ enum UserType {
     PARTNER
     VC_GROUP
     INCUBATOR
+    ADMIN
 }
 
 model User {

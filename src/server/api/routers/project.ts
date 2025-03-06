@@ -1,4 +1,4 @@
-import { type Prisma, ProjectStage, Currency } from "@prisma/client";
+import { Currency, type Prisma, ProjectStage } from "@prisma/client";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -92,13 +92,11 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-      console.log(where);
 
       const total = await ctx.db.project.count({
         where,
       });
 
-      console.log(total);
 
       const projects = await ctx.db.project.findMany({
         where,
@@ -119,8 +117,6 @@ export const projectRouter = createTRPCRouter({
         skip: (input.page ?? 1) * 20,
         take: 20,
       });
-
-      console.log(projects);
 
       return {
         projects,

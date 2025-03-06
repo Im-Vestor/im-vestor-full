@@ -21,7 +21,7 @@ import { useSignIn } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { LanguageSwitcher } from "~/components/ui/language-switcher";
-import { useTranslation } from "~/hooks/useTranslation";
+import { useTranslation } from "~/hooks/use-translation";
 
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
