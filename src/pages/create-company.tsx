@@ -643,7 +643,7 @@ export default function CreateCompany() {
                           <SelectContent>
                             <SelectItem value={Currency.USD}>$ USD</SelectItem>
                             <SelectItem value={Currency.EUR}>€ EUR</SelectItem>
-                            <SelectItem value={Currency.BRL}>₺ BRL</SelectItem>
+                            <SelectItem value={Currency.BRL}>R$ BRL</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>

@@ -83,6 +83,14 @@ export const Header = () => {
           <Button
             variant="ghost"
             size="sm"
+            className={`${path === "/investors" ? "text-[#EFD687]" : ""}`}
+            onClick={() => router.push("/investors")}
+          >
+            Investors
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className={`${path === "/meetings" ? "text-[#EFD687]" : ""}`}
             onClick={() => router.push("/meetings")}
           >

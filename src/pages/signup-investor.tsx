@@ -452,7 +452,7 @@ export default function SignupInvestor() {
                                 € EUR
                               </SelectItem>
                               <SelectItem value={Currency.BRL}>
-                                ₺ BRL
+                              R$ BRL
                               </SelectItem>
                             </SelectContent>
                           </Select>

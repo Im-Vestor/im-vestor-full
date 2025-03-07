@@ -19,6 +19,44 @@ export const investorRouter = createTRPCRouter({
       },
     });
   }),
+  getInvestorsRelatedToEntrepreneur: protectedProcedure
+    .input(z.object({ page: z.number().optional() }))
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        include: {
+          entrepreneur: {
+            include: {
+              projects: true,
+            },
+          },
+        },
+      });
+
+      const projectSectors = [
+        ...new Set(
+          user?.entrepreneur?.projects?.map((project) => project.sectorId),
+        ),
+      ];
+
+      const investors = await ctx.db.investor.findMany({
+        where: {
+          areas: {
+            some: {
+              id: { in: projectSectors },
+            },
+          },
+        },
+        include: {
+          country: true,
+          state: true,
+        },
+        skip: input.page ? input.page * 10 : 0,
+        take: 10,
+      });
+
+      return investors;
+    }),
   create: publicProcedure
     .input(
       z.object({
@@ -34,6 +72,7 @@ export const investorRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string().min(8),
         currency: z.nativeEnum(Currency),
+        areas: z.array(z.number()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -93,6 +132,11 @@ export const investorRouter = createTRPCRouter({
           birthDate: input.birthDate,
           currency: input.currency,
           userId: user.id,
+          areas: {
+            connect: input.areas.map((area) => ({
+              id: area.toString(),
+            })),
+          },
         },
       });
     }),
@@ -121,7 +165,7 @@ export const investorRouter = createTRPCRouter({
           },
         });
       }
-      
+
       return ctx.db.investor.update({
         where: { userId: input.userId },
         data: {
