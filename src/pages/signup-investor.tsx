@@ -451,6 +451,9 @@ export default function SignupInvestor() {
                               <SelectItem value={Currency.EUR}>
                                 € EUR
                               </SelectItem>
+                              <SelectItem value={Currency.BRL}>
+                                ₺ BRL
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>

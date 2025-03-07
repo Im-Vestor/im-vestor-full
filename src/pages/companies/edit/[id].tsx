@@ -694,6 +694,7 @@ export default function EditCompany() {
                           <SelectContent>
                             <SelectItem value={Currency.USD}>$ USD</SelectItem>
                             <SelectItem value={Currency.EUR}>€ EUR</SelectItem>
+                            <SelectItem value={Currency.BRL}>₺ BRL</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>

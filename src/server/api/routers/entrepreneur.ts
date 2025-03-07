@@ -58,7 +58,6 @@ export const entrepreneurRouter = createTRPCRouter({
         });
       }
 
-
       const client = await clerkClient();
 
       const clerkUser = await client.users.createUser({

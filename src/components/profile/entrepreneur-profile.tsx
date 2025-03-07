@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Building2,
   CircleUserRound,
+  DollarSign,
   Loader2,
   MapPin,
   Pencil,
@@ -56,12 +57,12 @@ export const EntrepreneurProfile = () => {
               objectFit="cover"
               className="rounded-t-md"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-90%[#23242F]/70 to-[#23242F]/100" />
+            <div className="via-90%[#23242F]/70 absolute inset-0 bg-gradient-to-b from-transparent to-[#23242F]/100" />
           </div>
         ) : (
-          <div className="h-24 w-full rounded-t-lg bg-transparent"/>
+          <div className="h-24 w-full rounded-t-lg bg-transparent" />
         )}
-        
+
         <div className="absolute bottom-0 left-12 translate-y-1/2">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A]">
             {entrepreneur?.photo ? (
@@ -107,7 +108,7 @@ export const EntrepreneurProfile = () => {
         <p className="mt-3 text-gray-400">
           {entrepreneur?.about ?? "No description"}
         </p>
-        <h3 className="mt-12 font-semibold">Company</h3>
+        <h3 className="mt-12 font-semibold">Projects</h3>
         {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
           <div className="mt-4 flex flex-col gap-4">
             {entrepreneur?.projects.map((project) => (
@@ -182,14 +183,24 @@ function ProjectCard({
             </div>
           </div>
         </div>
-        <Link
-          href={`/companies/edit/${project.id}`}
-          className="flex h-8 items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm hover:bg-white/10"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Pencil className="mr-2 h-3.5 w-3.5" />
-          Edit
-        </Link>
+        <div className="flex flex-col gap-2 items-end">
+          <Link
+            href={`/companies/edit/${project.id}`}
+            className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm hover:bg-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Pencil className="mr-2 h-3.5 w-3.5" />
+            Edit
+          </Link>
+          <Link
+            href={`/companies/know-your-numbers/${project.id}`}
+            className="flex h-8 items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm hover:bg-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DollarSign className="mr-2 h-3.5 w-3.5" />
+            Know your Numbers
+          </Link>
+        </div>
       </div>
       <hr className="my-6 border-white/10" />
       <div className="flex items-center gap-2">

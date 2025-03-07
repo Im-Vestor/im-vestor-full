@@ -1,5 +1,6 @@
 import { type Currency, type ProjectStage } from "@prisma/client";
 import {
+  ArrowLeft,
   Building2,
   CircleUserRound,
   Globe,
@@ -59,7 +60,14 @@ export default function CompanyDetails() {
       <Header />
       <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-8">
         {/* Company Header */}
-        <div className="flex gap-8 items-center">
+        <button
+          type="button"
+          className="mb-8 flex items-center gap-2 hover:opacity-75"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+        <div className="flex items-center gap-8">
           <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg">
             {project.logo ? (
               <Image
@@ -151,7 +159,8 @@ export default function CompanyDetails() {
                   {project.Entrepreneur?.lastName}
                 </p>
                 <p className="text-sm text-white/70">
-                  {project.Entrepreneur?.state?.name}, {project.Entrepreneur?.country?.name}
+                  {project.Entrepreneur?.state?.name},{" "}
+                  {project.Entrepreneur?.country?.name}
                 </p>
               </div>
             </div>
@@ -234,9 +243,7 @@ export default function CompanyDetails() {
         {/* FAQs */}
         {project.faqs && project.faqs.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-xl font-semibold">
-              FAQ
-            </h2>
+            <h2 className="text-xl font-semibold">FAQ</h2>
             <div className="mt-4 space-y-6">
               {project.faqs.map((faq) => (
                 <div

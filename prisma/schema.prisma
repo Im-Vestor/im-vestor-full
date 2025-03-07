@@ -11,6 +11,7 @@ datasource db {
 enum Currency {
     EUR
     USD
+    BRL
 }
 
 model Country {
@@ -154,14 +155,14 @@ model Project {
     investmentGoal  Float
     logo            String?
     currency        Currency      @default(USD)
-    files           File[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    faqs ProjectFaq[]
-
-    views ProjectView[]
+    knowYourNumbers KnowYourNumbers?
+    faqs            ProjectFaq[]
+    files           File[]
+    views           ProjectView[]
 
     Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
@@ -173,6 +174,15 @@ model Project {
     sectorId  String
     countryId Int?
     stateId   Int?
+}
+
+model KnowYourNumbers {
+    id       String @id @default(uuid())
+    question String
+    answer   String
+
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String  @unique
 }
 
 model ProjectFaq {
