@@ -85,7 +85,7 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
 export default function EditCompany() {
   const router = useRouter();
-  const { id } = router.query;
+  const { companyId } = router.query;
   const { user } = useUser();
 
   const [country, setCountry] = useState<string>("");
@@ -101,9 +101,9 @@ export default function EditCompany() {
     });
 
   const { data: project } = api.project.getById.useQuery(
-    { id: id as string },
+    { id: companyId as string },
     {
-      enabled: !!id,
+      enabled: !!companyId,
     }
   );
 
@@ -191,10 +191,10 @@ export default function EditCompany() {
   };
 
   async function onSubmit(data: CompanyFormValues) {
-    if (!id) return;
+    if (!companyId) return;
     
     await updateCompany({
-      id: id as string,
+      id: companyId as string,
       ...data,
     });
   }

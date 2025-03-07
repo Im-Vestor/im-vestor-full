@@ -1,4 +1,3 @@
-import { type Currency, type ProjectStage } from "@prisma/client";
 import {
   ArrowLeft,
   Building2,
@@ -12,28 +11,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Header } from "~/components/header";
 import { api } from "~/utils/api";
-
-// Helper function to format currency
-const formatCurrency = (value: number, currency: Currency = "USD"): string => {
-  const formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-
-  return formatter.format(value);
-};
-
-// Helper function to format stage names
-const formatStage = (stage: ProjectStage | null | undefined) => {
-  if (!stage) return "Not specified";
-
-  return stage
-    .split("_")
-    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(" ");
-};
+import { formatCurrency, formatStage } from "~/utils/format";
 
 export default function CompanyDetails() {
   const router = useRouter();
@@ -155,7 +133,7 @@ export default function CompanyDetails() {
               )}
               <div>
                 <p className="font-medium text-[#EFD687]">
-                  {project.Entrepreneur?.firstName}{" "}
+                  {project.Entrepreneur?.firstName}s{" "}
                   {project.Entrepreneur?.lastName}
                 </p>
                 <p className="text-sm text-white/70">

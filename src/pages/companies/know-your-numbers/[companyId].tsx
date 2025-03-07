@@ -1,18 +1,46 @@
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleUserRound, Loader2 } from "lucide-react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Header } from "~/components/header";
+import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
 import { api } from "~/utils/api";
+import { formatCurrency, formatStage } from "~/utils/format";
 
 export default function EditCompany() {
   const router = useRouter();
-  const { id } = router.query;
+  const { companyId } = router.query;
 
   const { data: project, isLoading } = api.project.getById.useQuery(
-    { id: id as string },
+    { id: companyId as string },
     {
-      enabled: !!id,
+      enabled: !!companyId,
     },
   );
+
+  const [notes, setNotes] = useState(project?.knowYourNumbers?.notes ?? "");
+
+  const { mutate: updateKnowYourNumbers, isPending: isUpdating } =
+    api.project.updateKnowYourNumbers.useMutation({
+      onSuccess: () => {
+        toast.success("Notes updated successfully");
+      },
+      onError: () => {
+        toast.error("Failed to update notes");
+      },
+    });
+
+  const handleUpdateKnowYourNumbers = () => {
+    if (!project?.id) return;
+    updateKnowYourNumbers({ id: project.id, notes });
+  };
+
+  useEffect(() => {
+    if (project?.knowYourNumbers) {
+      setNotes(project.knowYourNumbers.notes);
+    }
+  }, [project]);
 
   if (isLoading) {
     return (
@@ -26,14 +54,117 @@ export default function EditCompany() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
       <div className="mt-12">
-        <div className="space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-8">
-          <button
-            type="button"
-            className="flex items-center gap-2 hover:opacity-75"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
+        <button
+          type="button"
+          className="flex items-center gap-2 hover:opacity-75"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+
+        <div className="mt-4 rounded-xl border-2 border-white/10 bg-[#20212B] px-16 py-8">
+          <div className="grid grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Your Numbers</h2>
+              <div className="flex justify-between">
+                <span className="text-white/70">Stage</span>
+                <span className="font-medium">
+                  {formatStage(project?.stage)}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-white/70">Annual Revenue</span>
+                <span className="font-medium">
+                  {project?.annualRevenue
+                    ? formatCurrency(project.annualRevenue, project.currency)
+                    : "Not specified"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-white/70">Initial Investment</span>
+                <span className="font-medium">
+                  {project?.startInvestment
+                    ? formatCurrency(project.startInvestment, project.currency)
+                    : "Not specified"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-white/70">Investment Goal</span>
+                <span className="font-medium">
+                  {formatCurrency(
+                    project?.investmentGoal ?? 0,
+                    project?.currency ?? "USD",
+                  )}
+                </span>
+              </div>
+
+              {project?.equity !== null && project?.equity !== undefined && (
+                <div className="flex justify-between">
+                  <span className="text-white/70">Equity Offered</span>
+                  <span className="font-medium">{project.equity}%</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span className="text-white/70">Investor Slots</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {project?.investorSlots ?? 0}
+                  </span>
+                  <div className="flex space-x-1">
+                    {Array.from({
+                      length: Math.min(project?.investorSlots ?? 0, 5),
+                    }).map((_, i) => (
+                      <CircleUserRound
+                        key={i}
+                        color="#EFD687"
+                        className="h-4 w-4"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {project?.foundationDate && (
+                <div className="flex justify-between">
+                  <span className="text-white/70">Founded</span>
+                  <span className="font-medium">
+                    {new Date(project.foundationDate).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Notes</h2>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Enter your notes here"
+                className="h-48"
+              />
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleUpdateKnowYourNumbers}
+                  disabled={isUpdating || !project?.id}
+                  className="self-end"
+                >
+                  Save
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-8">
           <h1 className="text-lg font-bold">Know Your Numbers</h1>
           <div className="space-y-6">
             <div>

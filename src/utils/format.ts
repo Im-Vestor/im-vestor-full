@@ -1,4 +1,4 @@
-import { type Currency } from "@prisma/client";
+import { type ProjectStage, type Currency } from "@prisma/client";
 
 /**
  * Format a number as currency
@@ -8,7 +8,7 @@ import { type Currency } from "@prisma/client";
  */
 export const formatCurrency = (
   value: number,
-  currency: Currency = "USD"
+  currency: Currency = "USD",
 ): string => {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -18,4 +18,14 @@ export const formatCurrency = (
   });
 
   return formatter.format(value);
-}; 
+};
+
+// Helper function to format stage names
+export const formatStage = (stage: ProjectStage | null | undefined) => {
+  if (!stage) return "Not specified";
+
+  return stage
+    .split("_")
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(" ");
+};

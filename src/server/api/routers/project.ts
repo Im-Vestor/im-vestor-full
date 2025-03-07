@@ -17,6 +17,7 @@ export const projectRouter = createTRPCRouter({
               country: true,
             },
           },
+          knowYourNumbers: true,
           files: true,
           faqs: true,
           state: true,
@@ -92,11 +93,9 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-
       const total = await ctx.db.project.count({
         where,
       });
-
 
       const projects = await ctx.db.project.findMany({
         where,
@@ -259,6 +258,27 @@ export const projectRouter = createTRPCRouter({
       });
 
       return updatedProject;
+    }),
+  updateKnowYourNumbers: protectedProcedure
+    .input(z.object({ id: z.string(), notes: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const knowYourNumbers = await ctx.db.knowYourNumbers.findUnique({
+        where: { projectId: input.id },
+      });
+
+      if (!knowYourNumbers) {
+        await ctx.db.knowYourNumbers.create({
+          data: {
+            projectId: input.id,
+            notes: input.notes,
+          },
+        });
+      } else {
+        await ctx.db.knowYourNumbers.update({
+          where: { projectId: input.id },
+          data: { notes: input.notes },
+        });
+      }
     }),
   addFile: protectedProcedure
     .input(
