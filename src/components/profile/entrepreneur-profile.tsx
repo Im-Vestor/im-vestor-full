@@ -129,7 +129,7 @@ export const EntrepreneurProfile = () => {
         )}
         <Button
           className="mt-4 md:w-1/3"
-          onClick={() => router.push("/create-company")}
+          onClick={() => router.push("/companies/create")}
         >
           Add your Company
           <ArrowRight className="ml-2" />

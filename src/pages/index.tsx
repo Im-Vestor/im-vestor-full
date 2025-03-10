@@ -91,7 +91,7 @@ export default function Home() {
             {t("connectingEntrepreneursAndInvestors")}
           </h1>
           <Button
-            onClick={async () => await router.push("/signup")}
+            onClick={async () => await router.push("/sign-up")}
             className="mt-8 rounded-full hover:opacity-75"
           >
             {t("getStarted")} <ArrowDownRight />
@@ -312,7 +312,7 @@ export default function Home() {
                 <p className="mt-2 text-xs text-gray-300">
                   {t("dontHaveAccount")}{" "}
                   <Link
-                    href="/signup"
+                    href="/sign-up"
                     className="text-[#F0D687] underline hover:opacity-70"
                   >
                     {t("createOne")}

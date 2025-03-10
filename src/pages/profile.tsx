@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Header } from "~/components/header";
 import { EntrepreneurProfile } from "~/components/profile/entrepreneur-profile";
 import { InvestorProfile } from "~/components/profile/investor-profile";
+import { PartnerProfile } from "~/components/profile/partner-profile";
 
 export default function Profile() {
   const router = useRouter();
@@ -21,8 +22,10 @@ export default function Profile() {
       <div className="mt-12">
         {user?.publicMetadata.userType === "ENTREPRENEUR" ? (
           <EntrepreneurProfile />
-        ) : (
+        ) : user?.publicMetadata.userType === "INVESTOR" ? (
           <InvestorProfile />
+        ) : (
+          <PartnerProfile />
         )}
       </div>
     </main>

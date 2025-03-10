@@ -7,7 +7,7 @@ export const referralRouter = createTRPCRouter({
         id: ctx.auth.userId,
       },
       include: {
-        referrals: true,
+        referralsAsReferrer: true,
       },
     });
   }),

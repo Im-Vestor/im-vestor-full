@@ -14,9 +14,9 @@ export default function SignUp() {
 
   const handleNext = async () => {
     if (accountType === "entrepreneur") {
-      await router.push(`signup-entrepreneur`);
+      await router.push(`/sign-up/entrepreneur`);
     } else if (accountType === "investor") {
-      await router.push(`signup-investor`);
+      await router.push(`/sign-up/investor`);
     }
   };
 

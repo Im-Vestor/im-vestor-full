@@ -7,7 +7,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { generateCode } from "~/utils/referral";
+import { createReferralLink, generateCode } from "~/utils/referral";
 
 export const entrepreneurRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -41,22 +41,14 @@ export const entrepreneurRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      let referralId: string | undefined;
+      const userToCheck = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
 
-      if (input.referralToken) {
-        const referralUser = await ctx.db.user.findUnique({
-          where: { referralCode: input.referralToken },
-        });
-
-        referralId = referralUser?.id;
-
-        await ctx.db.referral.create({
-          data: {
-            userId: referralId ?? "",
-            name: `${input.firstName} ${input.lastName}`,
-          },
-        });
+      if (userToCheck) {
+        throw new Error("User already exists");
       }
+
 
       const client = await clerkClient();
 
@@ -75,11 +67,21 @@ export const entrepreneurRouter = createTRPCRouter({
         data: {
           id: clerkUser.id,
           email: input.email,
-          referralId: referralId,
           referralCode: generateCode(),
           userType: UserType.ENTREPRENEUR,
         },
       });
+
+      if (input.referralToken) {
+        if (input.referralToken) {
+          await createReferralLink(
+            input.referralToken,
+            user.id,
+            input.firstName,
+            input.lastName,
+          );
+        }
+      }
 
       return ctx.db.entrepreneur.create({
         data: {
@@ -94,7 +96,6 @@ export const entrepreneurRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        userId: z.string().min(1),
         firstName: z.string().min(1),
         lastName: z.string().min(1),
         country: z.string().min(1),
@@ -111,7 +112,7 @@ export const entrepreneurRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       if (input.photo) {
         await ctx.db.user.update({
-          where: { id: input.userId },
+          where: { id: ctx.auth.userId },
           data: {
             imageUrl: input.photo,
           },
@@ -119,7 +120,7 @@ export const entrepreneurRouter = createTRPCRouter({
       }
 
       return ctx.db.entrepreneur.update({
-        where: { userId: input.userId },
+        where: { userId: ctx.auth.userId },
         data: {
           firstName: input.firstName,
           lastName: input.lastName,

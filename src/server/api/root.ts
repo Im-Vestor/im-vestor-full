@@ -7,11 +7,13 @@ import { referralRouter } from "./routers/referral";
 import { entrepreneurRouter } from "./routers/entrepreneur";
 import { userRouter } from "./routers/user";
 import { adminRouter } from "./routers/admin";
+import { partnerRouter } from "./routers/partner";
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
   country: countryRouter,
   investor: investorRouter,
+  partner: partnerRouter,
   project: projectRouter,
   referral: referralRouter,
   entrepreneur: entrepreneurRouter,

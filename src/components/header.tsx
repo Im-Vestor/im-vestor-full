@@ -14,6 +14,51 @@ import {
 } from "./ui/dropdown-menu";
 import { api } from "~/utils/api";
 
+const ENTREPRENEUR_MENUS = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    label: "Investors",
+    href: "/investors",
+  },
+  {
+    label: "Meetings",
+    href: "/meetings",
+  },
+  {
+    label: "Shop",
+    href: "/shop",
+  },
+];
+
+const INVESTOR_MENUS = [
+  {
+    label: "Companies",
+    href: "/companies",
+  },
+  {
+    label: "Meetings",
+    href: "/meetings",
+  },
+  {
+    label: "Shop",
+    href: "/shop",
+  },
+];
+
+const PARTNER_MENUS = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    label: "Referrals",
+    href: "/referral/list",
+  },
+];
+
 export const Header = () => {
   const router = useRouter();
   const path = usePathname();
@@ -41,69 +86,52 @@ export const Header = () => {
         <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
         <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
       </div>
+      
       {isSignedIn && userType === "INVESTOR" && (
         <div className="flex w-1/3 items-center justify-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/companies" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/companies")}
-          >
-            Find Projects
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/meetings" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/meetings")}
-          >
-            Meetings
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/shop" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/shop")}
-          >
-            Shop
-          </Button>
+          {INVESTOR_MENUS.map((menu) => (
+            <Button
+              key={menu.href}
+              variant="ghost"
+              size="sm"
+              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
+              onClick={() => router.push(menu.href)}
+            >
+              {menu.label}
+            </Button>
+          ))}
         </div>
       )}
 
       {isSignedIn && userType === "ENTREPRENEUR" && (
         <div className="flex w-1/3 items-center justify-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/dashboard" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/dashboard")}
-          >
-            Dashboard
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/investors" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/investors")}
-          >
-            Investors
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/meetings" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/meetings")}
-          >
-            Meetings
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${path === "/shop" ? "text-[#EFD687]" : ""}`}
-            onClick={() => router.push("/shop")}
-          >
-            Shop
-          </Button>
+          {ENTREPRENEUR_MENUS.map((menu) => (
+            <Button
+              key={menu.href}
+              variant="ghost"
+              size="sm"
+              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
+              onClick={() => router.push(menu.href)}
+            >
+              {menu.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {isSignedIn && userType === "PARTNER" && (
+        <div className="flex w-1/3 items-center justify-center gap-3">
+          {PARTNER_MENUS.map((menu) => (
+            <Button
+              key={menu.href}
+              variant="ghost"
+              size="sm"
+              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
+              onClick={() => router.push(menu.href)}
+            >
+              {menu.label}
+            </Button>
+          ))}
         </div>
       )}
 
@@ -131,11 +159,13 @@ export const Header = () => {
                 <User className="h-4 w-4" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/referral")}>
+              <DropdownMenuItem onClick={() => router.push("/referral/share")}>
                 <Mail className="h-4 w-4" />
                 Referrals
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/login" })}>
+              <DropdownMenuItem
+                onClick={() => signOut({ redirectUrl: "/login" })}
+              >
                 <LogOut className="h-4 w-4" />
                 Sign out
               </DropdownMenuItem>

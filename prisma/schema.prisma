@@ -14,6 +14,12 @@ enum Currency {
     BRL
 }
 
+enum ProjectStatus {
+    ACTIVE
+    INACTIVE
+    COMPLETED
+}
+
 model Country {
     id           Int            @id @default(autoincrement())
     name         String
@@ -47,8 +53,12 @@ model Referral {
     id       String   @id @default(uuid())
     name     String
     joinedAt DateTime @default(now())
-    user     User     @relation(fields: [userId], references: [id])
-    userId   String
+
+    referrer   User   @relation("ReferrerToUser", fields: [referrerId], references: [id])
+    referrerId String
+
+    referred   User   @relation("ReferredToUser", fields: [referredId], references: [id])
+    referredId String
 }
 
 enum UserType {
@@ -62,18 +72,29 @@ enum UserType {
 
 model User {
     id           String        @id @default(uuid())
-    email        String
+    email        String        @unique
     imageUrl     String?
     referralCode String        @unique
-    referralId   String?
     userType     UserType
     investor     Investor?
     entrepreneur Entrepreneur?
-    // partner      Partner?
+    partner      Partner?
     // vcGroup      VcGroup?
     // incubator    Incubator?
 
-    referrals Referral[]
+    referralsAsReferrer Referral[] @relation("ReferrerToUser")
+    referralsAsReferred Referral[] @relation("ReferredToUser")
+}
+
+model Partner {
+    id          String  @id @default(uuid())
+    firstName   String
+    lastName    String
+    companyName String?
+    mobileFone  String?
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
 }
 
 model Investor {
@@ -94,7 +115,8 @@ model Investor {
     state                  State?    @relation(fields: [stateId], references: [id])
     country                Country?  @relation(fields: [countryId], references: [id])
 
-    favoriteProjects Project[]
+    favoriteProjects Project[] @relation("FavoriteInvestors")
+    investedProjects Project[] @relation("InvestedInvestors")
     projectViews     ProjectView[]
     areas            Area[]
 
@@ -148,6 +170,7 @@ model Project {
     country         Country?      @relation(fields: [countryId], references: [id])
     state           State?        @relation(fields: [stateId], references: [id])
     about           String?
+    status          ProjectStatus @default(ACTIVE)
     startInvestment Float?
     investorSlots   Int?
     annualRevenue   Float?
@@ -167,8 +190,11 @@ model Project {
     Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
 
-    Investor   Investor? @relation(fields: [investorId], references: [id])
-    investorId String?
+    favoriteInvestors Investor[] @relation("FavoriteInvestors")
+    favoriteInvestorId String?
+
+    investedInvestors Investor[] @relation("InvestedInvestors")
+    investedInvestorId String?
 
     sector    Area   @relation(fields: [sectorId], references: [id])
     sectorId  String

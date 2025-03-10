@@ -46,7 +46,9 @@ interface InvestorFormProps {
 export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
   const utils = api.useUtils();
 
-  const [country, setCountry] = useState<string>(investor?.countryId?.toString() ?? "");
+  const [country, setCountry] = useState<string>(
+    investor?.countryId?.toString() ?? "",
+  );
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
@@ -91,7 +93,6 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
         onSubmit={form.handleSubmit((data) =>
           updateInvestor({
             ...data,
-            userId: investor?.userId ?? "",
           }),
         )}
         className="space-y-4 rounded-lg border-2 border-white/10 bg-[#242630]"
@@ -205,9 +206,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
             name="country"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Country*
-                </Label>
+                <Label className="font-normal text-neutral-200">Country*</Label>
                 <FormControl>
                   <Select
                     value={field.value}
@@ -243,9 +242,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
             name="state"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  State*
-                </Label>
+                <Label className="font-normal text-neutral-200">State*</Label>
                 <FormControl>
                   <Select
                     value={field.value}
@@ -261,10 +258,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
                     </SelectTrigger>
                     <SelectContent>
                       {states?.map((state) => (
-                        <SelectItem
-                          key={state.id}
-                          value={state.id.toString()}
-                        >
+                        <SelectItem key={state.id} value={state.id.toString()}>
                           {state.name}
                         </SelectItem>
                       ))}
@@ -283,9 +277,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
             name="about"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  About me
-                </Label>
+                <Label className="font-normal text-neutral-200">About me</Label>
                 <FormControl>
                   <Textarea
                     placeholder="I'm a Venture Capitalist..."
@@ -314,4 +306,4 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
       </form>
     </Form>
   );
-}; 
+};

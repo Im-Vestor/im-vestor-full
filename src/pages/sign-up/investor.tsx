@@ -113,7 +113,7 @@ export default function SignupInvestor() {
         setStep(step + 1);
       },
       onError: (error) => {
-        toast.error("Failed to create account. Please try again.");
+        toast.error("Failed to create account. " + error.message);
         console.error("Registration error:", error);
       },
     });
@@ -665,7 +665,7 @@ export default function SignupInvestor() {
                     setStep(step + 1);
                   } else {
                     console.error("Invalid form");
-                    console.log(form.formState.errors);
+                    console.error(form.formState.errors);
                   }
                 }}
               >

@@ -42,8 +42,6 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where: Prisma.ProjectWhereInput = {};
 
-      console.log(input);
-
       if (input.sectorId && input.sectorId.length > 0) {
         where.sectorId = {
           in: input.sectorId,

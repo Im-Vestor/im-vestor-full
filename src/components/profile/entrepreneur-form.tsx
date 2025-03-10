@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type Entrepreneur } from "@prisma/client";
 import { ImageIcon, Plus } from "lucide-react";
@@ -52,7 +51,6 @@ export const EntrepreneurForm = ({
   entrepreneur,
   onCancel,
 }: EntrepreneurFormProps) => {
-  const { user } = useUser();
   const utils = api.useUtils();
 
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
@@ -99,9 +97,7 @@ export const EntrepreneurForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) =>
-          updateEntrepreneur({ ...data, userId: user?.id ?? "" }),
-        )}
+        onSubmit={form.handleSubmit((data) => updateEntrepreneur({ ...data }))}
         className="space-y-4 rounded-lg border-2 border-white/10 bg-[#242630]"
       >
         {renderBannerUpload(
@@ -467,4 +463,4 @@ const renderPhotoUpload = (
   );
 };
 
-export { renderBannerUpload, renderPhotoUpload }; 
+export { renderBannerUpload, renderPhotoUpload };

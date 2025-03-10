@@ -1,5 +1,12 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowRight, Copy, Facebook, Instagram, Linkedin } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Copy,
+  Facebook,
+  Instagram,
+  Linkedin,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -17,6 +24,14 @@ export default function Referral() {
 
         <main className="relative mx-4 flex flex-col md:mx-48 md:flex-row md:justify-between">
           <div className="mt-12 flex w-full flex-col items-center md:mt-48 md:w-1/2 md:items-start">
+            <Link
+              href="/profile"
+              className="mb-8 flex cursor-pointer items-center gap-2 hover:opacity-75"
+            >
+              <ArrowLeft className="size-4" />
+              Back
+            </Link>
+
             <div className="flex flex-col items-center">
               <Image
                 src="/logo/imvestor.png"
@@ -74,9 +89,7 @@ export default function Referral() {
                     }}
                     className="absolute right-2 h-4 w-4 cursor-pointer hover:opacity-75"
                   />
-                  <p className="flex-1 text-center">
-                    {referral?.referralCode}
-                  </p>
+                  <p className="flex-1 text-center">{referral?.referralCode}</p>
                 </div>
               </div>
               <div className="flex w-full justify-center gap-8 md:justify-between md:px-8">
@@ -84,7 +97,7 @@ export default function Referral() {
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
                     "https://imvestor.com",
                   )}&text=${encodeURIComponent(
-                      `Join Imvestor using my referral code: ${referral?.referralCode}`,
+                    `Join Imvestor using my referral code: ${referral?.referralCode}`,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -118,14 +131,14 @@ export default function Referral() {
           </div>
         </main>
 
-        <div className="hidden flex-col items-center justify-center md:flex pb-24">
+        <div className="hidden flex-col items-center justify-center pb-24 md:flex">
           <div className="mt-12 text-center text-5xl font-bold text-[#E5CD82]">
             My Referral
           </div>
           <div className="mt-6 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-center text-xl font-bold">
-            Total: {referral?.referrals.length}
+            Total: {referral?.referralsAsReferrer.length}
           </div>
-          {referral?.referrals.map((ref) => (
+          {referral?.referralsAsReferrer.map((ref) => (
             <div
               key={ref.name}
               className="mt-10 flex items-center justify-center gap-8 rounded-md bg-[#1b1c24] px-24 py-3"
