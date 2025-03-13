@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -83,10 +84,12 @@ export const Header = () => {
       <div
         className={`flex ${isSignedIn ? "w-1/3" : "w-full"} items-center gap-3`}
       >
-        <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
-        <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo/imvestor.png" alt="Imvestor" width={30} height={24} />
+          <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
+        </Link>
       </div>
-      
+
       {isSignedIn && userType === "INVESTOR" && (
         <div className="flex w-1/3 items-center justify-center gap-3">
           {INVESTOR_MENUS.map((menu) => (

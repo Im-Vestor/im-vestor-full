@@ -18,16 +18,39 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			sidebar: {
-  				DEFAULT: 'hsl(var(--sidebar-background))',
-  				foreground: 'hsl(var(--sidebar-foreground))',
-  				primary: 'hsl(var(--sidebar-primary))',
-  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-  				accent: 'hsl(var(--sidebar-accent))',
-  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-  				border: 'hsl(var(--sidebar-border))',
-  				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			primary: {
+  				DEFAULT: "linear-gradient(to right, #EDD689, #D3B662)",
+  				from: "#EDD689",
+  				to: "#D3B662",
+  				solid: "#EDD689",
+  				hover: "#EDD689/90",
+  				foreground: "#000000",
+  			},
+  			background: {
+  				DEFAULT: "#030014",
+  				card: "#030014",
+  				gradient: {
+  					from: "#20212B",
+  					to: "#252935",
+  				},
+  			},
+  			ui: {
+  				border: {
+  					DEFAULT: "white/10",
+  				},
+  				text: {
+  					DEFAULT: "white",
+  					muted: "white/70",
+  				},
+  			},
+  			destructive: {
+  				DEFAULT: "#EF4444",
+  				hover: "#EF4444/90",
+  				foreground: "white",
+  			},
+  		},
+  		backgroundImage: {
+  			'primary-gradient': 'linear-gradient(to right, #EDD689, #D3B662)',
   		},
   		keyframes: {
   			'accordion-down': {
