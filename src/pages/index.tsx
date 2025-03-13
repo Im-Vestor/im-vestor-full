@@ -696,7 +696,7 @@ export default function Home() {
 
                       <Link className="mt-8 z-50" href="/sign-up/entrepreneur">
                         <Button >
-                          Join us
+                          Join as {t("entrepreneur")}
                           <ArrowRight className="ml-2" />
                         </Button>
                       </Link>
@@ -747,7 +747,7 @@ export default function Home() {
 
                       <Link className="mt-8 z-50" href="/sign-up/investor">
                         <Button>
-                          Join us
+                          Join as {t("investor")}
                           <ArrowRight className="ml-2" />
                         </Button>
                       </Link>
