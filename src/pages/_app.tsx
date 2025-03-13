@@ -32,7 +32,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <div
-          className={`${roboto.className} ${roboto.variable} bg-gradient-to-b from-[#20212B] to-[#252935] text-white`}
+          className={`${roboto.className} ${roboto.variable} bg-background text-ui-text`}
         >
           <Component {...pageProps} />
         </div>

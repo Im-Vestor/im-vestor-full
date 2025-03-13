@@ -1,12 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@layer base {
-body {
-    background-color: #20222D;
-  }
 
+@layer base {
   :root {
     --radius: 0.5rem;
+
+    /* Primary Theme Colors */
+    --primary: 47 84% 73%;
+    --primary-from: #EDD689;
+    --primary-to: #D3B662;
+
+    /* Sidebar Theme Variables */
+    --sidebar-background: 225 17% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 47 84% 73%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 225 17% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 47 84% 73%;
+  }
+
+  body {
+    @apply bg-background text-ui-text;
+  }
+}
+
+@layer utilities {
+  /* Primary Color Utilities */
+  .bg-primary {
+    @apply bg-primary-gradient;
+  }
+
+  .text-primary {
+    @apply bg-primary-gradient bg-clip-text text-transparent;
+  }
+
+  .border-primary {
+    @apply border-primary-solid;
+  }
+
+  .from-primary {
+    @apply from-[#EDD689];
+  }
+
+  .to-primary {
+    @apply to-[#D3B662];
   }
 }
