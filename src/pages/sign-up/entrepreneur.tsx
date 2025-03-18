@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { format } from "date-fns";
 import { ArrowLeft, ArrowRight, CalendarIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -12,6 +13,7 @@ import { Header } from "~/components/header";
 import { SignUpCard } from "~/components/sign-up-card";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -37,6 +39,12 @@ const formSchema = z
       required_error: "Birth date is required",
     }),
     referralToken: z.string().optional(),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: "You must accept the terms and conditions",
+    }),
+    acceptConfidentiality: z.boolean().refine((val) => val === true, {
+      message: "You must accept the confidentiality agreement",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -60,7 +68,10 @@ export default function SignupEntrepreneur() {
         new Date().setFullYear(new Date().getFullYear() - 18),
       ),
       referralToken: (router.query.referralToken as string) ?? "",
+      acceptTerms: true,
+      acceptConfidentiality: true,
     },
+    mode: "onBlur",
   });
 
   
@@ -83,9 +94,9 @@ export default function SignupEntrepreneur() {
         <Header />
       </div>
       <div
-        className={`md:max-w-[40rem] ${step !== 4 && "rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-6 backdrop-blur-md"}`}
+        className={`md:max-w-[40rem] ${step !== 5 && "rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-6 backdrop-blur-md"}`}
       >
-        {step !== 4 && (
+        {step !== 5 && (
           <button
             type="button"
             className="flex items-center gap-2 hover:opacity-75"
@@ -308,6 +319,61 @@ export default function SignupEntrepreneur() {
             )}
 
             {step === 3 && (
+              <div className="md:min-w-[25rem] md:max-w-[25rem]">
+                <h2 className="mb-12 mt-8 text-center text-4xl font-semibold">
+                  Terms & <span className="text-[#E5CD82]">Conditions</span>
+                </h2>
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label>I accept the{" "}
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              className="text-[#E5CD82] underline"
+                            >
+                              terms and conditions
+                            </Link>
+                          </Label>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="acceptConfidentiality"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label>I accept the confidentiality agreement</Label>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
               <SignUpCard
                 name={
                   form.getValues("firstName") + " " + form.getValues("lastName")
@@ -323,31 +389,68 @@ export default function SignupEntrepreneur() {
               />
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <>
                 <FinishCard name={form.getValues("firstName")} />
               </>
             )}
 
-            {step !== 4 && (
+            {step !== 5 && (
               <Button
                 type={"button"}
                 className="mt-12 w-full"
-                disabled={isRegistering || !form.formState.isValid}
+                disabled={
+                  isRegistering || 
+                  (step === 1 && !form.formState.isValid) ||
+                  (step === 3 && (!form.getValues("acceptTerms") || !form.getValues("acceptConfidentiality")))
+                }
                 onClick={async () => {
-                  if (step === 2) {
-                    await registerEntrepreneur(form.getValues());
-                  } else {
+                  let isValid = false;
+
+                  switch (step) {
+                    case 1:
+                      isValid = await form.trigger([
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "password",
+                        "confirmPassword",
+                        "mobileFone",
+                        "birthDate",
+                      ]);
+                      break;
+                    case 2:
+                      isValid = true; // Referral token is optional
+                      break;
+                    case 3:
+                      isValid = await form.trigger([
+                        "acceptTerms",
+                        "acceptConfidentiality",
+                      ]);
+                      break;
+                    case 4:
+                      isValid = true;
+                      await registerEntrepreneur(form.getValues());
+                      return;
+                  }
+
+                  if (isValid) {
                     setStep(step + 1);
+                  } else {
+                    console.error("Invalid form");
+                    console.error(form.formState.errors);
                   }
                 }}
               >
-                {step === 3
-                  ? "Take your pass"
-                  : form.formState.isValid
-                    ? "Continue"
-                    : "Please fill all the fields"}{" "}
-                <ArrowRight className="ml-2" />
+                {isRegistering ? (
+                  "Creating account..."
+                ) : step === 4 ? (
+                  "Take your pass"
+                ) : (
+                  <>
+                    Continue <ArrowRight className="ml-2" />
+                  </>
+                )}
               </Button>
             )}
           </form>

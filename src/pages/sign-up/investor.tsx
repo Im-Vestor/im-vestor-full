@@ -35,6 +35,7 @@ import {
 } from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 const formSchema = z
   .object({
@@ -102,6 +103,7 @@ export default function SignupInvestor() {
       acceptTerms: false,
       acceptConfidentiality: false,
     },
+    mode: "onBlur",
   });
 
   const { data: areas } = api.area.getAll.useQuery();
@@ -522,53 +524,6 @@ export default function SignupInvestor() {
             )}
 
             {step === 4 && (
-              <div className="md:min-w-[25rem] md:max-w-[25rem]">
-                <h2 className="mb-12 mt-8 text-center text-4xl font-semibold">
-                  Terms & <span className="text-[#E5CD82]">Conditions</span>
-                </h2>
-                <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="acceptTerms"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <Label>I accept the terms and conditions</Label>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="acceptConfidentiality"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <Label>I accept the confidentiality agreement</Label>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            )}
-
-            {step === 5 && (
               <div className="min-w-[20rem] md:min-w-[30rem] md:max-w-[30rem]">
                 <h2 className="my-8 text-center text-4xl font-semibold">
                   Were you <br />
@@ -598,6 +553,61 @@ export default function SignupInvestor() {
               </div>
             )}
 
+            {step === 5 && (
+              <div className="md:min-w-[25rem] md:max-w-[25rem]">
+                <h2 className="mb-12 mt-8 text-center text-4xl font-semibold">
+                  Terms & <span className="text-[#E5CD82]">Conditions</span>
+                </h2>
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label>I accept the{" "}
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              className="text-[#E5CD82] underline"
+                            >
+                              terms and conditions
+                            </Link>
+                          </Label>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="acceptConfidentiality"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label>I accept the confidentiality agreement</Label>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
             {step === 6 && (
               <SignUpCard
                 name={
@@ -620,7 +630,8 @@ export default function SignupInvestor() {
               <Button
                 type="button"
                 className="mt-12 w-full"
-                disabled={isRegistering}
+                disabled={isRegistering || (step === 5 && 
+                  (!form.getValues("acceptTerms") || !form.getValues("acceptConfidentiality")))}
                 onClick={async () => {
                   let isValid = false;
 
@@ -647,10 +658,10 @@ export default function SignupInvestor() {
                       ]);
                       break;
                     case 4:
-                      isValid = await form.trigger("acceptTerms");
+                      isValid = true; // Referral token is optional
                       break;
                     case 5:
-                      isValid = true; // Referral token is optional
+                      isValid = await form.trigger("acceptTerms");
                       if (isValid) {
                         await registerInvestor(form.getValues());
                         return;

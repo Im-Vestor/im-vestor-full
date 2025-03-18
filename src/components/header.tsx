@@ -28,6 +28,10 @@ const ENTREPRENEUR_MENUS = [
     href: "/meetings",
   },
   {
+    label: "News",
+    href: "/news/entrepreneur",
+  },
+  {
     label: "Shop",
     href: "/shop",
   },
@@ -43,6 +47,10 @@ const INVESTOR_MENUS = [
     href: "/meetings",
   },
   {
+    label: "News",
+    href: "/news/investor",
+  },
+  {
     label: "Shop",
     href: "/shop",
   },
@@ -56,6 +64,10 @@ const PARTNER_MENUS = [
   {
     label: "Referrals",
     href: "/referral/list",
+  },
+  {
+    label: "News",
+    href: "/news/partner",
   },
 ];
 
