@@ -1,4 +1,4 @@
-import { useSignIn } from "@clerk/nextjs";
+import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
@@ -11,7 +11,9 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
 export default function Login() {
+  const user = useUser();
   const router = useRouter();
+  const { signOut } = useClerk();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -19,17 +21,22 @@ export default function Login() {
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
     setIsPending(true);
 
     try {
+      if (user.isLoaded && user.isSignedIn) {
+        await signOut({
+          redirectUrl: "/login",
+        });
+      }
+
       const signInAttempt = await signIn.create({
         identifier: email,
         password,
-        
       });
 
       if (signInAttempt.status === "complete") {
@@ -40,7 +47,9 @@ export default function Login() {
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
-        toast.error(err.errors[0]?.message ?? "Failed to login. Please try again.");
+        toast.error(
+          err.errors[0]?.message ?? "Failed to login. Please try again.",
+        );
       } else {
         toast.error("Failed to login. Please try again.");
         console.error(JSON.stringify(err, null, 2));

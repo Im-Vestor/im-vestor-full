@@ -7,21 +7,6 @@ import { ProjectStatus } from "@prisma/client";
 import Image from "next/image";
 import { cn } from "~/lib/utils";
 
-const PROJECT_STATUS_TO_STRING = [
-  {
-    value: ProjectStatus.ACTIVE,
-    label: "Active",
-  },
-  {
-    value: ProjectStatus.INACTIVE,
-    label: "Inactive",
-  },
-  {
-    value: ProjectStatus.COMPLETED,
-    label: "Completed",
-  },
-];
-
 export default function List() {
   const [page, setPage] = useState(0);
 
