@@ -162,7 +162,7 @@ export default function CreateCompany() {
       <div className="mt-12">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-8">
+            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] md:px-16 px-4 py-8">
               <button
                 type="button"
                 className="flex items-center gap-2 hover:opacity-75"
@@ -260,7 +260,7 @@ export default function CreateCompany() {
                     </Label>
                     <FormControl>
                       <Input
-                        className="w-1/2"
+                        className="w-full md:w-1/2"
                         type="url"
                         placeholder="https://example.com"
                         {...field}
@@ -285,7 +285,7 @@ export default function CreateCompany() {
                             <Button
                               variant={"outline"}
                               className={cn(
-                                "w-1/2 border-none pl-3 text-left font-normal",
+                                "w-full md:w-1/2 border-none pl-3 text-left font-normal",
                                 !field.value && "text-muted-foreground",
                               )}
                             >
@@ -318,7 +318,7 @@ export default function CreateCompany() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="sectorId"
@@ -387,7 +387,7 @@ export default function CreateCompany() {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="country"
@@ -485,7 +485,7 @@ export default function CreateCompany() {
                 )}
               />
               <h3 className="mt-2 text-lg">Financial Requirements</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="startInvestment"
@@ -540,7 +540,7 @@ export default function CreateCompany() {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="annualRevenue"
@@ -596,7 +596,7 @@ export default function CreateCompany() {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="investmentGoal"

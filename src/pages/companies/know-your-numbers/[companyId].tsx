@@ -62,8 +62,8 @@ export default function EditCompany() {
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
-        <div className="mt-4 rounded-xl border-2 border-white/10 bg-[#20212B] px-16 py-8">
-          <div className="grid grid-cols-2 gap-12">
+        <div className="mt-4 rounded-xl border-2 border-white/10 bg-[#20212B] md:px-16 px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Your Numbers</h2>
               <div className="flex justify-between">
@@ -164,7 +164,7 @@ export default function EditCompany() {
           </div>
         </div>
 
-        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-8">
+        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] md:px-16 px-4 py-8">
           <h1 className="text-lg font-bold">Know Your Numbers</h1>
           <div className="space-y-6">
             <div>

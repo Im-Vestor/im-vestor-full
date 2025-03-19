@@ -6,16 +6,20 @@ import {
   Loader2,
   MapPin,
   User,
+  Calendar,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Header } from "~/components/header";
 import { api } from "~/utils/api";
 import { formatCurrency, formatStage } from "~/utils/format";
+import { useUser } from "@clerk/nextjs";
+import { Button } from "~/components/ui/button";
 
 export default function CompanyDetails() {
   const router = useRouter();
   const { companyId } = router.query;
+  const { user } = useUser();
 
   const { data: project, isLoading } = api.project.getById.useQuery(
     { id: companyId as string },
@@ -24,29 +28,41 @@ export default function CompanyDetails() {
 
   if (isLoading || !project) {
     return (
-      <main className="mx-auto min-h-screen max-w-6xl p-8">
+      <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
         <Header />
-        <div className="mt-32 flex items-center justify-center">
+        <div className="mt-16 flex items-center justify-center sm:mt-32">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       </main>
     );
   }
 
+  const isInvestor = user?.publicMetadata.userType === "INVESTOR";
+
+  const handleScheduleMeeting = async () => {
+    // TODO: Implement meeting scheduling
+    // if (companyId) {
+    //   await router.push(`/meetings/schedule?companyId=${companyId as string}`);
+    // }
+  };
+
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
       <Header />
-      <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-8">
+      <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-4 sm:p-8">
         {/* Company Header */}
-        <button
-          type="button"
-          className="mb-8 flex items-center gap-2 hover:opacity-75"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
-        <div className="flex items-center gap-8">
-          <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            className="mb-4 flex items-center gap-2 hover:opacity-75 sm:mb-0"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
+        </div>
+
+        <div className="mt-4 flex flex-col items-start gap-4 sm:mt-8 sm:flex-row sm:items-center sm:gap-8">
+          <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-32">
             {project.logo ? (
               <Image
                 src={project.logo}
@@ -57,86 +73,97 @@ export default function CompanyDetails() {
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center rounded-md bg-white/10">
-                <Building2 className="size-10 text-neutral-200" />
+                <Building2 className="size-8 text-neutral-200 sm:size-10" />
               </div>
             )}
           </div>
 
-          <div className="mt-2 flex-1">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-semibold">{project.name}</h1>
-              <span className="rounded-full bg-[#EFD687] px-6 py-1 text-black">
-                {project.sector?.name ?? "Uncategorized"}
-              </span>
-            </div>
+          <div className="mt-0 flex-1 sm:mt-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+              <div className="flex flex-col gap-2">
+                <h1 className="text-2xl font-semibold sm:text-3xl">
+                  {project.name}
+                </h1>
+                <p className="text-sm text-white/60 sm:text-base">
+                  {project.quickSolution ?? "No description available"}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-white/70 sm:text-sm">
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                  {project.state?.name && project.country?.name ? (
+                    <span>
+                      {project.state.name}, {project.country.name}
+                    </span>
+                  ) : (
+                    <span>Location not specified</span>
+                  )}
 
-            <p className="mt-1 text-white/60">
-              {project.quickSolution ?? "No description available"}
-            </p>
-
-            <div className="mt-2 flex items-center gap-1.5 text-white/70">
-              <MapPin className="h-4 w-4" />
-              {project.state?.name && project.country?.name ? (
-                <span>
-                  {project.state.name}, {project.country.name}
+                  {project.website && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <a
+                        href={
+                          project.website.startsWith("http")
+                            ? project.website
+                            : `https://${project.website}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="max-w-[200px] truncate hover:underline sm:max-w-none"
+                      >
+                        {project.website}
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
+                {isInvestor && (
+                  <Button onClick={handleScheduleMeeting} variant="secondary">
+                    <Calendar className="mr-2 h-4 w-4" /> Schedule Meeting
+                  </Button>
+                )}
+                <span className="w-fit rounded-full bg-[#EFD687] px-4 py-1 text-sm text-black sm:px-6 sm:text-base">
+                  {project.sector?.name ?? "Uncategorized"}
                 </span>
-              ) : (
-                <span>Location not specified</span>
-              )}
-
-              {project.website && (
-                <>
-                  <span className="mx-2">•</span>
-                  <Globe className="h-4 w-4" />
-                  <a
-                    href={
-                      project.website.startsWith("http")
-                        ? project.website
-                        : `https://${project.website}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {project.website}
-                  </a>
-                </>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
-        <hr className="my-8 border-white/10" />
+        <hr className="my-6 border-white/10 sm:my-8" />
 
         {/* Company Details */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
           <div>
-            <h2 className="text-xl font-semibold">About</h2>
-            <p className="mt-4 whitespace-pre-wrap text-white/80">
+            <h2 className="text-lg font-semibold sm:text-xl">About</h2>
+            <p className="mt-3 whitespace-pre-wrap text-sm text-white/80 sm:mt-4 sm:text-base">
               {project.about ?? "No detailed description available."}
             </p>
 
-            <h2 className="mt-8 text-xl font-semibold">Founder</h2>
-            <div className="mt-4 flex items-center gap-4">
+            <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">
+              Founder
+            </h2>
+            <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
               {project.Entrepreneur?.photo ? (
                 <Image
                   src={project.Entrepreneur.photo}
                   alt="Founder"
                   width={64}
                   height={64}
-                  className="h-16 w-16 rounded-full object-cover"
+                  className="h-12 w-12 rounded-full object-cover sm:h-16 sm:w-16"
                 />
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-                  <User className="size-6 text-neutral-200" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 sm:h-16 sm:w-16">
+                  <User className="size-5 text-neutral-200 sm:size-6" />
                 </div>
               )}
               <div>
-                <p className="font-medium text-[#EFD687]">
-                  {project.Entrepreneur?.firstName}s{" "}
+                <p className="text-sm font-medium text-[#EFD687] sm:text-base">
+                  {project.Entrepreneur?.firstName}{" "}
                   {project.Entrepreneur?.lastName}
                 </p>
-                <p className="text-sm text-white/70">
+                <p className="text-xs text-white/70 sm:text-sm">
                   {project.Entrepreneur?.state?.name},{" "}
                   {project.Entrepreneur?.country?.name}
                 </p>
@@ -145,16 +172,18 @@ export default function CompanyDetails() {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold">Investment Details</h2>
-            <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-[#1E202A] p-6">
-              <div className="flex justify-between">
+            <h2 className="text-lg font-semibold sm:text-xl">
+              Investment Details
+            </h2>
+            <div className="mt-3 space-y-3 rounded-lg border border-white/10 bg-[#1E202A] p-4 sm:mt-4 sm:space-y-4 sm:p-6">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Stage</span>
                 <span className="font-medium">
                   {formatStage(project.stage)}
                 </span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Annual Revenue</span>
                 <span className="font-medium">
                   {project.annualRevenue
@@ -163,7 +192,7 @@ export default function CompanyDetails() {
                 </span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Initial Investment</span>
                 <span className="font-medium">
                   {project.startInvestment
@@ -172,7 +201,7 @@ export default function CompanyDetails() {
                 </span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Investment Goal</span>
                 <span className="font-medium">
                   {formatCurrency(project.investmentGoal, project.currency)}
@@ -180,13 +209,13 @@ export default function CompanyDetails() {
               </div>
 
               {project.equity !== null && project.equity !== undefined && (
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-white/70">Equity Offered</span>
                   <span className="font-medium">{project.equity}%</span>
                 </div>
               )}
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Investor Slots</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">
@@ -199,7 +228,7 @@ export default function CompanyDetails() {
                       <CircleUserRound
                         key={i}
                         color="#EFD687"
-                        className="h-4 w-4"
+                        className="h-3 w-3 sm:h-4 sm:w-4"
                       />
                     ))}
                   </div>
@@ -207,7 +236,7 @@ export default function CompanyDetails() {
               </div>
 
               {project.foundationDate && (
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-white/70">Founded</span>
                   <span className="font-medium">
                     {new Date(project.foundationDate).toLocaleDateString()}
@@ -220,16 +249,20 @@ export default function CompanyDetails() {
 
         {/* FAQs */}
         {project.faqs && project.faqs.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold">FAQ</h2>
-            <div className="mt-4 space-y-6">
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-lg font-semibold sm:text-xl">FAQ</h2>
+            <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
               {project.faqs.map((faq) => (
                 <div
                   key={faq.id}
-                  className="rounded-lg border border-white/10 bg-[#1E202A] p-6"
+                  className="rounded-lg border border-white/10 bg-[#1E202A] p-4 sm:p-6"
                 >
-                  <h3 className="text-lg font-medium">{faq.question}</h3>
-                  <p className="mt-2 text-white/80">{faq.answer}</p>
+                  <h3 className="text-base font-medium sm:text-lg">
+                    {faq.question}
+                  </h3>
+                  <p className="mt-2 text-sm text-white/80 sm:text-base">
+                    {faq.answer}
+                  </p>
                 </div>
               ))}
             </div>
@@ -238,16 +271,18 @@ export default function CompanyDetails() {
 
         {/* Files/Documents */}
         {project.files && project.files.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold">Documents</h2>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-lg font-semibold sm:text-xl">Documents</h2>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
               {project.files.map((file) => (
                 <div
                   key={file.id}
-                  className="rounded-lg border border-white/10 bg-[#1E202A] p-4"
+                  className="rounded-lg border border-white/10 bg-[#1E202A] p-3 sm:p-4"
                 >
-                  <p className="font-medium">{file.name}</p>
-                  <p className="text-sm text-white/50">
+                  <p className="truncate text-sm font-medium sm:text-base">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-white/50 sm:text-sm">
                     {file.type} • {(file.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
