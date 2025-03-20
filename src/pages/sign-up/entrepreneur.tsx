@@ -74,7 +74,7 @@ export default function SignupEntrepreneur() {
     mode: "onBlur",
   });
 
-  
+
 
   const { mutateAsync: registerEntrepreneur, isPending: isRegistering } =
     api.entrepreneur.create.useMutation({
@@ -94,7 +94,7 @@ export default function SignupEntrepreneur() {
         <Header />
       </div>
       <div
-        className={`md:max-w-[40rem] ${step !== 5 && "rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-6 backdrop-blur-md"}`}
+        className={`md:max-w-[40rem] ${step !== 5 && "rounded-2xl border-4 border-white/10 bg-background bg-opacity-30 p-6 backdrop-blur-md"}`}
       >
         {step !== 5 && (
           <button
@@ -400,7 +400,7 @@ export default function SignupEntrepreneur() {
                 type={"button"}
                 className="mt-12 w-full"
                 disabled={
-                  isRegistering || 
+                  isRegistering ||
                   (step === 1 && !form.formState.isValid) ||
                   (step === 3 && (!form.getValues("acceptTerms") || !form.getValues("acceptConfidentiality")))
                 }

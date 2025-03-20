@@ -23,7 +23,7 @@ export default function PartnerDashboard() {
                 earnings.
               </p>
             </div>
-            <div className="w-40 rounded-sm border-2 border-white/10 bg-[#2D2F3D] bg-opacity-30 py-2 pl-6 text-lg font-bold placeholder:text-white">
+            <div className="w-40 rounded-sm border-2 border-white/10 bg-background bg-opacity-30 py-2 pl-6 text-lg font-bold placeholder:text-white">
               <div className="relative flex items-center justify-center">
                 {isLoading ? (
                   <Loader2 className="size-4 animate-spin" />

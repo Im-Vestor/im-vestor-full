@@ -221,7 +221,7 @@ export default function Companies() {
             </div>
           </div>
           <div className="mt-6 w-full md:mt-0 md:w-4/5">
-            <div className="flex items-center rounded-md bg-[#282A37]">
+            <div className="flex items-center rounded-md bg-background">
               <SearchIcon className="ml-3 h-5 w-5 text-white" />
               <Input
                 placeholder="Search"

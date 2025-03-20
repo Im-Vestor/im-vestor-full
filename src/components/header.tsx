@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -129,7 +130,7 @@ export const Header = () => {
             ))}
           </div>
         )}
-        
+
         {/* User Profile / Login */}
         {isSignedIn ? (
           <div className="flex items-center gap-3">
@@ -169,9 +170,9 @@ export const Header = () => {
             </DropdownMenu>
 
             {/* Mobile Menu Toggle */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >

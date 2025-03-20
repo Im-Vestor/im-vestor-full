@@ -60,7 +60,7 @@ export const LanguageSwitcher = () => {
           </div>
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="border-white/10 bg-[#181920] text-white">
+      <SelectContent className="border-white/10 bg-background text-white">
         {languages.map((lang) => (
           <SelectItem
             key={lang.code}

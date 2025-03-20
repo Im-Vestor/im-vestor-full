@@ -78,7 +78,7 @@ export default function Referral() {
               <h2 className="hidden bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-2xl font-bold tracking-wide text-transparent md:block">
                 Share your code!
               </h2>
-              <div className="mb-8 mt-8 w-full rounded-sm border-2 border-white/10 bg-[#2D2F3D] bg-opacity-30 p-2 text-lg font-bold placeholder:text-white md:mb-20 md:mt-12 md:w-52">
+              <div className="mb-8 mt-8 w-full rounded-sm border-2 border-white/10 bg-background bg-opacity-30 p-2 text-lg font-bold placeholder:text-white md:mb-20 md:mt-12 md:w-52">
                 <div className="relative flex items-center justify-center">
                   <Copy
                     onClick={async () => {
