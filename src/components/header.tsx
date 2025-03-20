@@ -1,6 +1,6 @@
 import { useClerk, useUser } from "@clerk/nextjs";
 import { type UserType } from "@prisma/client";
-import { LogOut, Mail, User } from "lucide-react";
+import { LogOut, Mail, Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/router";
@@ -17,16 +17,16 @@ import Link from "next/link";
 
 const ENTREPRENEUR_MENUS = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
-  },
-  {
     label: "Investors",
     href: "/investors",
   },
   {
     label: "Meetings",
     href: "/meetings",
+  },
+  {
+    label: "News",
+    href: "/news/entrepreneur",
   },
   {
     label: "Shop",
@@ -44,6 +44,10 @@ const INVESTOR_MENUS = [
     href: "/meetings",
   },
   {
+    label: "News",
+    href: "/news/investor",
+  },
+  {
     label: "Shop",
     href: "/shop",
   },
@@ -58,6 +62,10 @@ const PARTNER_MENUS = [
     label: "Referrals",
     href: "/referral/list",
   },
+  {
+    label: "News",
+    href: "/news/partner",
+  },
 ];
 
 export const Header = () => {
@@ -70,6 +78,7 @@ export const Header = () => {
   const { signOut } = useClerk();
 
   const [userType, setUserType] = useState<UserType | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -77,103 +86,118 @@ export const Header = () => {
     }
   }, [user]);
 
+  // Get correct menu based on user type
+  const getMenus = () => {
+    if (userType === "INVESTOR") return INVESTOR_MENUS;
+    if (userType === "ENTREPRENEUR") return ENTREPRENEUR_MENUS;
+    if (userType === "PARTNER") return PARTNER_MENUS;
+    return [];
+  };
+
+  // Handle navigation
+  const handleNavigation = async (href: string) => {
+    await router.push(href);
+  };
+
+  // Handle mobile navigation
+  const handleMobileNavigation = async (href: string) => {
+    await router.push(href);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
-    <div
-      className={`mb-12 flex ${isSignedIn ? "items-center justify-between" : "justify-center"} rounded-full border border-white/10 px-8 py-4`}
-    >
-      <div
-        className={`flex ${isSignedIn ? "w-1/3" : "w-full"} items-center gap-3`}
-      >
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo/imvestor.png" alt="Imvestor" width={30} height={24} />
+    <div className="mb-12 md:rounded-full rounded-3xl border border-white/10 px-4 py-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
           <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
-        </Link>
+        </div>
+
+        {/* Desktop Navigation */}
+        {isSignedIn && (
+          <div className="hidden md:flex items-center justify-center gap-1 lg:gap-3">
+            {getMenus().map((menu) => (
+              <Button
+                key={menu.href}
+                variant="ghost"
+                size="sm"
+                className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
+                onClick={() => void handleNavigation(menu.href)}
+              >
+                {menu.label}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* User Profile / Login */}
+        {isSignedIn ? (
+          <div className="flex items-center gap-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 md:gap-4">
+                  <span className="hidden md:inline">{user?.firstName}</span>
+                  {userDetails?.imageUrl ? (
+                    <Image
+                      src={userDetails?.imageUrl ?? ""}
+                      alt="Profile"
+                      width={24}
+                      height={24}
+                      className="size-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="size-6" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => void handleNavigation("/profile")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Referrals
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => signOut({ redirectUrl: "/login" })}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+        ) : (
+          <div></div> // Empty div for non-signed in state
+        )}
       </div>
 
-      {isSignedIn && userType === "INVESTOR" && (
-        <div className="flex w-1/3 items-center justify-center gap-3">
-          {INVESTOR_MENUS.map((menu) => (
+      {/* Mobile Navigation Menu */}
+      {isSignedIn && isMobileMenuOpen && (
+        <div className="mt-4 flex flex-col space-y-2 md:hidden">
+          {getMenus().map((menu) => (
             <Button
               key={menu.href}
               variant="ghost"
               size="sm"
-              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
-              onClick={() => router.push(menu.href)}
+              className={`justify-start ${path === menu.href ? "text-[#EFD687]" : ""}`}
+              onClick={() => void handleMobileNavigation(menu.href)}
             >
               {menu.label}
             </Button>
           ))}
-        </div>
-      )}
-
-      {isSignedIn && userType === "ENTREPRENEUR" && (
-        <div className="flex w-1/3 items-center justify-center gap-3">
-          {ENTREPRENEUR_MENUS.map((menu) => (
-            <Button
-              key={menu.href}
-              variant="ghost"
-              size="sm"
-              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
-              onClick={() => router.push(menu.href)}
-            >
-              {menu.label}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {isSignedIn && userType === "PARTNER" && (
-        <div className="flex w-1/3 items-center justify-center gap-3">
-          {PARTNER_MENUS.map((menu) => (
-            <Button
-              key={menu.href}
-              variant="ghost"
-              size="sm"
-              className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
-              onClick={() => router.push(menu.href)}
-            >
-              {menu.label}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {isSignedIn && (
-        <div className="flex w-1/3 items-center justify-end gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-4">
-                <span>{user?.firstName}</span>
-                {userDetails?.imageUrl ? (
-                  <Image
-                    src={userDetails?.imageUrl ?? ""}
-                    alt="Profile"
-                    width={24}
-                    height={24}
-                    className="size-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="size-6" />
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push("/profile")}>
-                <User className="h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/referral/share")}>
-                <Mail className="h-4 w-4" />
-                Referrals
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => signOut({ redirectUrl: "/login" })}
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       )}
     </div>

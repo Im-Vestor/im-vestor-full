@@ -1,66 +1,189 @@
-import { type Country, type Investor, type State } from "@prisma/client";
-import { Loader2, MessageCircle, UserRound } from "lucide-react";
+import {
+  type Area,
+  type Country,
+  type Investor,
+  type State,
+} from "@prisma/client";
+import { Loader2, MessageCircle, SearchIcon, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
 
-export default function Companies() {
+type InvestmentRange = {
+  id: string;
+  label: string;
+  min?: number;
+  max?: number;
+};
+
+// Define investment ranges
+const INVESTMENT_RANGES: InvestmentRange[] = [
+  { id: "1", label: "Less than $100k", max: 100000 },
+  { id: "2", label: "$100k - $500k", min: 100000, max: 500000 },
+  { id: "3", label: "$500k - $1M", min: 500000, max: 1000000 },
+  { id: "4", label: "$1M - $5M", min: 1000000, max: 5000000 },
+  { id: "5", label: "$5M+", min: 5000000 },
+];
+
+type InvestorWithRelations = Investor & {
+  state: State | null;
+  country: Country | null;
+  areas: Area[];
+};
+
+export default function Investors() {
+  const { data: areas } = api.area.getAll.useQuery();
+  const [showAllAreas, setShowAllAreas] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
 
-  const { data: investors, isLoading } =
-    api.investor.getInvestorsRelatedToEntrepreneur.useQuery({ page });
+  // Filter states
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [investmentFilters, setInvestmentFilters] = useState<{
+    min?: number;
+    max?: number;
+  }>({});
 
-  if (isLoading) {
-    return (
-      <main className="mx-auto min-h-screen max-w-6xl p-8">
-        <Header />
-        <div className="mt-12">
-          <div className="flex items-center justify-center">
-            <Loader2 className="size-8 animate-spin text-white" />
-          </div>
-        </div>
-      </main>
-    );
-  }
+  // Prepare filter parameters for the API call
+  const filterParams = {
+    areaIds: selectedAreas,
+    minInvestment: investmentFilters.min,
+    maxInvestment: investmentFilters.max,
+    searchQuery: searchQuery,
+    page: page,
+  };
+
+  const { data, isLoading } =
+    api.investor.getInvestorsRelatedToEntrepreneur.useQuery(filterParams);
+
+  const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
+
+  const handleAreaChange = (areaId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedAreas([...selectedAreas, areaId]);
+    } else {
+      setSelectedAreas(selectedAreas.filter((id) => id !== areaId));
+    }
+  };
+
+  const handleInvestmentFilterChange = (id: string, checked: boolean) => {
+    if (!checked) {
+      setInvestmentFilters({});
+      return;
+    }
+
+    const range = INVESTMENT_RANGES.find((r) => r.id === id);
+    if (range) {
+      setInvestmentFilters({ min: range.min, max: range.max });
+    }
+  };
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-12">
-          <div className="mt-4 flex flex-col gap-4">
-            {investors && investors.length > 0 ? (
-              investors.map((investor) => (
-                <InvestorCard key={investor.id} investor={investor} />
-              ))
-            ) : (
-              <p className="my-12 text-center text-sm text-white/50">
-                No investors found!
-              </p>
-            )}
-          </div>
-          <p className="mt-4 text-end text-sm text-white/50">
-            {`Showing ${investors?.length ?? 0} of ${investors?.length ?? 0} investors`}
-          </p>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setPage(page + 1)}
-              disabled={(investors?.length ?? 0) - (page + 1) * 20 <= 0}
-            >
-              Next
-            </Button>
+        <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 md:px-16 md:py-12">
+          <div className="flex flex-col md:flex-row">
+            <div className="w-full md:w-1/5">
+              <p className="font-medium">Areas of Interest</p>
+              <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
+                {visibleAreas?.map((area) => (
+                  <div key={area.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={area.id.toString()}
+                      checked={selectedAreas.includes(area.id.toString())}
+                      onCheckedChange={(checked) =>
+                        handleAreaChange(area.id.toString(), checked === true)
+                      }
+                    />
+                    <p key={area.id} className="text-sm">
+                      {area.name}
+                    </p>
+                  </div>
+                ))}
+                {areas && areas.length > 3 && (
+                  <button
+                    onClick={() => setShowAllAreas(!showAllAreas)}
+                    className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
+                  >
+                    {showAllAreas
+                      ? "Show less"
+                      : `See more (${areas.length - 3})`}
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 font-medium">Investment Range</p>
+              <div className="ml-2 mt-1.5 flex flex-col">
+                {INVESTMENT_RANGES.map((range) => (
+                  <div key={range.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={range.id}
+                      checked={
+                        investmentFilters.min === range.min &&
+                        investmentFilters.max === range.max
+                      }
+                      onCheckedChange={(checked) =>
+                        handleInvestmentFilterChange(range.id, checked === true)
+                      }
+                    />
+                    <p className="text-sm">{range.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-6 w-full md:mt-0 md:w-4/5">
+              <div className="flex items-center rounded-md bg-[#282A37]">
+                <SearchIcon className="ml-3 h-5 w-5 text-white" />
+                <Input
+                  placeholder="Search investors by name"
+                  className="bg-transparent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="mt-4 flex flex-col gap-4">
+                {data?.investors && data.investors.length > 0 ? (
+                  data.investors.map((investor: InvestorWithRelations) => (
+                    <InvestorCard key={investor.id} investor={investor} />
+                  ))
+                ) : isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="size-8 animate-spin text-white" />
+                  </div>
+                ) : (
+                  <p className="my-12 text-center text-sm text-white/50">
+                    No investors found matching your criteria.
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <p className="text-sm text-white/50">
+                  {isLoading
+                    ? "Loading investors..."
+                    : `Showing ${data?.investors?.length ?? 0} of ${data?.total ?? 0} investors`}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(page + 1)}
+                  disabled={(data?.total ?? 0) - (page + 1) * 10 <= 0}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -68,11 +191,7 @@ export default function Companies() {
   );
 }
 
-function InvestorCard({
-  investor,
-}: {
-  investor: Investor & { state: State | null; country: Country | null };
-}) {
+function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
   return (
     <Link
       // href={`/investors/${investor.id}`}
@@ -80,7 +199,7 @@ function InvestorCard({
       key={investor.id}
       className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
     >
-      <div className="mb-4 flex gap-6">
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
         {investor.photo ? (
           <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
             <Image
@@ -97,7 +216,7 @@ function InvestorCard({
           </div>
         )}
 
-        <div className="flex w-full justify-between">
+        <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
           <div className="flex flex-col">
             <div>
               <div className="flex items-center gap-2">
@@ -110,16 +229,34 @@ function InvestorCard({
                   {investor.state.name}, {investor.country.name}
                 </span>
               )}
-              <p>{investor.about}</p>
+              <p className="mt-1 line-clamp-2">{investor.about}</p>
             </div>
+            {investor.areas && investor.areas.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {investor.areas.slice(0, 2).map((area) => (
+                  <span
+                    key={area.id}
+                    className="rounded-full bg-[#323645] px-6 py-1 text-sm font-light"
+                  >
+                    {area.name}
+                  </span>
+                ))}
+                {investor.areas.length > 2 && (
+                  <span className="rounded-full bg-[#323645] px-3 py-1 text-sm font-light">
+                    +{investor.areas.length - 2}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col">
             <Button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 toast.success("Poke not implemented yet!");
               }}
-              className="gap-2"
+              className="gap-2 self-start md:self-auto"
               size="sm"
             >
               <MessageCircle className="size-4" strokeWidth={2.5} />

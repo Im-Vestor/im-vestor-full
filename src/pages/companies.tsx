@@ -1,5 +1,9 @@
-import { type ProjectStage } from "@prisma/client";
-import { Building2, CircleUserRound, SearchIcon, UserRoundIcon } from "lucide-react";
+import { type Country, type Project, type State, type ProjectStage } from "@prisma/client";
+import {
+  Building2,
+  Loader2,
+  SearchIcon
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -119,11 +123,11 @@ export default function Companies() {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <div className="flex rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-16 py-12">
-          <div className="w-1/5">
+        <div className="flex flex-col rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 md:flex-row md:px-16 md:py-12">
+          <div className="w-full md:w-1/5">
             <p className="font-medium">Sector</p>
             <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
               {visibleAreas?.map((area) => (
@@ -216,7 +220,7 @@ export default function Companies() {
               ))}
             </div>
           </div>
-          <div className="w-4/5">
+          <div className="mt-6 w-full md:mt-0 md:w-4/5">
             <div className="flex items-center rounded-md bg-background">
               <SearchIcon className="ml-3 h-5 w-5 text-white" />
               <Input
@@ -235,80 +239,25 @@ export default function Companies() {
             </div>
             <div className="mt-4 flex flex-col gap-4">
               {isLoading ? (
-                <p>Loading projects...</p>
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="size-8 animate-spin text-white" />
+                </div>
               ) : projects?.projects && projects?.projects.length > 0 ? (
                 projects?.projects.map((project) => (
-                  <Link
-                    href={`/companies/${project.id}`}
-                    key={project.id}
-                    className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
-                  >
-                    <div className="mb-4 flex gap-6">
-                      {project.logo ? (
-                        <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
-                          <Image
-                            src={project.logo}
-                            alt={`${project.name} Logo`}
-                            width={72}
-                            height={72}
-                            className="h-full w-full rounded-md object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
-                          <Building2 className="size-8 text-neutral-500" />
-                        </div>
-                      )}
-
-                      <div className="flex flex-col">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-semibold">
-                              {project.name}
-                            </h3>
-                          </div>
-                          {project.state?.name && project.country?.name && (
-                            <span className="text-white/70">
-                              {project.state.name}, {project.country.name}
-                            </span>
-                          )}
-                          <p>
-                            {project.quickSolution ??
-                              "No description available"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="rounded-full bg-[#323645] px-6 py-1 font-light">
-                      {project.sector?.name ?? "Uncategorized"}
-                    </span>
-                    <hr className="my-4 border-white/10" />
-                    <div className="flex items-center gap-2">
-                      <UserRoundIcon className="h-4 w-4 text-white/50" />
-                      <p className="text-sm text-white/50">Founded by</p>
-                      <span className="text-[#EFD687]">
-                        {project.Entrepreneur?.firstName}{" "}
-                        {project.Entrepreneur?.lastName}
-                      </span>
-                      <div className="ml-auto flex space-x-2">
-                        {Array.from({
-                          length: Math.min(project.investorSlots ?? 0, 5),
-                        }).map((_, i) => (
-                          <CircleUserRound
-                            key={i}
-                            color="#EFD687"
-                            className="h-4 w-4"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </Link>
+                  <CompanyCard key={project.id} project={project} />
                 ))
               ) : (
-                <p>No projects found matching your criteria.</p>
+                <p className="text-center text-sm text-white/50">
+                  No projects found matching your criteria.
+                </p>
               )}
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <p className="text-sm text-white/50">
+                {isLoading
+                  ? "Loading projects..."
+                  : `Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} companies`}
+              </p>
               <Button
                 variant="outline"
                 onClick={() => setPage(page - 1)}
@@ -328,5 +277,46 @@ export default function Companies() {
         </div>
       </div>
     </main>
+  );
+}
+
+function CompanyCard({ project }: { project: Project & { state: State | null; country: Country | null } }) {
+  return (
+    <Link
+      href={`/companies/${project.id}`}
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
+    >
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
+        {project.logo ? (
+          <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
+            <Image
+              src={project.logo}
+              alt={`${project.name} Logo`}
+              width={72}
+              height={72}
+              className="h-full w-full rounded-md object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
+            <Building2 className="size-8 text-neutral-500" />
+          </div>
+        )}
+
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-semibold">{project.name}</h3>
+          </div>
+          {project.state?.name && project.country?.name && (
+            <span className="text-white/70">
+              {project.state.name}, {project.country.name}
+            </span>
+          )}
+          <p className="mt-1 line-clamp-3">
+            {project.quickSolution ?? "No description available"}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }

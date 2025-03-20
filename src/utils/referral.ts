@@ -1,4 +1,3 @@
-import { User } from "@prisma/client";
 import { db } from "~/server/db";
 
 export function generateCode(): string {

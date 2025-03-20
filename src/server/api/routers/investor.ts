@@ -20,42 +20,68 @@ export const investorRouter = createTRPCRouter({
     });
   }),
   getInvestorsRelatedToEntrepreneur: protectedProcedure
-    .input(z.object({ page: z.number().optional() }))
+    .input(z.object({ 
+      page: z.number().optional(),
+      searchQuery: z.string().optional(),
+      minInvestment: z.number().optional(),
+      maxInvestment: z.number().optional(),
+      areaIds: z.array(z.string()).optional(),
+      countryId: z.number().optional(),
+      stateId: z.number().optional(),
+    }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.db.user.findUnique({
-        where: { id: ctx.auth.userId },
-        include: {
-          entrepreneur: {
-            include: {
-              projects: true,
-            },
-          },
+      const totalInvestors = await ctx.db.investor.count({
+        where: {
+          ...(input.searchQuery ? {
+            OR: [
+              { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+              { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+            ],
+          } : {}),
+          ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
+          ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
+          ...(input.areaIds && input.areaIds.length > 0 ? {
+            areas: {
+              some: {
+                id: { in: input.areaIds }
+              }
+            }
+          } : {}),
+          ...(input.countryId ? { countryId: input.countryId } : {}),
+          ...(input.stateId ? { stateId: input.stateId } : {}),
         },
       });
 
-      const projectSectors = [
-        ...new Set(
-          user?.entrepreneur?.projects?.map((project) => project.sectorId),
-        ),
-      ];
-
       const investors = await ctx.db.investor.findMany({
         where: {
-          areas: {
-            some: {
-              id: { in: projectSectors },
-            },
-          },
+          ...(input.searchQuery ? {
+            OR: [
+              { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+              { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+            ],
+          } : {}),
+          ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
+          ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
+          ...(input.areaIds && input.areaIds.length > 0 ? {
+            areas: {
+              some: {
+                id: { in: input.areaIds }
+              }
+            }
+          } : {}),
+          ...(input.countryId ? { countryId: input.countryId } : {}),
+          ...(input.stateId ? { stateId: input.stateId } : {}),
         },
         include: {
           country: true,
           state: true,
+          areas: true,
         },
         skip: input.page ? input.page * 10 : 0,
         take: 10,
       });
 
-      return investors;
+      return { investors, total: totalInvestors };
     }),
   create: publicProcedure
     .input(

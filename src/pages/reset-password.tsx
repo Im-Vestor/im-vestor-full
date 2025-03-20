@@ -1,4 +1,4 @@
-import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
@@ -10,13 +10,12 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
-export default function Login() {
-  const user = useUser();
+export default function ResetPassword() {
   const router = useRouter();
-  const { signOut } = useClerk();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [code, setCode] = useState("");
 
   const { isLoaded, signIn, setActive } = useSignIn();
 
@@ -25,37 +24,40 @@ export default function Login() {
 
     if (!isLoaded) return;
 
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     setIsPending(true);
 
     try {
-      if (user.isLoaded && user.isSignedIn) {
-        await signOut({
-          redirectUrl: "/login",
-        });
-      }
-
-      const signInAttempt = await signIn.create({
-        identifier: email,
+      const result = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code,
         password,
       });
 
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
-        await router.push("/profile");
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        toast.success("Password has been reset successfully");
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        console.error(JSON.stringify(result, null, 2));
+        toast.error("Failed to reset password. Please try again.");
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
         toast.error(
-          err.errors[0]?.message ?? "Failed to login. Please try again.",
+          err.errors[0]?.message ??
+            "Failed to reset password. Please try again.",
         );
       } else {
-        toast.error("Failed to login. Please try again.");
+        toast.error("Failed to reset password. Please try again.");
         console.error(JSON.stringify(err, null, 2));
       }
     } finally {
       setIsPending(false);
+      void router.push("/profile");
     }
   };
 
@@ -65,42 +67,47 @@ export default function Login() {
         {/* Left side - Image */}
         <div className="hidden lg:block lg:w-1/2">
           <Image
-            src="/images/login-image.png" // Add your image here
-            alt="Login"
+            src="/images/login-image.png"
+            alt="Reset Password"
             className="h-screen w-full object-cover"
             width={1920}
             height={1080}
           />
         </div>
 
-        {/* Right side - Login form */}
+        {/* Right side - Reset password form */}
         <div className="flex w-full items-center justify-center px-8 lg:w-1/2">
           <div className="w-full max-w-md space-y-8">
             <div>
-              <h2 className="mt-6 text-3xl font-bold text-[#E5CD82]">Login</h2>
+              <h2 className="mt-6 text-3xl font-bold text-[#E5CD82]">
+                Reset Password
+              </h2>
               <p className="mt-2 text-sm text-gray-300">
-                Please sign in to your account
+                Create a new password for your account
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-normal text-neutral-200">Email*</Label>
+                  <Label className="font-normal text-neutral-200">
+                    Verification Code*
+                  </Label>
                   <Input
-                    onChange={(e) => setEmail(e.target.value)}
-                    value={email}
-                    id="email"
-                    name="email"
-                    type="email"
+                    onChange={(e) => setCode(e.target.value)}
+                    value={code}
+                    id="code"
+                    name="code"
+                    type="text"
                     required
-                    placeholder="example@email.com"
+                    placeholder="••••••••"
                     disabled={isPending}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label className="font-normal text-neutral-200">
-                    Password*
+                    New Password*
                   </Label>
                   <Input
                     onChange={(e) => setPassword(e.target.value)}
@@ -113,26 +120,29 @@ export default function Login() {
                     disabled={isPending}
                   />
                 </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Link href="/forgot-password">
-                  <Button
-                    variant="link"
-                    className="h-6 font-normal text-neutral-200"
-                    size="sm"
-                  >
-                    Forgot password?
-                  </Button>
-                </Link>
+                <div className="space-y-2">
+                  <Label className="font-normal text-neutral-200">
+                    Confirm Password*
+                  </Label>
+                  <Input
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    value={confirmPassword}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    disabled={isPending}
+                  />
+                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? (
-                  "Logging in..."
+                  "Resetting Password..."
                 ) : (
                   <>
-                    Login <ArrowRight className="ml-2" />
+                    Reset Password <ArrowRight className="ml-2" />
                   </>
                 )}
               </Button>
@@ -140,10 +150,10 @@ export default function Login() {
 
             <div className="mt-6">
               <p className="mt-8 text-center text-xs">
-                Don&apos;t have an account?{" "}
-                <Link href="/sign-up" className="underline hover:opacity-70">
+                Remember your password?{" "}
+                <Link href="/login" className="underline hover:opacity-70">
                   <span className="text-[#F0D687] underline hover:opacity-70">
-                    Create one
+                    Login
                   </span>
                 </Link>
               </p>

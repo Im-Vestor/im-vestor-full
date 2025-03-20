@@ -109,11 +109,11 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <Label className="font-normal text-neutral-200">
-                  Fiscal Code*
+                  Company Name*
                 </Label>
                 <FormControl>
                   <Input
-                    placeholder="01234567890"
+                    placeholder="Google"
                     {...field}
                     disabled={isUpdatingPartner}
                   />
