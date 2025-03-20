@@ -139,8 +139,8 @@ export default function Home() {
     <>
       <main className="min-h-screen bg-background pt-24">
         <div
-          className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/20 blur-3xl md:w-[1000px]" />
-        <motion.header
+          className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px]" />
+        {/*         <motion.header
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -152,7 +152,7 @@ export default function Home() {
               {t("signIn")}
             </Button>
           </Link>
-        </motion.header>
+        </motion.header> */}
 
         <motion.div
           variants={staggerContainer}
@@ -198,12 +198,12 @@ export default function Home() {
               variants={popUp}
               transition={{ delay: 1.6 }}
             >
-              <Button
+              {/*               <Button
                 onClick={async () => await router.push("/sign-up")}
                 className="mt-16 rounded-full hover:opacity-75 hover:scale-x-105 transition-all duration-500"
               >
                 {t("getStarted")} <ArrowDownRight />
-              </Button>
+              </Button> */}
             </motion.div>
           </div>
 
@@ -214,7 +214,7 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="my-32 w-full relative"
           >
-            <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent z-20 pointer-events-none" />
             <motion.div
               onClick={() => setIsVideoPlaying(true)}
               whileHover={{ scale: 1.02, opacity: 0.95 }}
@@ -224,7 +224,7 @@ export default function Home() {
                 stiffness: 300,
                 damping: 20
               }}
-              className="relative aspect-video mx-auto max-w-6xl px-4 border-2 border-white/10 bg-background group border-b-background p-6 rounded-2xl cursor-pointer overflow-hidden"
+              className="relative aspect-video mx-auto max-w-6xl px-4 border-2 border-white/10 bg-background group border-b-background p-6 rounded-2xl cursor-pointer overflow-hidden z-10"
             >
               <motion.div
                 initial={{ opacity: 0.5 }}
@@ -266,7 +266,6 @@ export default function Home() {
                   <motion.div
                     animate={{
                       scale: [1, 1.1, 1],
-                      opacity: [0.7, 1, 0.7]
                     }}
                     transition={{
                       duration: 2,
@@ -341,6 +340,10 @@ export default function Home() {
                 </>
               )}
             </AnimatePresence>
+
+
+            <div
+              className="absolute -top-20 left-1/2 h-[90%] w-[80%] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl opacity-30" />
           </motion.div>
 
           <motion.div
@@ -694,7 +697,7 @@ export default function Home() {
                         {t("entrepreneurDesc")}
                       </motion.p>
 
-                      <Link className="mt-8 z-50" href="/sign-up/entrepreneur">
+                      <Link className="mt-8 z-50 opacity-50 pointer-events-none" href="/sign-up/entrepreneur">
                         <Button >
                           Join as {t("entrepreneur")}
                           <ArrowRight className="ml-2" />
@@ -745,7 +748,7 @@ export default function Home() {
                         {t("investorDesc")}
                       </motion.p>
 
-                      <Link className="mt-8 z-50" href="/sign-up/investor">
+                      <Link className="mt-8 z-50 opacity-50 pointer-events-none" href="/sign-up/investor">
                         <Button>
                           Join as {t("investor")}
                           <ArrowRight className="ml-2" />
@@ -809,13 +812,13 @@ export default function Home() {
                     </span>
                   </h2>
                   <p className="mt-2 text-sm text-gray-300">
-                    {t("dontHaveAccount")}{" "}
-                    <Link
+                    {/* {t("dontHaveAccount")}{" "}  */}You will be able to create an account soon.
+                    {/*                     <Link
                       href="/sign-up"
                       className="text-primary hover:opacity-70"
                     >
                       {t("createOne")}
-                    </Link>
+                    </Link> */}
                   </p>
                   <Input
                     className="mt-8"
@@ -831,7 +834,7 @@ export default function Home() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <div className="mt-4 flex w-full items-center justify-between">
+                  <div className="mt-4 flex w-full items-center justify-between opacity-50 pointer-events-none">
                     <Link
                       href="/reset-password"
                       className="text-xs text-primary hover:opacity-70"
