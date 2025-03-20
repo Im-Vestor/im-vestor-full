@@ -16,7 +16,7 @@ export const FinishCard = ({ name }: { name: string }) => {
       </p>
       <p className="text-center ">Your path to successful investments starts now!</p>
 
-      <div className="mt-16 rounded-3xl w-full border-2 border-[#E5CD82]/40 bg-[#2D2F3D] bg-opacity-30 p-6 backdrop-blur-md">
+      <div className="mt-16 rounded-3xl w-full border-2 border-[#E5CD82]/40 bg-background bg-opacity-30 p-6 backdrop-blur-md">
         <div className="flex flex-col items-center">
           <Image
             src={"/images/male-avatar.svg"}

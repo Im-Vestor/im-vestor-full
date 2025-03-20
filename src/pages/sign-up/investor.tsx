@@ -133,7 +133,7 @@ export default function SignupInvestor() {
         <Header />
       </div>
       <div
-        className={`md:max-w-[40rem] ${step !== 7 && "rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-6 backdrop-blur-md"}`}
+        className={`md:max-w-[40rem] ${step !== 7 && "rounded-2xl border-4 border-white/10 bg-background bg-opacity-30 p-6 backdrop-blur-md"}`}
       >
         {step !== 7 && (
           <button

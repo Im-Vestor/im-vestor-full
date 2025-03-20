@@ -93,8 +93,8 @@ const CountrySelect = ({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0 bg-[#181920] text-white border-white/10">
-        <Command className="bg-[#181920] border-white/10">
+      <PopoverContent className="w-[300px] p-0 bg-background text-white border-white/10">
+        <Command className="bg-background border-white/10">
           <CommandInput placeholder="Search country..." />
           <CommandList>
             <ScrollArea className="h-72">

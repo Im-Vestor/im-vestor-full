@@ -73,7 +73,7 @@ export default function SignupPartner() {
         <Header />
       </div>
       <div
-        className={`rounded-2xl backdrop-blur-md border-4 border-white/10 bg-[#181920] bg-opacity-30 p-6 md:max-w-[40rem]`}
+        className={`rounded-2xl backdrop-blur-md border-4 border-white/10 bg-background bg-opacity-30 p-6 md:max-w-[40rem]`}
       >
         <button
           type="button"

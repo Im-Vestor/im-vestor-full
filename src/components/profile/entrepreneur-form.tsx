@@ -385,7 +385,7 @@ const renderBannerUpload = (
       </div>
       <div className="absolute right-4 top-4">
         <label htmlFor="banner-upload" className="cursor-pointer">
-          <div className="flex items-center gap-2 rounded-md border border-white/10 bg-[#282A37] px-4 py-2 text-sm text-white hover:bg-[#282A37]/90">
+          <div className="flex items-center gap-2 rounded-md border border-white/10 bg-background px-4 py-2 text-sm text-white hover:bg-background/90">
             <ImageIcon className="h-4 w-4" />
             {isUploadingBanner ? "Uploading..." : "Change Banner"}
           </div>

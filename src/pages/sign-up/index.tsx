@@ -23,7 +23,7 @@ export default function SignUp() {
   return (
     <>
       <main className="flex min-h-screen items-center justify-center">
-        <div className="rounded-2xl border-4 border-white/10 bg-[#2D2F3D] bg-opacity-30 p-6 backdrop-blur-md">
+        <div className="rounded-2xl border-4 border-white/10 bg-background bg-opacity-30 p-6 backdrop-blur-md">
           <h2 className="mt-4 text-center text-4xl font-semibold">
             Choose your <span className="text-[#E5CD82]">account type</span>
           </h2>
@@ -33,9 +33,10 @@ export default function SignUp() {
           <div className="mt-10 flex max-w-4xl items-center justify-center gap-4">
             <button
               onClick={() => setAccountType("entrepreneur")}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border-2 bg-[#2D2F3D] bg-opacity-30 p-6 backdrop-blur-md hover:opacity-75 ${
-                accountType === "entrepreneur" ? "border-[#E5CD82]" : ""
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === "entrepreneur"
+                  ? "border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20"
+                  : "border border-white/10 hover:border-white/30 hover:opacity-75"
+                }`}
             >
               <Image
                 src="images/individual.svg"
@@ -49,9 +50,10 @@ export default function SignUp() {
             </button>
             <button
               onClick={() => setAccountType("investor")}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border-2 bg-[#2D2F3D] bg-opacity-30 p-6 backdrop-blur-md hover:opacity-75 ${
-                accountType === "investor" ? "border-[#E5CD82]" : ""
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === "investor"
+                  ? "border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20"
+                  : "border border-white/10 hover:border-white/30 hover:opacity-75"
+                }`}
             >
               <Image
                 src="images/vc-group.svg"
