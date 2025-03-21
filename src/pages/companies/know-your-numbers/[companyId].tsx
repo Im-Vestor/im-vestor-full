@@ -62,7 +62,7 @@ export default function EditCompany() {
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
-        <div className="mt-4 rounded-xl border-2 border-white/10 bg-[#20212B] md:px-16 px-4 py-8">
+        <div className="mt-4 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Your Numbers</h2>
