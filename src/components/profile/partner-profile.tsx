@@ -23,7 +23,7 @@ export const PartnerProfile = () => {
   }
 
   return (
-    <div className={`rounded-lg border border-white/10 pb-20`}>
+    <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
       <div className="relative">
         <div className="h-24 w-full rounded-t-lg bg-transparent" />
 
