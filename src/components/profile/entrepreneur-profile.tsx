@@ -148,7 +148,7 @@ function ProjectCard({
 }) {
   return (
     <Link
-      className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-4 sm:p-6 transition-all hover:border-white/20"
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20"
       href={`/companies/${project.id}`}
     >
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0">

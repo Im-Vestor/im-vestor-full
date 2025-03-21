@@ -79,7 +79,7 @@ export default function Meetings() {
 
 function MeetingCard() {
   return (
-    <div className="rounded-xl border-2 border-white/10 bg-[#1E202A] p-6">
+    <div className="rounded-xl border-2 border-white/10 bg-card p-6">
       <p className="text-sm text-white/50">
         Starts at: <span className="text-white">4:30 PM, 02 March 2024</span>
       </p>

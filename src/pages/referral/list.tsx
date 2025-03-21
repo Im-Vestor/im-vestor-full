@@ -28,7 +28,7 @@ export default function List() {
           <div className="mt-4 flex flex-col gap-4">
             {data?.referralsWithBusinesses.map((referralWithBusiness) => (
               <div
-                className="mb-4 rounded-xl border-2 border-white/10 bg-[#1E202A] p-4 sm:p-6"
+                className="mb-4 rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6"
                 key={referralWithBusiness.referral.id}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">

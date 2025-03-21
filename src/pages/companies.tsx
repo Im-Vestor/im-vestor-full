@@ -284,7 +284,7 @@ function CompanyCard({ project }: { project: Project & { state: State | null; co
   return (
     <Link
       href={`/companies/${project.id}`}
-      className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
     >
       <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (

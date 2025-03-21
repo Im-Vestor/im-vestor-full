@@ -175,7 +175,7 @@ export default function CompanyDetails() {
             <h2 className="text-lg font-semibold sm:text-xl">
               Investment Details
             </h2>
-            <div className="mt-3 space-y-3 rounded-lg border border-white/10 bg-[#1E202A] p-4 sm:mt-4 sm:space-y-4 sm:p-6">
+            <div className="mt-3 space-y-3 rounded-lg border border-white/10 bg-card p-4 sm:mt-4 sm:space-y-4 sm:p-6">
               <div className="flex justify-between text-sm sm:text-base">
                 <span className="text-white/70">Stage</span>
                 <span className="font-medium">
@@ -255,7 +255,7 @@ export default function CompanyDetails() {
               {project.faqs.map((faq) => (
                 <div
                   key={faq.id}
-                  className="rounded-lg border border-white/10 bg-[#1E202A] p-4 sm:p-6"
+                  className="rounded-lg border border-white/10 bg-card p-4 sm:p-6"
                 >
                   <h3 className="text-base font-medium sm:text-lg">
                     {faq.question}
@@ -277,7 +277,7 @@ export default function CompanyDetails() {
               {project.files.map((file) => (
                 <div
                   key={file.id}
-                  className="rounded-lg border border-white/10 bg-[#1E202A] p-3 sm:p-4"
+                  className="rounded-lg border border-white/10 bg-card p-3 sm:p-4"
                 >
                   <p className="truncate text-sm font-medium sm:text-base">
                     {file.name}

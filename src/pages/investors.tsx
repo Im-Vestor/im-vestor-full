@@ -197,7 +197,7 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
       // href={`/investors/${investor.id}`}
       href="#"
       key={investor.id}
-      className="cursor-pointer rounded-xl border-2 border-white/10 bg-[#1E202A] p-6 transition-all hover:border-white/20"
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
     >
       <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
         {investor.photo ? (
