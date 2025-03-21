@@ -109,7 +109,7 @@ export const Header = () => {
   };
 
   return (
-    <div className="mb-12 md:rounded-full rounded-3xl border border-white/10 px-4 py-4 md:px-6 lg:px-8">
+    <div className="mb-12 md:rounded-full rounded-3xl border border-white/10 px-4 py-4 md:px-6 lg:px-8 bg-card">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
