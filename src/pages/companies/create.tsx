@@ -1,81 +1,63 @@
-import { useUser } from "@clerk/nextjs";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ProjectStage, Currency } from "@prisma/client";
-import { format } from "date-fns";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarIcon,
-  Loader2,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Header } from "~/components/header";
-import { Button } from "~/components/ui/button";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { useUser } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ProjectStage, Currency } from '@prisma/client';
+import { format } from 'date-fns';
+import { ArrowLeft, ArrowRight, CalendarIcon, Loader2, PlusIcon, Trash2Icon } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Header } from '~/components/header';
+import { Button } from '~/components/ui/button';
+import { Calendar } from '~/components/ui/calendar';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Textarea } from "~/components/ui/textarea";
-import { PROJECT_STAGES } from "~/data/project-stages";
-import { cn } from "~/lib/utils";
-import { api } from "~/utils/api";
-import { sendImageToBackend } from "~/utils/file";
+} from '~/components/ui/select';
+import { Textarea } from '~/components/ui/textarea';
+import { PROJECT_STAGES } from '~/data/project-stages';
+import { cn } from '~/lib/utils';
+import { api } from '~/utils/api';
+import { sendImageToBackend } from '~/utils/file';
 
 const companyFormSchema = z.object({
-  name: z.string().min(2, "Company name must be at least 2 characters"),
+  name: z.string().min(2, 'Company name must be at least 2 characters'),
   logo: z.string().optional(),
-  quickSolution: z
-    .string()
-    .min(10, "Quick solution must be at least 10 characters"),
+  quickSolution: z.string().min(10, 'Quick solution must be at least 10 characters'),
   website: z.string().optional(),
   foundationDate: z.date(),
-  sectorId: z.string().min(1, "Company sector is required"),
+  sectorId: z.string().min(1, 'Company sector is required'),
   stage: z.nativeEnum(ProjectStage),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
+  country: z.string().min(1, 'Country is required'),
+  state: z.string().min(1, 'State is required'),
   about: z
     .string()
-    .min(10, "About must be at least 10 characters")
-    .max(280, "About must be at most 280 characters"),
-  startInvestment: z.number().min(1, "Start investment is required"),
-  investorSlots: z.number().min(1, "Investors slots is required"),
-  annualRevenue: z.number().min(1, "Annual revenue is required"),
-  investmentGoal: z.number().min(1, "Investment goal is required"),
+    .min(10, 'About must be at least 10 characters')
+    .max(280, 'About must be at most 280 characters'),
+  startInvestment: z.number().min(1, 'Start investment is required'),
+  investorSlots: z.number().min(1, 'Investors slots is required'),
+  annualRevenue: z.number().min(1, 'Annual revenue is required'),
+  monthsToReturn: z.number().min(1, 'Months to return is required'),
+  investmentGoal: z.number().min(1, 'Investment goal is required'),
   equity: z.number().optional(),
   currency: z.nativeEnum(Currency, {
-    required_error: "Currency is required",
+    required_error: 'Currency is required',
   }),
   faqs: z
     .array(
       z.object({
         question: z.string(),
         answer: z.string(),
-      }),
+      })
     )
     .optional()
     .default([]),
@@ -87,70 +69,69 @@ export default function CreateCompany() {
   const router = useRouter();
   const { user } = useUser();
 
-  const [country, setCountry] = useState<string>("");
+  const [country, setCountry] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
 
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
-  const { data: countries, isLoading: isLoadingCountries } =
-    api.country.getAll.useQuery();
-  const { data: states, isLoading: isLoadingStates } =
-    api.country.getStates.useQuery({
+  const { data: countries, isLoading: isLoadingCountries } = api.country.getAll.useQuery();
+  const { data: states, isLoading: isLoadingStates } = api.country.getStates.useQuery(
+    {
       countryId: country,
-    }, {
+    },
+    {
       enabled: !!country,
-    });
+    }
+  );
 
-  const { mutateAsync: createCompany, isPending } =
-    api.project.create.useMutation({
-      onSuccess: () => {
-        toast.success("Company created successfully!");
-        void router.push("/profile");
-      },
-      onError: (error) => {
-        toast.error("Failed to create company. Please try again.");
-        console.error(
-          "Create company error:",
-          error instanceof Error ? error.message : "Unknown error",
-        );
-      },
-    });
+  const { mutateAsync: createCompany, isPending } = api.project.create.useMutation({
+    onSuccess: () => {
+      toast.success('Company created successfully!');
+      void router.push('/profile');
+    },
+    onError: error => {
+      toast.error('Failed to create company. Please try again.');
+      console.error(
+        'Create company error:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    },
+  });
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      name: "",
-      logo: "",
-      quickSolution: "",
-      website: "",
+      name: '',
+      logo: '',
+      quickSolution: '',
+      website: '',
       foundationDate: new Date(),
-      sectorId: "",
+      sectorId: '',
       stage: ProjectStage.PRE_SEED,
-      country: "",
-      state: "",
-      about: "",
+      country: '',
+      state: '',
+      about: '',
       startInvestment: 0,
       investorSlots: 0,
       annualRevenue: 0,
+      monthsToReturn: 0,
       investmentGoal: 0,
       equity: 0,
       currency: Currency.USD,
-      faqs: [{ question: "", answer: "" }],
+      faqs: [{ question: '', answer: '' }],
     },
   });
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (file) {
       setIsUploading(true);
 
-      const imageUrl = await sendImageToBackend(file, user?.id ?? "");
+      const imageUrl = await sendImageToBackend(file, user?.id ?? '');
 
       setIsUploading(false);
 
-      form.setValue("logo", imageUrl ?? "");
+      form.setValue('logo', imageUrl ?? '');
     }
   };
 
@@ -224,9 +205,7 @@ export default function CreateCompany() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <Label className="font-normal text-neutral-200">
-                      Company Name*
-                    </Label>
+                    <Label className="font-normal text-neutral-200">Company Name*</Label>
                     <FormControl>
                       <Input placeholder="Enter company name" {...field} />
                     </FormControl>
@@ -239,14 +218,9 @@ export default function CreateCompany() {
                 name="quickSolution"
                 render={({ field }) => (
                   <FormItem>
-                    <Label className="font-normal text-neutral-200">
-                      Quick Solution*
-                    </Label>
+                    <Label className="font-normal text-neutral-200">Quick Solution*</Label>
                     <FormControl>
-                      <Textarea
-                        placeholder="Describe your solution"
-                        {...field}
-                      />
+                      <Textarea placeholder="Describe your solution" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -257,9 +231,7 @@ export default function CreateCompany() {
                 name="website"
                 render={({ field }) => (
                   <FormItem>
-                    <Label className="font-normal text-neutral-200">
-                      Website (optional)
-                    </Label>
+                    <Label className="font-normal text-neutral-200">Website (optional)</Label>
                     <FormControl>
                       <Input
                         className="w-full md:w-1/2"
@@ -277,33 +249,24 @@ export default function CreateCompany() {
                 name="foundationDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-2">
-                    <Label className="font-normal text-neutral-200">
-                      Foundation Date*
-                    </Label>
+                    <Label className="font-normal text-neutral-200">Foundation Date*</Label>
                     <FormControl>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={"outline"}
+                              variant={'outline'}
                               className={cn(
-                                "w-full md:w-1/2 border-none pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
+                                'w-full md:w-1/2 border-none pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
                               )}
                             >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Select date</span>
-                              )}
+                              {field.value ? format(field.value, 'PPP') : <span>Select date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto border-none p-0"
-                          align="start"
-                        >
+                        <PopoverContent className="w-auto border-none p-0" align="start">
                           <Calendar
                             mode="single"
                             captionLayout="dropdown"
@@ -326,9 +289,7 @@ export default function CreateCompany() {
                   name="sectorId"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Company Sector*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Company Sector*</Label>
                       <FormControl>
                         <Select
                           value={field.value}
@@ -341,11 +302,8 @@ export default function CreateCompany() {
                             <SelectValue placeholder="Select sector" />
                           </SelectTrigger>
                           <SelectContent>
-                            {areas?.map((area) => (
-                              <SelectItem
-                                key={area.id}
-                                value={area.id.toString()}
-                              >
+                            {areas?.map(area => (
+                              <SelectItem key={area.id} value={area.id.toString()}>
                                 {area.name}
                               </SelectItem>
                             ))}
@@ -362,9 +320,7 @@ export default function CreateCompany() {
                   name="stage"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Company Stage*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Company Stage*</Label>
                       <FormControl>
                         <Select
                           value={field.value}
@@ -376,7 +332,7 @@ export default function CreateCompany() {
                             <SelectValue placeholder="Select stage" />
                           </SelectTrigger>
                           <SelectContent>
-                            {PROJECT_STAGES.map((stage) => (
+                            {PROJECT_STAGES.map(stage => (
                               <SelectItem key={stage.value} value={stage.value}>
                                 {stage.label}
                               </SelectItem>
@@ -395,16 +351,14 @@ export default function CreateCompany() {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Country*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Country*</Label>
                       <FormControl>
                         <Select
                           value={field.value}
                           onValueChange={(value: string) => {
                             field.onChange(value);
                             setCountry(value);
-                            form.setValue("state", "");
+                            form.setValue('state', '');
                           }}
                           disabled={isLoadingCountries}
                         >
@@ -412,11 +366,8 @@ export default function CreateCompany() {
                             <SelectValue placeholder="Select country" />
                           </SelectTrigger>
                           <SelectContent>
-                            {countries?.map((country) => (
-                              <SelectItem
-                                key={country.id}
-                                value={country.id.toString()}
-                              >
+                            {countries?.map(country => (
+                              <SelectItem key={country.id} value={country.id.toString()}>
                                 {country.name}
                               </SelectItem>
                             ))}
@@ -433,30 +384,21 @@ export default function CreateCompany() {
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        State*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">State*</Label>
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={(value: string) =>
-                            field.onChange(value)
-                          }
+                          onValueChange={(value: string) => field.onChange(value)}
                           disabled={
-                            !form.getValues("country") ||
-                            isLoadingCountries ||
-                            isLoadingStates
+                            !form.getValues('country') || isLoadingCountries || isLoadingStates
                           }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="State*" />
                           </SelectTrigger>
                           <SelectContent>
-                            {states?.map((state) => (
-                              <SelectItem
-                                key={state.id}
-                                value={state.id.toString()}
-                              >
+                            {states?.map(state => (
+                              <SelectItem key={state.id} value={state.id.toString()}>
                                 {state.name}
                               </SelectItem>
                             ))}
@@ -473,14 +415,9 @@ export default function CreateCompany() {
                 name="about"
                 render={({ field }) => (
                   <FormItem>
-                    <Label className="font-normal text-neutral-200">
-                      About Company*
-                    </Label>
+                    <Label className="font-normal text-neutral-200">About Company*</Label>
                     <FormControl>
-                      <Textarea
-                        placeholder="Tell us about your company"
-                        {...field}
-                      />
+                      <Textarea placeholder="Tell us about your company" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -491,23 +428,20 @@ export default function CreateCompany() {
                 <FormField
                   control={form.control}
                   name="startInvestment"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Start Investment*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Start Investment*</Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
                           placeholder="Enter amount in USD"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "" || !isNaN(Number(value))) {
-                              field.onChange(Number(value));
-                            }
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
                           }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -518,23 +452,20 @@ export default function CreateCompany() {
                 <FormField
                   control={form.control}
                   name="investorSlots"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Investors Slots*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Investors Slots*</Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
                           placeholder="Enter number of slots"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "" || !isNaN(Number(value))) {
-                              field.onChange(Number(value));
-                            }
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
                           }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -546,23 +477,20 @@ export default function CreateCompany() {
                 <FormField
                   control={form.control}
                   name="annualRevenue"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Annual Revenue*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Annual Revenue*</Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
                           placeholder="Enter amount in USD"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "" || !isNaN(Number(value))) {
-                              field.onChange(Number(value));
-                            }
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
                           }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -573,24 +501,21 @@ export default function CreateCompany() {
                 <FormField
                   control={form.control}
                   name="equity"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Equity (%)
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Equity (%)</Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
                           max={100}
                           placeholder="Enter equity percentage"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "" || !isNaN(Number(value))) {
-                              field.onChange(Number(value));
-                            }
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
                           }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -602,23 +527,45 @@ export default function CreateCompany() {
                 <FormField
                   control={form.control}
                   name="investmentGoal"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Investment Goal*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Investment Goal*</Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
                           placeholder="Enter amount in USD"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "" || !isNaN(Number(value))) {
-                              field.onChange(Number(value));
-                            }
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
                           }}
+                          {...fieldProps}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="monthsToReturn"
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">ROI (months)*</Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={96}
+                          placeholder="Enter months to return the investment"
+                          value={value === 0 ? '' : value}
+                          onChange={e => {
+                            const inputValue = e.target.value;
+                            onChange(inputValue === '' ? 0 : Number(inputValue));
+                          }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -631,14 +578,9 @@ export default function CreateCompany() {
                   name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">
-                        Currency*
-                      </Label>
+                      <Label className="font-normal text-neutral-200">Currency*</Label>
                       <FormControl>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
+                        <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select currency" />
                           </SelectTrigger>
@@ -656,7 +598,7 @@ export default function CreateCompany() {
               </div>
               <h3 className="mt-2 text-lg">Company FAQ</h3>
               <div className="space-y-4">
-                {form.watch("faqs")?.map((_, index) => (
+                {form.watch('faqs')?.map((_, index) => (
                   <div key={index}>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
@@ -666,10 +608,7 @@ export default function CreateCompany() {
                           render={({ field }) => (
                             <FormItem className="w-11/12">
                               <FormControl>
-                                <Input
-                                  placeholder={`Question ${index + 1}`}
-                                  {...field}
-                                />
+                                <Input placeholder={`Question ${index + 1}`} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -680,10 +619,10 @@ export default function CreateCompany() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            const currentFaq = form.getValues("faqs") ?? [];
+                            const currentFaq = form.getValues('faqs') ?? [];
                             form.setValue(
-                              "faqs",
-                              currentFaq.filter((_, i) => i !== index),
+                              'faqs',
+                              currentFaq.filter((_, i) => i !== index)
                             );
                           }}
                         >
@@ -696,10 +635,7 @@ export default function CreateCompany() {
                         render={({ field }) => (
                           <FormItem className="w-11/12">
                             <FormControl>
-                              <Input
-                                placeholder={`Answer ${index + 1}`}
-                                {...field}
-                              />
+                              <Input placeholder={`Answer ${index + 1}`} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -712,27 +648,20 @@ export default function CreateCompany() {
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    const currentFaq = form.getValues("faqs") ?? [];
-                    form.setValue("faqs", [
-                      ...currentFaq,
-                      { question: "", answer: "" },
-                    ]);
+                    const currentFaq = form.getValues('faqs') ?? [];
+                    form.setValue('faqs', [...currentFaq, { question: '', answer: '' }]);
                   }}
                 >
                   <PlusIcon className="h-4 w-4" /> Add Question
                 </Button>
               </div>
               <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                >
+                <Button type="button" variant="outline" onClick={() => router.back()}>
                   Cancel
                 </Button>
                 <Button className="w-1/3" type="submit" disabled={isPending}>
                   {isPending ? (
-                    "Saving..."
+                    'Saving...'
                   ) : (
                     <div className="flex items-center gap-2">
                       <span>Save</span>

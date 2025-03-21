@@ -105,8 +105,6 @@ model Investor {
     fiscalCode             String?
     investmentMinValue     Float
     investmentMaxValue     Float
-    investmentNetWorth     Float
-    investmentAnnualIncome Float
     birthDate              DateTime?
     photo                  String?
     banner                 String?
@@ -174,6 +172,7 @@ model Project {
     startInvestment Float?
     investorSlots   Int?
     annualRevenue   Float?
+    monthsToReturn  Int?
     equity          Float?
     investmentGoal  Float
     logo            String?

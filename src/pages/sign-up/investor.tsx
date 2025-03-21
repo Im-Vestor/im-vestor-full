@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { Currency } from "@prisma/client";
+import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { format } from "date-fns";
 import { ArrowLeft, ArrowRight, CalendarIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +36,6 @@ import {
 } from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
 import { api } from "~/utils/api";
-import Link from "next/link";
 
 const formSchema = z
   .object({
@@ -53,8 +53,6 @@ const formSchema = z
     investmentMaxValue: z
       .number()
       .min(1, "Maximum investment value is required"),
-    investmentNetWorth: z.number().min(1, "Net worth is required"),
-    investmentAnnualIncome: z.number().min(1, "Annual income is required"),
     currency: z.nativeEnum(Currency, {
       required_error: "Currency is required",
     }),
@@ -92,8 +90,6 @@ export default function SignupInvestor() {
       country: "",
       investmentMinValue: 0,
       investmentMaxValue: 0,
-      investmentNetWorth: 0,
-      investmentAnnualIncome: 0,
       currency: Currency.USD,
       birthDate: new Date(
         new Date().setFullYear(new Date().getFullYear() - 18),
@@ -387,13 +383,13 @@ export default function SignupInvestor() {
                                 <div className="space-y-4">
                                   <Slider
                                     min={2500}
-                                    max={5000000}
+                                    max={1000000}
                                     step={2500}
-                                    defaultValue={[2500, 5000000]}
+                                    defaultValue={[2500, 1000000]}
                                     minStepsBetweenThumbs={1}
                                     value={[
                                       Number(minField.value || "2500"),
-                                      Number(maxField.value || "5000000"),
+                                      Number(maxField.value || "1000000"),
                                     ]}
                                     onValueChange={([min, max]) => {
                                       if (min && max) {
@@ -414,11 +410,11 @@ export default function SignupInvestor() {
                                       <span>-</span>
                                       <span>
                                         {formatCurrency(
-                                          Number(maxField.value) || 5000000,
+                                          Number(maxField.value) || 1000000,
                                         )}
                                       </span>
                                     </div>
-                                    <span>$5M+</span>
+                                    <span>$1M+</span>
                                   </div>
                                 </div>
                               </FormControl>
@@ -458,62 +454,6 @@ export default function SignupInvestor() {
                               </SelectItem>
                             </SelectContent>
                           </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="investmentNetWorth"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Net Worth*
-                        </Label>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="number"
-                            min={0}
-                            placeholder="Enter amount in USD"
-                            disabled={isRegistering}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "" || !isNaN(Number(value))) {
-                                field.onChange(Number(value));
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="investmentAnnualIncome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Annual Income*
-                        </Label>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="number"
-                            min={0}
-                            placeholder="Enter amount in USD"
-                            disabled={isRegistering}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "" || !isNaN(Number(value))) {
-                                field.onChange(Number(value));
-                              }
-                            }}
-                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -651,8 +591,6 @@ export default function SignupInvestor() {
                       isValid = await form.trigger([
                         "investmentMinValue",
                         "investmentMaxValue",
-                        "investmentNetWorth",
-                        "investmentAnnualIncome",
                       ]);
                       break;
                     case 4:

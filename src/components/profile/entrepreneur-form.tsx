@@ -168,7 +168,7 @@ export const EntrepreneurForm = ({
           <FormField
             control={form.control}
             name="fiscalCode"
-            render={({ field }) => (
+            render={({ field: { value, onChange, ...fieldProps } }) => (
               <FormItem>
                 <Label className="font-normal text-neutral-200">
                   Fiscal Code*
@@ -176,7 +176,9 @@ export const EntrepreneurForm = ({
                 <FormControl>
                   <Input
                     placeholder="01234567890"
-                    {...field}
+                    value={value || ""}
+                    onChange={e => onChange(e.target.value)}
+                    {...fieldProps}
                     disabled={isUpdatingEntrepreneur}
                   />
                 </FormControl>

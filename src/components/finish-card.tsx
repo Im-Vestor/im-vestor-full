@@ -7,7 +7,7 @@ export const FinishCard = ({ name }: { name: string }) => {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-center w-80 md:w-72">
+    <div className="flex flex-col items-center justify-center max-w-md">
       <h1 className="mt-4 text-center text-6xl font-semibold">
         Welcome, <span className="text-[#E5CD82]">{name}</span>!
       </h1>
