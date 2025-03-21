@@ -40,6 +40,7 @@ type InvestorWithRelations = Investor & {
 export default function Investors() {
   const { data: areas } = api.area.getAll.useQuery();
   const [showAllAreas, setShowAllAreas] = useState(false);
+  const [visibleAreasCount, setVisibleAreasCount] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
 
@@ -62,7 +63,7 @@ export default function Investors() {
   const { data, isLoading } =
     api.investor.getInvestorsRelatedToEntrepreneur.useQuery(filterParams);
 
-  const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
+  const visibleAreas = areas?.slice(0, visibleAreasCount);
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     if (checked) {
@@ -84,6 +85,20 @@ export default function Investors() {
     }
   };
 
+  const handleShowMoreAreas = () => {
+    if (areas) {
+      if (visibleAreasCount + 10 >= areas.length) {
+        setVisibleAreasCount(areas.length);
+      } else {
+        setVisibleAreasCount(visibleAreasCount + 10);
+      }
+    }
+  };
+
+  const handleShowLessAreas = () => {
+    setVisibleAreasCount(5);
+  };
+
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
@@ -102,24 +117,30 @@ export default function Investors() {
                         handleAreaChange(area.id.toString(), checked === true)
                       }
                     />
-                    <p key={area.id} className="text-sm">
+                    <p className="text-sm">
                       {area.name}
                     </p>
                   </div>
                 ))}
-                {areas && areas.length > 3 && (
+                {areas && areas.length > visibleAreasCount && (
                   <button
-                    onClick={() => setShowAllAreas(!showAllAreas)}
+                    onClick={handleShowMoreAreas}
                     className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
                   >
-                    {showAllAreas
-                      ? "Show less"
-                      : `See more (${areas.length - 3})`}
+                    See more ({Math.min(10, areas.length - visibleAreasCount)})
+                  </button>
+                )}
+                {visibleAreasCount > 5 && (
+                  <button
+                    onClick={handleShowLessAreas}
+                    className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
+                  >
+                    Show less
                   </button>
                 )}
               </div>
               <p className="mt-2 font-medium">Investment Range</p>
-              <div className="ml-2 mt-1.5 flex flex-col">
+              <div className="ml-2 mt-1.5 flex flex-col gap-2">
                 {INVESTMENT_RANGES.map((range) => (
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
@@ -138,11 +159,11 @@ export default function Investors() {
               </div>
             </div>
             <div className="mt-6 w-full md:mt-0 md:w-4/5">
-              <div className="flex items-center rounded-md bg-[#282A37]">
+              <div className="flex items-center rounded-md bg-white/10 border-2 border-white/10">
                 <SearchIcon className="ml-3 h-5 w-5 text-white" />
                 <Input
                   placeholder="Search investors by name"
-                  className="bg-transparent"
+                  className="bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

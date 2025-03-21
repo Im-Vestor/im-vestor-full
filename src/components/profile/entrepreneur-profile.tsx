@@ -46,7 +46,7 @@ export const EntrepreneurProfile = () => {
   }
 
   return (
-    <div className={`rounded-lg border border-white/10 pb-20`}>
+    <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
       <div className="relative">
         {entrepreneur?.banner ? (
           <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
@@ -104,10 +104,12 @@ export const EntrepreneurProfile = () => {
             ? `${entrepreneur.state.name}, ${entrepreneur.country.name}`
             : "Not specified"}
         </p>
+        <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
         <p className="mt-3 text-gray-400">
           {entrepreneur?.about ?? "No description"}
         </p>
+        <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">Projects</h3>
         {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
           <div className="mt-4 flex flex-col gap-4">

@@ -24,7 +24,7 @@ export const InvestorProfile = () => {
   }
 
   return (
-    <div className={`rounded-lg border border-white/10 pb-20`}>
+    <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
       <div className="relative">
         {investor?.banner ? (
           <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
@@ -72,12 +72,14 @@ export const InvestorProfile = () => {
             {isEditing ? "Cancel" : "Edit"}
           </Button>
         </div>
+        <hr className="my-4 sm:my-6 border-white/10" />
         <p className="mt-1 flex items-center gap-1 text-gray-400">
           <MapPin className="mr-0.5 h-4 w-4" />
           {investor?.state && investor?.country
             ? `${investor.state.name}, ${investor.country.name}`
             : "Not specified"}
         </p>
+        <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
         <p className="mt-3 text-gray-400">
           {investor?.about ?? "No description"}
