@@ -107,7 +107,8 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
           setIsUploadingBanner,
           (banner: string) => form.setValue("banner", banner),
         )}
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col items-start gap-4 ml-6">
+          <Label className="font-normal text-neutral-200">Profile Picture</Label>
           {renderPhotoUpload(
             investor?.id ?? "",
             investor?.photo ?? null,
