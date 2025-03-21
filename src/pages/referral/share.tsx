@@ -20,9 +20,9 @@ export default function Referral() {
   return (
     <>
       <div className="relative min-h-screen">
-        <div className="absolute -top-1/2 left-1/2 h-[800px] min-h-screen w-[200px] -translate-x-1/2 transform rounded-full bg-white/5 blur-[128px] md:w-[1000px]" />
+        <div className="absolute -top-1/2 left-1/2 h-[800px] min-h-screen -translate-x-1/2 transform rounded-full bg-white/5 blur-[128px]" />
 
-        <main className="relative mx-4 flex flex-col md:mx-48 md:flex-row md:justify-between">
+        <main className="relative mx-4 flex flex-col lg:mx-48 xl:mx-96 md:flex-row md:justify-between">
           <div className="mt-12 flex w-full flex-col items-center md:mt-48 md:w-1/2 md:items-start">
             <Link
               href="/profile"
@@ -63,15 +63,16 @@ export default function Referral() {
             </Link>
           </div>
 
-          <div className="relative mt-12 md:mt-0">
+          <div className="relative md:w-80 w-full">
             <Image
-              src="/images/badge.svg"
+              src="/images/tape.png"
               alt="Badge"
-              width={320}
-              height={320}
-              className="hidden md:block"
+              width={100}
+              height={200}
+              className="hidden md:block z-50 absolute top-0 left-1/2 -translate-x-1/2"
             />
-            <div className="mt-8 flex flex-col items-center justify-center px-8 md:absolute md:inset-0 md:mt-64">
+            <div className="md:mt-60 mt-32 relative flex flex-col items-center justify-center p-8 bg-card rounded-b-3xl z-10">
+              <div className="w-full h-24 absolute -top-24 left-0 rounded-t-3xl bg-white/10"></div>
               <h2 className="bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-center text-xl font-bold tracking-wide text-transparent md:text-2xl">
                 Invite Friends & Earn Rewards
               </h2>
@@ -92,7 +93,8 @@ export default function Referral() {
                   <p className="flex-1 text-center">{referral?.referralCode}</p>
                 </div>
               </div>
-              <div className="flex w-full justify-center gap-8 md:justify-between md:px-8">
+              <hr className="w-full my-8 opacity-10 duration-300" />
+              <div className="flex w-full justify-center gap-8 md:justify-between md:px-8 opacity-60 duration-300">
                 <Link
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
                     "https://imvestor.com",
