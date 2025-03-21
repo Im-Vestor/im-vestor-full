@@ -1,14 +1,12 @@
 "use client";
 
 import {
-  ArrowDownRight,
   ArrowRight,
   Briefcase,
   Compass,
   Handshake,
   Instagram,
   Linkedin,
-  LogIn,
   ShieldCheck,
   Zap,
   Play,
@@ -24,7 +22,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSignIn } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-import { LanguageSwitcher } from "~/components/ui/language-switcher";
 import { useTranslation } from "~/hooks/use-translation";
 import StarField from "~/components/ui/StarField";
 

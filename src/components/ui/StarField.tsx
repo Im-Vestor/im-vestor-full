@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useRef } from "react"
-import Link from "next/link"
 
 export default function SpaceHero({ children }: { children: React.ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -18,7 +17,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
         const canvas = canvasRef.current
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
-        
+
         ctx.fillStyle = "black"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
       }
@@ -45,7 +44,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
     }
 
     const nebulae: Nebula[] = []
-    
+
     nebulae.push({
       x: canvas.width * 0.3,
       y: canvas.height * 0.2,
@@ -58,7 +57,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
       moveY: 0.05,
       moveDirection: { x: 1, y: 1 },
     })
-    
+
     nebulae.push({
       x: canvas.width * 0.7,
       y: canvas.height * 0.6,
@@ -71,7 +70,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
       moveY: 0.04,
       moveDirection: { x: -1, y: 1 },
     })
-    
+
     nebulae.push({
       x: canvas.width * 0.5,
       y: canvas.height * 0.4,
@@ -84,7 +83,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
       moveY: 0.06,
       moveDirection: { x: 1, y: -1 },
     })
-    
+
     nebulae.push({
       x: canvas.width * 0.2,
       y: canvas.height * 0.7,
@@ -126,7 +125,7 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
       const gradient = ctx.createRadialGradient(
         canvas.width / 2,
         canvas.height / 2,
-        0, 
+        0,
         canvas.width / 2,
         canvas.height / 2,
         canvas.width / 2,
@@ -166,10 +165,10 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
           nebula.y + nebula.moveY,
           nebula.radius * nebula.scale
         )
-        
-        const colorParts = nebula.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/)
-        if (colorParts) {
-          const [_, r, g, b] = colorParts
+
+        const colorMatch = RegExp(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/).exec(nebula.color)
+        if (colorMatch) {
+          const [, r, g, b] = colorMatch
           gradient.addColorStop(0, nebula.color)
           gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`)
         } else {
@@ -284,13 +283,13 @@ export default function SpaceHero({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full overflow-hidden bg-black">
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-      
+
       <div className="absolute inset-x-0 top-0 z-[1] h-32 bg-gradient-to-b from-black to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 z-[1] h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
 
       <div className="relative z-10 flex w-full items-center justify-center py-20">
         <div className="mx-auto text-center">
-            {children}	
+          {children}
         </div>
       </div>
     </div>

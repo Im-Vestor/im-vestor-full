@@ -18,7 +18,7 @@ export default function List() {
     <main className="mx-auto min-h-screen w-full max-w-6xl p-4 sm:p-6 md:p-8">
       <Header />
       <div className="mt-8 md:mt-12">
-        <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 sm:px-8 md:px-12 lg:px-16 md:py-8 lg:py-12">
+        <div className="rounded-xl border-2 border-white/10 bg-card px-4 py-6 sm:px-8 md:px-12 lg:px-16 md:py-8 lg:py-12">
           {isLoading && (
             <div className="mt-6 md:mt-12 flex items-center justify-center">
               <Loader2 className="size-8 animate-spin" />
@@ -133,7 +133,7 @@ export default function List() {
                 onClick={() => setPage(page + 1)}
                 disabled={
                   (data?.referralsWithBusinesses?.length ?? 0) -
-                    (page + 1) * 20 <=
+                  (page + 1) * 20 <=
                   0
                 }
               >

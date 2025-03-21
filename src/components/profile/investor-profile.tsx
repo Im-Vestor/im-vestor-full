@@ -68,7 +68,7 @@ export const InvestorProfile = () => {
             className="flex items-center gap-2"
             onClick={() => setIsEditing(!isEditing)}
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-2 w-2" />
             {isEditing ? "Cancel" : "Edit"}
           </Button>
         </div>

@@ -19,12 +19,12 @@ export const SignUpCard = ({
         height={120}
         className="hidden md:block"
       />
-      <div className="mt-4 w-full rounded-xl bg-[#242631]">
+      <div className="mt-4 w-full rounded-xl bg-card">
         <h1 className="mb-2 mt-6 text-center text-4xl font-semibold text-[#E5CD82]">
           {type === "entrepreneur" ? "Entrepreneur" : "Investor"}
         </h1>
         <h2 className="mt-2 text-center text-lg text-[#DCDDE0]">{name}</h2>
-        <hr className="my-4 w-full border-neutral-700" />
+        <hr className="my-4 w-full border-background border-4" />
 
         {/* Price Section */}
         <div className="mb-4 pt-8 text-center">

@@ -14,7 +14,7 @@ export default function PartnerDashboard() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
       <div className="mt-12">
-        <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 md:px-16 md:py-12">
+        <div className="rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold">Your referal code</h1>

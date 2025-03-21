@@ -15,7 +15,7 @@ export default function Meetings() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
       <div className="mt-12 flex gap-6">
-        <div className="w-2/5 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-12">
+        <div className="w-2/5 rounded-xl border-2 border-white/10 bg-card p-12">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl bg-[#EFD687] p-4">
               <CalendarIcon className="h-8 w-8 text-black" />
@@ -65,7 +65,7 @@ export default function Meetings() {
             />
           </div>
         </div>
-        <div className="w-3/5 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] p-12">
+        <div className="w-3/5 rounded-xl border-2 border-white/10 bg-card p-12">
           <div className="mt-4 flex flex-col gap-4">
             <MeetingCard />
             <MeetingCard />

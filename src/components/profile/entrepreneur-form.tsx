@@ -37,7 +37,7 @@ const entrepreneurFormSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   fiscalCode: z.string().min(1, "Fiscal code is required"),
   mobileFone: z.string().min(1, "Mobile phone is required"),
-  about: z.string().optional(),
+  about: z.string().min(12, "About me must be at least 12 characters"),
   photo: z.string().optional(),
   banner: z.string().optional(),
 });
@@ -62,6 +62,8 @@ export const EntrepreneurForm = ({
   const { data: states, isLoading: isLoadingStates } =
     api.country.getStates.useQuery({
       countryId: country,
+    }, {
+      enabled: !!country,
     });
 
   const { mutate: updateEntrepreneur, isPending: isUpdatingEntrepreneur } =
@@ -98,7 +100,7 @@ export const EntrepreneurForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((data) => updateEntrepreneur({ ...data }))}
-        className="space-y-4 rounded-lg border-2 border-white/10 bg-[#242630]"
+        className="space-y-4 rounded-lg border-2 border-white/10 bg-card"
       >
         {renderBannerUpload(
           entrepreneur?.id ?? "",
@@ -330,7 +332,7 @@ export const EntrepreneurForm = ({
             render={({ field }) => (
               <FormItem>
                 <Label className="font-normal text-neutral-200">
-                  About me
+                  About me*
                 </Label>
                 <FormControl>
                   <Textarea

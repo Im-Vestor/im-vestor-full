@@ -96,6 +96,8 @@ export default function CreateCompany() {
   const { data: states, isLoading: isLoadingStates } =
     api.country.getStates.useQuery({
       countryId: country,
+    }, {
+      enabled: !!country,
     });
 
   const { mutateAsync: createCompany, isPending } =
@@ -162,7 +164,7 @@ export default function CreateCompany() {
       <div className="mt-12">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] md:px-16 px-4 py-8">
+            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-8">
               <button
                 type="button"
                 className="flex items-center gap-2 hover:opacity-75"

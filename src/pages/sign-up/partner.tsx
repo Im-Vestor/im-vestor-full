@@ -69,7 +69,7 @@ export default function SignupPartner() {
 
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">
-      <div className="mt-4 w-full md:min-w-[80rem] md:max-w-[80rem]">
+      <div className="mt-4 w-[80%]">
         <Header />
       </div>
       <div

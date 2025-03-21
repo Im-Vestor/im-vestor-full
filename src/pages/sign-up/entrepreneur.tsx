@@ -90,7 +90,7 @@ export default function SignupEntrepreneur() {
 
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">
-      <div className="mt-4 w-full md:min-w-[80rem] md:max-w-[80rem]">
+      <div className="mt-4 w-[80%]">
         <Header />
       </div>
       <div
@@ -333,7 +333,7 @@ export default function SignupEntrepreneur() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary"
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
@@ -360,7 +360,7 @@ export default function SignupEntrepreneur() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
+                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary"
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">

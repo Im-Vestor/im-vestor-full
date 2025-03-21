@@ -126,7 +126,7 @@ export default function Companies() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <div className="flex flex-col rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 md:flex-row md:px-16 md:py-12">
+        <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:flex-row md:px-16 md:py-12">
           <div className="w-full md:w-1/5">
             <p className="font-medium">Sector</p>
             <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">

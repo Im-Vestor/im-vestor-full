@@ -164,7 +164,7 @@ export default function EditCompany() {
           </div>
         </div>
 
-        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] md:px-16 px-4 py-8">
+        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-8">
           <h1 className="text-lg font-bold">Know Your Numbers</h1>
           <div className="space-y-6">
             <div>

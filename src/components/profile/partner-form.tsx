@@ -58,7 +58,7 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((data) => updatePartner({ ...data }))}
-        className="space-y-4 rounded-lg border-2 border-white/10 bg-[#242630]"
+        className="space-y-4 rounded-lg border-2 border-white/10 bg-card"
       >
         <div className="mx-6 grid grid-cols-1 gap-4 pt-12 md:grid-cols-2">
           <FormField

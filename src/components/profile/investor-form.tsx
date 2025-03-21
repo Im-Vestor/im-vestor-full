@@ -57,6 +57,8 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
   const { data: states, isLoading: isLoadingStates } =
     api.country.getStates.useQuery({
       countryId: country,
+    }, {
+      enabled: !!country,
     });
 
   const { mutate: updateInvestor, isPending: isUpdatingInvestor } =
@@ -95,7 +97,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
             ...data,
           }),
         )}
-        className="space-y-4 rounded-lg border-2 border-white/10 bg-[#242630]"
+        className="space-y-4 rounded-lg border-2 border-white/10 bg-card"
       >
         {renderBannerUpload(
           investor?.id ?? "",
@@ -277,7 +279,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
             name="about"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">About me</Label>
+                <Label className="font-normal text-neutral-200">About me*</Label>
                 <FormControl>
                   <Textarea
                     placeholder="I'm a Venture Capitalist..."

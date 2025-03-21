@@ -88,7 +88,7 @@ export default function Investors() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <div className="rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] px-4 py-6 md:px-16 md:py-12">
+        <div className="rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/5">
               <p className="font-medium">Areas of Interest</p>

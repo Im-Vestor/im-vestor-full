@@ -131,7 +131,7 @@ export default function SignupInvestor() {
 
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">
-      <div className="mt-4 w-full md:min-w-[80rem] md:max-w-[80rem]">
+      <div className="mt-4 w-[80%]">
         <Header />
       </div>
       <div
@@ -454,7 +454,7 @@ export default function SignupInvestor() {
                                 € EUR
                               </SelectItem>
                               <SelectItem value={Currency.BRL}>
-                              R$ BRL
+                                R$ BRL
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -568,8 +568,7 @@ export default function SignupInvestor() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
-                          />
+                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary" />
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <Label>I accept the{" "}
@@ -595,8 +594,7 @@ export default function SignupInvestor() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="border-gray-400 bg-white data-[state=checked]:bg-[#E5CD82]"
-                          />
+                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary" />
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <Label>I accept the confidentiality agreement</Label>
@@ -630,7 +628,7 @@ export default function SignupInvestor() {
               <Button
                 type="button"
                 className="mt-12 w-full"
-                disabled={isRegistering || (step === 5 && 
+                disabled={isRegistering || (step === 5 &&
                   (!form.getValues("acceptTerms") || !form.getValues("acceptConfidentiality")))}
                 onClick={async () => {
                   let isValid = false;

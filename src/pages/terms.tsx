@@ -3,7 +3,7 @@ import { Header } from "~/components/header";
 export default function Terms() {
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">
-      <div className="mt-4 w-full md:min-w-[80rem] md:max-w-[80rem]">
+      <div className="mt-4 w-[80%]">
         <Header />
       </div>
       <div className="mt-8 w-full max-w-5xl rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-8 backdrop-blur-md">

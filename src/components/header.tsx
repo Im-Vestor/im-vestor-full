@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { api } from "~/utils/api";
-import Link from "next/link";
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -71,10 +70,14 @@ const PARTNER_MENUS = [
 export const Header = () => {
   const router = useRouter();
   const path = usePathname();
-
-  const { data: userDetails } = api.user.getUser.useQuery();
-
   const { user, isSignedIn } = useUser();
+
+  const isSignUpRoute = path?.startsWith("/sign-up");
+  const { data: userDetails } = api.user.getUser.useQuery(
+    undefined,
+    { enabled: !isSignUpRoute && !!isSignedIn }
+  );
+
   const { signOut } = useClerk();
 
   const [userType, setUserType] = useState<UserType | null>(null);

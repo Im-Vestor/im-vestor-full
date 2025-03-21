@@ -3,12 +3,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Currency, ProjectStage } from "@prisma/client";
 import { format } from "date-fns";
 import {
-    ArrowLeft,
-    ArrowRight,
-    CalendarIcon,
-    Loader2,
-    PlusIcon,
-    Trash2Icon,
+  ArrowLeft,
+  ArrowRight,
+  CalendarIcon,
+  Loader2,
+  PlusIcon,
+  Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -20,25 +20,25 @@ import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "~/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { PROJECT_STAGES } from "~/data/project-stages";
@@ -98,6 +98,8 @@ export default function EditCompany() {
   const { data: states, isLoading: isLoadingStates } =
     api.country.getStates.useQuery({
       countryId: country,
+    }, {
+      enabled: !!country,
     });
 
   const { data: project } = api.project.getById.useQuery(
@@ -192,7 +194,7 @@ export default function EditCompany() {
 
   async function onSubmit(data: CompanyFormValues) {
     if (!companyId) return;
-    
+
     await updateCompany({
       id: companyId as string,
       ...data,
@@ -213,7 +215,7 @@ export default function EditCompany() {
       <div className="mt-12">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-gradient-to-b from-[#20212B] to-[#242834] md:px-16 px-4 py-8">
+            <div className="space-y-6 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-8">
               <button
                 type="button"
                 className="flex items-center gap-2 hover:opacity-75"
@@ -796,4 +798,4 @@ export default function EditCompany() {
       </div>
     </main>
   );
-} 
+}
