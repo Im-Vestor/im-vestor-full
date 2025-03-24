@@ -1,18 +1,14 @@
-import { type Country, type Project, type State, type ProjectStage } from "@prisma/client";
-import {
-  Building2,
-  Loader2,
-  SearchIcon
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { Header } from "~/components/header";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import { PROJECT_STAGES } from "~/data/project-stages";
-import { api } from "~/utils/api";
+import { type Country, type Project, type State, type ProjectStage } from '@prisma/client';
+import { Building2, Heart, Loader2, SearchIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Header } from '~/components/header';
+import { Button } from '~/components/ui/button';
+import { Checkbox } from '~/components/ui/checkbox';
+import { Input } from '~/components/ui/input';
+import { PROJECT_STAGES } from '~/data/project-stages';
+import { api } from '~/utils/api';
 
 type RevenueRange = {
   id: string;
@@ -30,30 +26,31 @@ type InvestmentRange = {
 
 // Define revenue and investment ranges
 const REVENUE_RANGES: RevenueRange[] = [
-  { id: "1", label: "Less than $100k", max: 100000 },
-  { id: "2", label: "$100k - $500k", min: 100000, max: 500000 },
-  { id: "3", label: "$500k - $1M", min: 500000, max: 1000000 },
-  { id: "4", label: "$1M - $5M", min: 1000000, max: 5000000 },
-  { id: "5", label: "$5M+", min: 5000000 },
+  { id: '1', label: 'Less than $100k', max: 100000 },
+  { id: '2', label: '$100k - $500k', min: 100000, max: 500000 },
+  { id: '3', label: '$500k - $1M', min: 500000, max: 1000000 },
+  { id: '4', label: '$1M - $5M', min: 1000000, max: 5000000 },
+  { id: '5', label: '$5M+', min: 5000000 },
 ];
 
 const INVESTMENT_RANGES: InvestmentRange[] = [
-  { id: "1", label: "Less than $100k", max: 100000 },
-  { id: "2", label: "$100k - $500k", min: 100000, max: 500000 },
-  { id: "3", label: "$500k - $1M", min: 500000, max: 1000000 },
-  { id: "4", label: "$1M - $5M", min: 1000000, max: 5000000 },
-  { id: "5", label: "$5M+", min: 5000000 },
+  { id: '1', label: 'Less than $100k', max: 100000 },
+  { id: '2', label: '$100k - $500k', min: 100000, max: 500000 },
+  { id: '3', label: '$500k - $1M', min: 500000, max: 1000000 },
+  { id: '4', label: '$1M - $5M', min: 1000000, max: 5000000 },
+  { id: '5', label: '$5M+', min: 5000000 },
 ];
 
 export default function Companies() {
   const { data: areas } = api.area.getAll.useQuery();
   const [showAllAreas, setShowAllAreas] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
 
   // Filter states
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [oneToFiveSlots, setOneToFiveSlots] = useState(false);
+  const [favorites, setFavorites] = useState(false);
   const [selectedStages, setSelectedStages] = useState<ProjectStage[]>([]);
   const [revenueFilters, setRevenueFilters] = useState<{
     min?: number;
@@ -75,10 +72,10 @@ export default function Companies() {
     maxInitialInvestment: investmentFilters.max,
     searchQuery: searchQuery,
     page: page,
+    favorites: favorites,
   };
 
-  const { data: projects, isLoading } =
-    api.project.getAllWithFilters.useQuery(filterParams);
+  const { data: projects, isLoading } = api.project.getAllWithFilters.useQuery(filterParams);
 
   const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
 
@@ -86,7 +83,7 @@ export default function Companies() {
     if (checked) {
       setSelectedSectors([...selectedSectors, sectorId]);
     } else {
-      setSelectedSectors(selectedSectors.filter((id) => id !== sectorId));
+      setSelectedSectors(selectedSectors.filter(id => id !== sectorId));
     }
   };
 
@@ -94,7 +91,7 @@ export default function Companies() {
     if (checked) {
       setSelectedStages([...selectedStages, stage]);
     } else {
-      setSelectedStages(selectedStages.filter((s) => s !== stage));
+      setSelectedStages(selectedStages.filter(s => s !== stage));
     }
   };
 
@@ -104,7 +101,7 @@ export default function Companies() {
       return;
     }
 
-    const range = REVENUE_RANGES.find((r) => r.id === id);
+    const range = REVENUE_RANGES.find(r => r.id === id);
     if (range) {
       setRevenueFilters({ min: range.min, max: range.max });
     }
@@ -116,7 +113,7 @@ export default function Companies() {
       return;
     }
 
-    const range = INVESTMENT_RANGES.find((r) => r.id === id);
+    const range = INVESTMENT_RANGES.find(r => r.id === id);
     if (range) {
       setInvestmentFilters({ min: range.min, max: range.max });
     }
@@ -130,12 +127,12 @@ export default function Companies() {
           <div className="w-full md:w-1/5">
             <p className="font-medium">Sector</p>
             <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
-              {visibleAreas?.map((area) => (
+              {visibleAreas?.map(area => (
                 <div key={area.id} className="flex items-center gap-2">
                   <Checkbox
                     id={area.id.toString()}
                     checked={selectedSectors.includes(area.id.toString())}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={checked =>
                       handleSectorChange(area.id.toString(), checked === true)
                     }
                   />
@@ -149,9 +146,7 @@ export default function Companies() {
                   onClick={() => setShowAllAreas(!showAllAreas)}
                   className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
                 >
-                  {showAllAreas
-                    ? "Show less"
-                    : `See more (${areas.length - 3})`}
+                  {showAllAreas ? 'Show less' : `See more (${areas.length - 3})`}
                 </button>
               )}
             </div>
@@ -161,23 +156,19 @@ export default function Companies() {
                 <Checkbox
                   id="1-5-slots"
                   checked={oneToFiveSlots}
-                  onCheckedChange={(checked) =>
-                    setOneToFiveSlots(checked === true)
-                  }
+                  onCheckedChange={checked => setOneToFiveSlots(checked === true)}
                 />
                 <p className="text-sm">1 - 5</p>
               </div>
             </div>
             <p className="mt-2 font-medium">Stage</p>
             <div className="ml-2 mt-1.5 flex flex-col">
-              {PROJECT_STAGES.map((stage) => (
+              {PROJECT_STAGES.map(stage => (
                 <div key={stage.value} className="flex items-center gap-2">
                   <Checkbox
                     id={stage.value}
                     checked={selectedStages.includes(stage.value)}
-                    onCheckedChange={(checked) =>
-                      handleStageChange(stage.value, checked === true)
-                    }
+                    onCheckedChange={checked => handleStageChange(stage.value, checked === true)}
                   />
                   <p className="text-sm">{stage.label}</p>
                 </div>
@@ -185,15 +176,12 @@ export default function Companies() {
             </div>
             <p className="mt-2 font-medium">Revenue</p>
             <div className="ml-2 mt-1.5 flex flex-col">
-              {REVENUE_RANGES.map((range) => (
+              {REVENUE_RANGES.map(range => (
                 <div key={range.id} className="flex items-center gap-2">
                   <Checkbox
                     id={range.id}
-                    checked={
-                      revenueFilters.min === range.min &&
-                      revenueFilters.max === range.max
-                    }
-                    onCheckedChange={(checked) =>
+                    checked={revenueFilters.min === range.min && revenueFilters.max === range.max}
+                    onCheckedChange={checked =>
                       handleRevenueFilterChange(range.id, checked === true)
                     }
                   />
@@ -203,21 +191,29 @@ export default function Companies() {
             </div>
             <p className="mt-2 font-medium">Initial Investment</p>
             <div className="ml-2 mt-1.5 flex flex-col">
-              {INVESTMENT_RANGES.map((range) => (
+              {INVESTMENT_RANGES.map(range => (
                 <div key={range.id} className="flex items-center gap-2">
                   <Checkbox
                     id={range.id}
                     checked={
-                      investmentFilters.min === range.min &&
-                      investmentFilters.max === range.max
+                      investmentFilters.min === range.min && investmentFilters.max === range.max
                     }
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={checked =>
                       handleInvestmentFilterChange(range.id, checked === true)
                     }
                   />
                   <p className="text-sm">{range.label}</p>
                 </div>
               ))}
+            </div>
+            <p className="mt-2 font-medium">Favorites</p>
+            <div className="ml-2 mt-1.5 flex items-center gap-2">
+              <Checkbox
+                id="favorites"
+                checked={favorites}
+                onCheckedChange={checked => setFavorites(checked === true)}
+              />
+              <p className="text-sm">Only Favorites</p>
             </div>
           </div>
           <div className="mt-6 w-full md:mt-0 md:w-4/5">
@@ -227,15 +223,11 @@ export default function Companies() {
                 placeholder="Search"
                 className="bg-transparent"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
             <div className="mt-4">
-              <p className="text-sm text-white/50">
-                {isLoading
-                  ? "Loading projects..."
-                  : `Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} companies`}
-              </p>
+              <p className="text-sm text-white/50">{isLoading && 'Loading projects...'}</p>
             </div>
             <div className="mt-4 flex flex-col gap-4">
               {isLoading ? (
@@ -243,7 +235,7 @@ export default function Companies() {
                   <Loader2 className="size-8 animate-spin text-white" />
                 </div>
               ) : projects?.projects && projects?.projects.length > 0 ? (
-                projects?.projects.map((project) => (
+                projects?.projects.map(project => (
                   <CompanyCard key={project.id} project={project} />
                 ))
               ) : (
@@ -255,14 +247,10 @@ export default function Companies() {
             <div className="mt-4 flex items-center justify-end gap-2">
               <p className="text-sm text-white/50">
                 {isLoading
-                  ? "Loading projects..."
-                  : `Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} companies`}
+                  ? 'Loading projects...'
+                  : `Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} projects`}
               </p>
-              <Button
-                variant="outline"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 0}
-              >
+              <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
                 Previous
               </Button>
               <Button
@@ -280,13 +268,17 @@ export default function Companies() {
   );
 }
 
-function CompanyCard({ project }: { project: Project & { state: State | null; country: Country | null } }) {
+function CompanyCard({
+  project,
+}: {
+  project: Project & { state: State | null; country: Country | null } & { isFavorite: boolean };
+}) {
   return (
     <Link
       href={`/companies/${project.id}`}
       className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
     >
-      <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
+      <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (
           <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
             <Image
@@ -306,15 +298,14 @@ function CompanyCard({ project }: { project: Project & { state: State | null; co
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <h3 className="text-xl font-semibold">{project.name}</h3>
+            {project.isFavorite && <Heart className="size-4 text-yellow-500 fill-yellow-500" />}
           </div>
           {project.state?.name && project.country?.name && (
             <span className="text-white/70">
               {project.state.name}, {project.country.name}
             </span>
           )}
-          <p className="mt-1 line-clamp-3">
-            {project.quickSolution ?? "No description available"}
-          </p>
+          <p className="mt-1 line-clamp-3">{project.quickSolution ?? 'No description available'}</p>
         </div>
       </div>
     </Link>

@@ -142,7 +142,7 @@ export default function Investors() {
                 <SearchIcon className="ml-3 h-5 w-5 text-white" />
                 <Input
                   placeholder="Search investors by name"
-                  className="bg-transparent"
+                  className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

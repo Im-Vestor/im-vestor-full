@@ -1,13 +1,9 @@
-import { clerkClient } from "@clerk/nextjs/server";
-import { UserType, Currency } from "@prisma/client";
-import { z } from "zod";
+import { clerkClient } from '@clerk/nextjs/server';
+import { UserType, Currency } from '@prisma/client';
+import { z } from 'zod';
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import { createReferralLink, generateCode } from "~/utils/referral";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const investorRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -16,37 +12,48 @@ export const investorRouter = createTRPCRouter({
       include: {
         country: true,
         state: true,
+        favoriteProjects: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
   }),
   getInvestorsRelatedToEntrepreneur: protectedProcedure
-    .input(z.object({ 
-      page: z.number().optional(),
-      searchQuery: z.string().optional(),
-      minInvestment: z.number().optional(),
-      maxInvestment: z.number().optional(),
-      areaIds: z.array(z.string()).optional(),
-      countryId: z.number().optional(),
-      stateId: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        page: z.number().optional(),
+        searchQuery: z.string().optional(),
+        minInvestment: z.number().optional(),
+        maxInvestment: z.number().optional(),
+        areaIds: z.array(z.string()).optional(),
+        countryId: z.number().optional(),
+        stateId: z.number().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const totalInvestors = await ctx.db.investor.count({
         where: {
-          ...(input.searchQuery ? {
-            OR: [
-              { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-              { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-            ],
-          } : {}),
+          ...(input.searchQuery
+            ? {
+                OR: [
+                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+                ],
+              }
+            : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
-          ...(input.areaIds && input.areaIds.length > 0 ? {
-            areas: {
-              some: {
-                id: { in: input.areaIds }
+          ...(input.areaIds && input.areaIds.length > 0
+            ? {
+                areas: {
+                  some: {
+                    id: { in: input.areaIds },
+                  },
+                },
               }
-            }
-          } : {}),
+            : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
         },
@@ -54,21 +61,25 @@ export const investorRouter = createTRPCRouter({
 
       const investors = await ctx.db.investor.findMany({
         where: {
-          ...(input.searchQuery ? {
-            OR: [
-              { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-              { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-            ],
-          } : {}),
+          ...(input.searchQuery
+            ? {
+                OR: [
+                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+                ],
+              }
+            : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
-          ...(input.areaIds && input.areaIds.length > 0 ? {
-            areas: {
-              some: {
-                id: { in: input.areaIds }
+          ...(input.areaIds && input.areaIds.length > 0
+            ? {
+                areas: {
+                  some: {
+                    id: { in: input.areaIds },
+                  },
+                },
               }
-            }
-          } : {}),
+            : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
         },
@@ -97,7 +108,7 @@ export const investorRouter = createTRPCRouter({
         password: z.string().min(8),
         currency: z.nativeEnum(Currency),
         areas: z.array(z.number()),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const userToCheck = await ctx.db.user.findUnique({
@@ -105,7 +116,7 @@ export const investorRouter = createTRPCRouter({
       });
 
       if (userToCheck) {
-        throw new Error("User already exists");
+        throw new Error('User already exists');
       }
 
       const client = await clerkClient();
@@ -122,12 +133,12 @@ export const investorRouter = createTRPCRouter({
       });
 
       if (!clerkUser) {
-        throw new Error("Failed to create user in Clerk.");
+        throw new Error('Failed to create user in Clerk.');
       }
 
       const user = await ctx.db.user.create({
         data: {
-          id: clerkUser ? clerkUser.id : "",
+          id: clerkUser ? clerkUser.id : '',
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.INVESTOR,
@@ -135,12 +146,7 @@ export const investorRouter = createTRPCRouter({
       });
 
       if (input.referralToken) {
-        await createReferralLink(
-          input.referralToken,
-          user.id,
-          input.firstName,
-          input.lastName,
-        );
+        await createReferralLink(input.referralToken, user.id, input.firstName, input.lastName);
       }
 
       return ctx.db.investor.create({
@@ -154,7 +160,7 @@ export const investorRouter = createTRPCRouter({
           currency: input.currency,
           userId: user.id,
           areas: {
-            connect: input.areas.map((area) => ({
+            connect: input.areas.map(area => ({
               id: area.toString(),
             })),
           },
@@ -174,7 +180,7 @@ export const investorRouter = createTRPCRouter({
         state: z.string().min(1),
         country: z.string().min(1),
         currency: z.nativeEnum(Currency).optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       if (input.photo) {
@@ -209,5 +215,35 @@ export const investorRouter = createTRPCRouter({
           },
         },
       });
+    }),
+  favoriteOrUnfavorite: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const investor = await ctx.db.investor.findUniqueOrThrow({
+        where: { userId: ctx.auth.userId },
+        include: {
+          favoriteProjects: true,
+        },
+      });
+
+      const favorite = investor.favoriteProjects.find(favorite => favorite.id === input.projectId);
+
+      if (favorite) {
+        await ctx.db.investor.update({
+          where: { id: investor.id },
+          data: {
+            favoriteProjects: {
+              disconnect: { id: input.projectId },
+            },
+          },
+        });
+      } else {
+        await ctx.db.investor.update({
+          where: { id: investor.id },
+          data: {
+            favoriteProjects: { connect: { id: input.projectId } },
+          },
+        });
+      }
     }),
 });

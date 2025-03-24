@@ -7,6 +7,7 @@ import {
   MapPin,
   User,
   Calendar,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -15,16 +16,51 @@ import { api } from "~/utils/api";
 import { formatCurrency, formatStage } from "~/utils/format";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
 export default function CompanyDetails() {
   const router = useRouter();
   const { companyId } = router.query;
   const { user } = useUser();
+  const isInvestor = user?.publicMetadata.userType === "INVESTOR";
 
   const { data: project, isLoading } = api.project.getById.useQuery(
     { id: companyId as string },
     { enabled: !!companyId },
   );
+
+  const { data: investor } = api.investor.getByUserId.useQuery(
+    undefined,
+    { enabled: !!isInvestor }
+  );
+  
+  // Check if the current project is in the investor's favorites
+  const isFavorite = useMemo(() => {
+    if (!investor?.favoriteProjects || !companyId) return false;
+    return investor.favoriteProjects.some(
+      (favoriteProject) => favoriteProject.id === companyId
+    );
+  }, [investor?.favoriteProjects, companyId]);
+  
+  const favoriteOrUnfavoriteMutation = api.investor.favoriteOrUnfavorite.useMutation({
+    onSuccess: () => {
+      // Refetch investor data to update the favorites list
+      void utils.investor.getByUserId.invalidate();
+      toast.success(`${isFavorite ? "Removed from" : "Added to"} favorites!`);
+    },
+    onError: () => {
+      toast.error(`Failed to ${isFavorite ? "remove" : "add"} favorite.`);
+    },
+  });
+
+  const utils = api.useUtils();
+  
+  const handleFavoriteClick = () => {
+    if (companyId) {
+      favoriteOrUnfavoriteMutation.mutate({ projectId: companyId as string });
+    }
+  };
 
   if (isLoading || !project) {
     return (
@@ -36,8 +72,6 @@ export default function CompanyDetails() {
       </main>
     );
   }
-
-  const isInvestor = user?.publicMetadata.userType === "INVESTOR";
 
   const handleScheduleMeeting = async () => {
     // TODO: Implement meeting scheduling
@@ -81,9 +115,23 @@ export default function CompanyDetails() {
           <div className="mt-0 flex-1 sm:mt-2">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
               <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-semibold sm:text-3xl">
-                  {project.name}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-semibold sm:text-3xl">
+                    {project.name}
+                  </h1>
+                  {isInvestor && (
+                    <button
+                      onClick={handleFavoriteClick}
+                      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
+                      aria-label={isFavorite ? `Remove ${project.name} from favorites` : `Add ${project.name} to favorites`}
+                      disabled={favoriteOrUnfavoriteMutation.isPending}
+                    >
+                      <Heart 
+                        className={`h-5 w-5 transition-all ${favoriteOrUnfavoriteMutation.isPending ? 'opacity-50' : ''} duration-300 ${isFavorite ? 'fill-[#EFD687] text-[#EFD687]' : 'fill-transparent'}`} 
+                      />
+                    </button>
+                  )}
+                </div>
                 <p className="text-sm text-white/60 sm:text-base">
                   {project.quickSolution ?? "No description available"}
                 </p>
