@@ -36,7 +36,7 @@ export const EntrepreneurProfile = () => {
     );
   }
 
-  if (isEditing) {
+  if (isEditing || !entrepreneur?.country) {
     return (
       <EntrepreneurForm
         entrepreneur={entrepreneur}

@@ -17,7 +17,7 @@ export const InvestorProfile = () => {
       </div>
     );
   }
-  if (isEditing) {
+  if (isEditing || !investor?.country) {
     return (
       <InvestorForm investor={investor} onCancel={() => setIsEditing(false)} />
     );
