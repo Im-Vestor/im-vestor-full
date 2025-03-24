@@ -28,6 +28,32 @@ export const entrepreneurRouter = createTRPCRouter({
       },
     });
   }),
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.entrepreneur.findUniqueOrThrow({
+        where: { id: input.id },
+        include: {
+          projects: {
+            include: {
+              state: true,
+              country: true,
+              sector: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+          country: true,
+          state: true,
+          user: {
+            select: {
+              id: true,
+            }
+          }
+        },
+      });
+    }),
   create: publicProcedure
     .input(
       z.object({

@@ -182,7 +182,7 @@ export default function Investors() {
                   </p>
                 )}
               </div>
-              <div className="mt-4 flex items-center justify-end gap-2">
+              <div className="mt-8 flex items-center justify-end gap-2">
                 <p className="text-sm text-white/50">
                   {isLoading
                     ? "Loading investors..."

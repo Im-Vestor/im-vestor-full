@@ -23,7 +23,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
       <LanguageProvider>
-        <Toaster />
+        <Toaster theme="dark" />
         <SpeedInsights />
         <Analytics />
         <Head>

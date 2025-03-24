@@ -18,6 +18,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function CompanyDetails() {
   const router = useRouter();
@@ -74,6 +75,7 @@ export default function CompanyDetails() {
   }
 
   const handleScheduleMeeting = async () => {
+    toast.error('Meeting scheduling is not available yet.');
     // TODO: Implement meeting scheduling
     // if (companyId) {
     //   await router.push(`/meetings/schedule?companyId=${companyId as string}`);
@@ -192,7 +194,8 @@ export default function CompanyDetails() {
             <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">
               Founder
             </h2>
-            <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
+            <Link href={`/entrepreneur/${project.Entrepreneur?.id}`} className="hover:opacity-75">
+              <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
               {project.Entrepreneur?.photo ? (
                 <Image
                   src={project.Entrepreneur.photo}
@@ -214,9 +217,10 @@ export default function CompanyDetails() {
                 <p className="text-xs text-white/70 sm:text-sm">
                   {project.Entrepreneur?.state?.name},{" "}
                   {project.Entrepreneur?.country?.name}
-                </p>
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           </div>
 
           <div>

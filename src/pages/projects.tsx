@@ -124,7 +124,7 @@ export default function Companies() {
       <Header />
       <div className="mt-12">
         <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:flex-row md:px-16 md:py-12">
-          <div className="w-full md:w-1/5 border-r border border-white">
+          <div className="w-full md:w-1/5">
             <p className="font-medium">Sector</p>
             <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
               {visibleAreas?.map(area => (
@@ -226,9 +226,6 @@ export default function Companies() {
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="mt-4">
-              <p className="text-sm text-white/50">{isLoading && 'Loading projects...'}</p>
-            </div>
             <div className="mt-4 flex flex-col gap-4">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
@@ -244,7 +241,7 @@ export default function Companies() {
                 </p>
               )}
             </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
+            <div className="mt-8 flex items-center justify-end gap-2">
               <p className="text-sm text-white/50">
                 {isLoading
                   ? 'Loading projects...'

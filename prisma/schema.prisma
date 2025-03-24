@@ -84,6 +84,9 @@ model User {
 
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
+    
+    followingConnections Connection[] @relation("Follower")
+    followerConnections  Connection[] @relation("Following")
 }
 
 model Partner {
@@ -237,4 +240,17 @@ model File {
 
     Project   Project? @relation(fields: [projectId], references: [id])
     projectId String?
+}
+
+model Connection {
+    id          String   @id @default(uuid())
+    createdAt   DateTime @default(now())
+    
+    follower    User     @relation("Follower", fields: [followerId], references: [id])
+    followerId  String
+    
+    following   User     @relation("Following", fields: [followingId], references: [id])
+    followingId String
+    
+    @@unique([followerId, followingId])
 }

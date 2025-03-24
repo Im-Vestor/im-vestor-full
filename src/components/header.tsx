@@ -1,10 +1,11 @@
 import { useClerk, useUser } from "@clerk/nextjs";
 import { type UserType } from "@prisma/client";
-import { LogOut, Mail, Menu, User, X } from "lucide-react";
+import { LogOut, Mail, Menu, User, Users, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { api } from "~/utils/api";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -12,7 +13,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { api } from "~/utils/api";
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -155,16 +155,21 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => void handleNavigation("/profile")}>
+                <DropdownMenuItem onClick={() => void handleNavigation("/profile")} className="hover:cursor-pointer">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")}>
+                <DropdownMenuItem onClick={() => void handleNavigation("/connections")} className="hover:cursor-pointer">
+                  <Users className="h-4 w-4 mr-2" />
+                  Connections
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")} className="hover:cursor-pointer">
                   <Mail className="h-4 w-4 mr-2" />
                   Referrals
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ redirectUrl: "/login" })}
+                  className="hover:cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign out
