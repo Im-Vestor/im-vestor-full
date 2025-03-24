@@ -1,30 +1,28 @@
-import { Currency, type Prisma, ProjectStage } from "@prisma/client";
-import { z } from "zod";
+import { Currency, type Prisma, ProjectStage } from '@prisma/client';
+import { z } from 'zod';
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const projectRouter = createTRPCRouter({
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.project.findUniqueOrThrow({
-        where: { id: input.id },
-        include: {
-          sector: true,
-          Entrepreneur: {
-            include: {
-              state: true,
-              country: true,
-            },
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    return ctx.db.project.findUniqueOrThrow({
+      where: { id: input.id },
+      include: {
+        sector: true,
+        Entrepreneur: {
+          include: {
+            state: true,
+            country: true,
           },
-          knowYourNumbers: true,
-          files: true,
-          faqs: true,
-          state: true,
-          country: true,
         },
-      });
-    }),
+        knowYourNumbers: true,
+        files: true,
+        faqs: true,
+        state: true,
+        country: true,
+      },
+    });
+  }),
   getAllWithFilters: protectedProcedure
     .input(
       z.object({
@@ -37,10 +35,20 @@ export const projectRouter = createTRPCRouter({
         maxInitialInvestment: z.number().optional(),
         searchQuery: z.string().optional(),
         page: z.number().optional(),
-      }),
+        favorites: z.boolean().optional(),
+      })
     )
     .query(async ({ ctx, input }) => {
       const where: Prisma.ProjectWhereInput = {};
+
+      const investor = await ctx.db.investor.findUniqueOrThrow({
+        where: {
+          userId: ctx.auth.userId,
+        },
+        include: {
+          favoriteProjects: true,
+        },
+      });
 
       if (input.sectorId && input.sectorId.length > 0) {
         where.sectorId = {
@@ -87,7 +95,13 @@ export const projectRouter = createTRPCRouter({
       if (input.searchQuery) {
         where.name = {
           contains: input.searchQuery,
-          mode: "insensitive",
+          mode: 'insensitive',
+        };
+      }
+
+      if (input.favorites) {
+        where.id = {
+          in: investor.favoriteProjects.map(project => project.id),
         };
       }
 
@@ -109,14 +123,17 @@ export const projectRouter = createTRPCRouter({
           sector: true,
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         skip: (input.page ?? 1) * 20,
         take: 20,
       });
 
       return {
-        projects,
+        projects: projects.map(project => ({
+          ...project,
+          isFavorite: investor.favoriteProjects.some(favorite => favorite.id === project.id),
+        })),
         total,
       };
     }),
@@ -144,9 +161,9 @@ export const projectRouter = createTRPCRouter({
           z.object({
             question: z.string(),
             answer: z.string(),
-          }),
+          })
         ),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const project = await ctx.db.project.create({
@@ -216,9 +233,9 @@ export const projectRouter = createTRPCRouter({
           z.object({
             question: z.string(),
             answer: z.string(),
-          }),
+          })
         ),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       await ctx.db.projectFaq.deleteMany({
@@ -288,7 +305,7 @@ export const projectRouter = createTRPCRouter({
         name: z.string(),
         type: z.string(),
         size: z.number(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const file = await ctx.db.file.create({
@@ -306,7 +323,7 @@ export const projectRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const investor = await ctx.db.investor.findUniqueOrThrow({
@@ -323,37 +340,5 @@ export const projectRouter = createTRPCRouter({
       });
 
       return projectView;
-    }),
-  favoriteOrUnfavorite: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const investor = await ctx.db.investor.findUniqueOrThrow({
-        where: { userId: ctx.auth.userId },
-        include: {
-          favoriteProjects: true,
-        },
-      });
-
-      const favorite = investor.favoriteProjects.find(
-        (favorite) => favorite.id === input.projectId,
-      );
-
-      if (favorite) {
-        await ctx.db.investor.update({
-          where: { id: investor.id },
-          data: {
-            favoriteProjects: {
-              disconnect: { id: input.projectId },
-            },
-          },
-        });
-      } else {
-        await ctx.db.investor.update({
-          where: { id: investor.id },
-          data: {
-            favoriteProjects: { connect: { id: input.projectId } },
-          },
-        });
-      }
     }),
 });

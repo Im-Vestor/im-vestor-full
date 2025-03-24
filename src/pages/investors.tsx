@@ -39,7 +39,6 @@ type InvestorWithRelations = Investor & {
 
 export default function Investors() {
   const { data: areas } = api.area.getAll.useQuery();
-  const [showAllAreas, setShowAllAreas] = useState(false);
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -163,7 +162,7 @@ export default function Investors() {
                 <SearchIcon className="ml-3 h-5 w-5 text-white" />
                 <Input
                   placeholder="Search investors by name"
-                  className="bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

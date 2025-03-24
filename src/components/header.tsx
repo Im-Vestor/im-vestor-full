@@ -35,8 +35,8 @@ const ENTREPRENEUR_MENUS = [
 
 const INVESTOR_MENUS = [
   {
-    label: "Companies",
-    href: "/companies",
+    label: "Projects",
+    href: "/projects",
   },
   {
     label: "Meetings",
