@@ -84,7 +84,7 @@ model User {
 
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
-    
+
     followingConnections Connection[] @relation("Follower")
     followerConnections  Connection[] @relation("Following")
 }
@@ -101,23 +101,23 @@ model Partner {
 }
 
 model Investor {
-    id                     String    @id @default(uuid())
-    firstName              String
-    lastName               String
-    mobileFone             String?
-    fiscalCode             String?
-    investmentMinValue     Float
-    investmentMaxValue     Float
-    birthDate              DateTime?
-    photo                  String?
-    banner                 String?
-    about                  String?
-    currency               Currency  @default(USD)
-    state                  State?    @relation(fields: [stateId], references: [id])
-    country                Country?  @relation(fields: [countryId], references: [id])
+    id                 String    @id @default(uuid())
+    firstName          String
+    lastName           String
+    mobileFone         String?
+    fiscalCode         String?
+    investmentMinValue Float
+    investmentMaxValue Float
+    birthDate          DateTime?
+    photo              String?
+    banner             String?
+    about              String?
+    currency           Currency  @default(USD)
+    state              State?    @relation(fields: [stateId], references: [id])
+    country            Country?  @relation(fields: [countryId], references: [id])
 
-    favoriteProjects Project[] @relation("FavoriteInvestors")
-    investedProjects Project[] @relation("InvestedInvestors")
+    favoriteProjects Project[]     @relation("FavoriteInvestors")
+    investedProjects Project[]     @relation("InvestedInvestors")
     projectViews     ProjectView[]
     areas            Area[]
 
@@ -192,10 +192,10 @@ model Project {
     Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
 
-    favoriteInvestors Investor[] @relation("FavoriteInvestors")
+    favoriteInvestors  Investor[] @relation("FavoriteInvestors")
     favoriteInvestorId String?
 
-    investedInvestors Investor[] @relation("InvestedInvestors")
+    investedInvestors  Investor[] @relation("InvestedInvestors")
     investedInvestorId String?
 
     sector    Area   @relation(fields: [sectorId], references: [id])
@@ -205,11 +205,20 @@ model Project {
 }
 
 model KnowYourNumbers {
-    id    String @id @default(uuid())
-    notes String
+    id      String   @id @default(uuid())
+    answers Answer[]
 
     project   Project @relation(fields: [projectId], references: [id])
     projectId String  @unique
+}
+
+model Answer {
+    id                String           @id @default(uuid())
+    answer            String
+    questionId        String
+    
+    KnowYourNumbers   KnowYourNumbers? @relation(fields: [knowYourNumbersId], references: [id])
+    knowYourNumbersId String?
 }
 
 model ProjectFaq {
@@ -243,14 +252,14 @@ model File {
 }
 
 model Connection {
-    id          String   @id @default(uuid())
-    createdAt   DateTime @default(now())
-    
-    follower    User     @relation("Follower", fields: [followerId], references: [id])
-    followerId  String
-    
-    following   User     @relation("Following", fields: [followingId], references: [id])
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+
+    follower   User   @relation("Follower", fields: [followerId], references: [id])
+    followerId String
+
+    following   User   @relation("Following", fields: [followingId], references: [id])
     followingId String
-    
+
     @@unique([followerId, followingId])
 }

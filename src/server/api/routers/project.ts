@@ -15,7 +15,11 @@ export const projectRouter = createTRPCRouter({
             country: true,
           },
         },
-        knowYourNumbers: true,
+        knowYourNumbers: {
+          include: {
+            answers: true,
+          },
+        },
         files: true,
         faqs: true,
         state: true,
@@ -277,7 +281,12 @@ export const projectRouter = createTRPCRouter({
       return updatedProject;
     }),
   updateKnowYourNumbers: protectedProcedure
-    .input(z.object({ id: z.string(), notes: z.string() }))
+    .input(
+      z.object({
+        id: z.string(),
+        answers: z.array(z.object({ questionId: z.string(), answer: z.string() })),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const knowYourNumbers = await ctx.db.knowYourNumbers.findUnique({
         where: { projectId: input.id },
@@ -285,17 +294,27 @@ export const projectRouter = createTRPCRouter({
 
       if (!knowYourNumbers) {
         await ctx.db.knowYourNumbers.create({
-          data: {
-            projectId: input.id,
-            notes: input.notes,
-          },
-        });
-      } else {
-        await ctx.db.knowYourNumbers.update({
-          where: { projectId: input.id },
-          data: { notes: input.notes },
+          data: { projectId: input.id },
         });
       }
+
+      // Delete all existing answers
+      await ctx.db.answer.deleteMany({
+        where: { knowYourNumbersId: knowYourNumbers?.id },
+      });
+
+      // Create new answers
+      await ctx.db.knowYourNumbers.update({
+        where: { projectId: input.id },
+        data: {
+          answers: {
+            create: input.answers.map(answer => ({
+              answer: answer.answer,
+              questionId: answer.questionId,
+            })),
+          },
+        },
+      });
     }),
   addFile: protectedProcedure
     .input(
