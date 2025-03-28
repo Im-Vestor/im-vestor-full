@@ -63,12 +63,16 @@ export const partnerRouter = createTRPCRouter({
       });
 
       if (input.referralToken) {
-        await createReferralLink(
-          input.referralToken,
-          user.id,
-          input.firstName,
-          input.lastName,
-        );
+        try {
+          await createReferralLink(
+            input.referralToken,
+            user.id,
+            input.firstName,
+            input.lastName,
+          );
+        } catch (error) {
+          console.error("Failed to create referral link", error);
+        }
       }
 
       return ctx.db.partner.create({

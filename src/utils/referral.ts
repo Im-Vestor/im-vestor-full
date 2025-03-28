@@ -22,6 +22,10 @@ export async function createReferralLink(
     where: { referralCode: referralToken },
   });
 
+  if (!referralUser) {
+    throw new Error("Referral user not found");
+  }
+
   await db.referral.create({
     data: {
       name: `${referredFirstName} ${referredLastName}`,
