@@ -141,6 +141,28 @@ export const projectRouter = createTRPCRouter({
         total,
       };
     }),
+  getLast10ViewsInProject: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const views = await ctx.db.projectView.findMany({
+        where: {
+          projectId: input.id,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          investor: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+        take: 10,
+      });
+
+      return views;
+    }),
   create: protectedProcedure
     .input(
       z.object({
@@ -345,11 +367,16 @@ export const projectRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const investor = await ctx.db.investor.findUniqueOrThrow({
+      const investor = await ctx.db.investor.findUnique({
         where: {
           userId: ctx.auth.userId,
         },
       });
+
+      if (!investor) {
+        console.error('Investor not found');
+        return;
+      }
 
       const projectView = await ctx.db.projectView.create({
         data: {

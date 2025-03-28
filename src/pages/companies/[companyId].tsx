@@ -9,6 +9,7 @@ import {
   Calendar,
   Heart,
   Presentation,
+  MessageCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -20,6 +21,7 @@ import { Button } from '~/components/ui/button';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function CompanyDetails() {
   const { user } = useUser();
@@ -32,6 +34,8 @@ export default function CompanyDetails() {
     { id: companyId as string },
     { enabled: !!companyId }
   );
+
+  const isProjectOwner = user?.id === project?.Entrepreneur?.userId;
 
   const { data: investor } = api.investor.getByUserId.useQuery(undefined, {
     enabled: !!isInvestor,
@@ -69,7 +73,7 @@ export default function CompanyDetails() {
     if (companyId) {
       void addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
   if (isLoading || !project) {
@@ -84,7 +88,7 @@ export default function CompanyDetails() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8 pb-48">
       <Header />
       <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8">
         {/* Company Header */}
@@ -328,6 +332,46 @@ export default function CompanyDetails() {
           </div>
         )}
       </div>
+
+      {isProjectOwner && <ProjectViews projectId={companyId as string} />}
     </main>
+  );
+}
+
+export function ProjectViews({ projectId }: { projectId: string }) {
+  const { data: views } = api.project.getLast10ViewsInProject.useQuery({ id: projectId });
+
+  return (
+    <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8 mt-8">
+      <h2 className="text-lg font-semibold sm:text-xl">Project Views</h2>
+      <div className="space-y-4 sm:mt-6 sm:space-y-6">
+        {views &&
+          views.length > 0 &&
+          views?.map(view => (
+            <div key={view.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                  <User className="size-3 text-neutral-200 sm:size-4" />
+                </div>
+
+                <p className="font-medium">Investor</p>
+
+                <p className=" text-white/50">({view.investor?.userId}) viewed your project</p>
+
+                <p className="font-medium">
+                  {formatDistanceToNow(view.createdAt, { addSuffix: true })}
+                </p>
+              </div>
+
+              <Button variant="secondary" size="sm">
+                <MessageCircle className="size-4" />
+                Send a Poke
+              </Button>
+            </div>
+          ))}
+
+        {views && views.length === 0 && <p className="text-sm text-white/50">No views yet</p>}
+      </div>
+    </div>
   );
 }

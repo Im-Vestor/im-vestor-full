@@ -68,6 +68,7 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
   const utils = api.useUtils();
 
   const user = connection.user;
+  const userType = user.userType;
   const firstName = user.entrepreneur?.firstName ?? user.investor?.firstName ?? user.partner?.firstName ?? '';
   const lastName = user.entrepreneur?.lastName ?? user.investor?.lastName ?? user.partner?.lastName ?? '';
 
@@ -82,7 +83,7 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
   });
 
   return (
-    <Link href={`/entrepreneur/${user.id}`}>
+    <Link href={`/${userType.toLowerCase()}/${user.id}`}>
       <div
         key={connection.connection.id}
         className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
