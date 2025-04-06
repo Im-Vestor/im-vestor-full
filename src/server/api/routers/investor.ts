@@ -6,6 +6,18 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/
 import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const investorRouter = createTRPCRouter({
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.investor.findUnique({
+        where: { id: input.id },
+        include: {
+          country: true,
+          state: true,
+          areas: true,
+        },
+      });
+    }),
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.investor.findUnique({
       where: { userId: ctx.auth.userId },

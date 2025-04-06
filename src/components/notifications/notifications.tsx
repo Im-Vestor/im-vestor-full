@@ -1,13 +1,13 @@
+import { NotificationType } from '@prisma/client';
+import { Bell, Trash2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Button } from '../ui/button';
-import { Bell, Loader2, Trash2 } from 'lucide-react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { NotificationType } from '@prisma/client';
 
 import { formatDistanceToNow } from 'date-fns';
 

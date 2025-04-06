@@ -44,6 +44,10 @@ const INVESTOR_MENUS = [
     href: "/meetings",
   },
   {
+    label: "Daily Pitches",
+    href: "/daily-pitches",
+  },
+  {
     label: "News",
     href: "/news/investor",
   },
