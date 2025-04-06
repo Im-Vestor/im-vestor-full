@@ -85,8 +85,9 @@ model User {
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
 
-    followingConnections Connection[] @relation("Follower")
-    followerConnections  Connection[] @relation("Following")
+    followingConnections Connection[]   @relation("Follower")
+    followerConnections  Connection[]   @relation("Following")
+    Notification         Notification[]
 }
 
 model Partner {
@@ -213,10 +214,10 @@ model KnowYourNumbers {
 }
 
 model Answer {
-    id                String           @id @default(uuid())
-    answer            String
-    questionId        String
-    
+    id         String @id @default(uuid())
+    answer     String
+    questionId String
+
     KnowYourNumbers   KnowYourNumbers? @relation(fields: [knowYourNumbersId], references: [id])
     knowYourNumbersId String?
 }
@@ -262,4 +263,25 @@ model Connection {
     followingId String
 
     @@unique([followerId, followingId])
+}
+
+enum NotificationType {
+    PROJECT_VIEW
+    // POKE
+    // MESSAGE
+    // INVESTMENT_REQUEST
+    // INVESTMENT_CONFIRMATION
+    // INVESTMENT_REJECTED
+    // INVESTMENT_CONFIRMED
+    // INVESTMENT_CANCELLED
+}
+
+model Notification {
+    id        String           @id @default(uuid())
+    createdAt DateTime         @default(now())
+    type      NotificationType
+    read      Boolean          @default(false)
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
 }

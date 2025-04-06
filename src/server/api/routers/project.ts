@@ -1,4 +1,4 @@
-import { Currency, type Prisma, ProjectStage } from '@prisma/client';
+import { Currency, NotificationType, type Prisma, ProjectStage } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
@@ -367,6 +367,20 @@ export const projectRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUnique({
+        where: {
+          id: input.projectId,
+        },
+        include: {
+          Entrepreneur: true,
+        },
+      });
+
+      if (!project) {
+        console.error('Project not found');
+        return;
+      }
+      
       const investor = await ctx.db.investor.findUnique({
         where: {
           userId: ctx.auth.userId,
@@ -377,6 +391,13 @@ export const projectRouter = createTRPCRouter({
         console.error('Investor not found');
         return;
       }
+
+      await ctx.db.notification.create({
+        data: {
+          userId: project.Entrepreneur?.userId ?? '',
+          type: NotificationType.PROJECT_VIEW,
+        },
+      });
 
       const projectView = await ctx.db.projectView.create({
         data: {

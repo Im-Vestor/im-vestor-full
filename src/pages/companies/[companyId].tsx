@@ -1,27 +1,26 @@
+import { useUser } from '@clerk/nextjs';
+import { formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
   Building2,
+  Calendar,
   CircleUserRound,
-  Globe,
+  Heart,
   Loader2,
   MapPin,
-  User,
-  Calendar,
-  Heart,
-  Presentation,
   MessageCircle,
+  Presentation,
+  User
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Header } from '~/components/header';
-import { api } from '~/utils/api';
-import { formatCurrency, formatStage } from '~/utils/format';
-import { useUser } from '@clerk/nextjs';
-import { Button } from '~/components/ui/button';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import Link from 'next/link';
-import { formatDistanceToNow } from 'date-fns';
+import { Header } from '~/components/header';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
+import { formatCurrency, formatStage } from '~/utils/format';
 
 export default function CompanyDetails() {
   const { user } = useUser();
@@ -154,25 +153,7 @@ export default function CompanyDetails() {
                     <span>Location not specified</span>
                   )}
 
-                  {project.website && (
-                    <>
-                      <span className="mx-2">•</span>
-                      <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <a
-                        href={
-                          project.website.startsWith('http')
-                            ? project.website
-                            : `https://${project.website}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="max-w-[200px] truncate hover:underline sm:max-w-none"
-                      >
-                        {project.website}
-                      </a>
-                    </>
-                  )}
-
+                
                   <span className="mx-2">•</span>
                   <span className="w-fit rounded-full bg-[#EFD687] px-2 py-0.5 text-sm text-black sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}

@@ -1,11 +1,12 @@
 import { useClerk, useUser } from "@clerk/nextjs";
 import { type UserType } from "@prisma/client";
-import { LogOut, Mail, Menu, User, Users, X } from "lucide-react";
+import { Book, LogOut, Mail, Menu, User, Users, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
+import { Notifications } from "./notifications/notifications";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -136,7 +137,9 @@ export const Header = () => {
 
         {/* User Profile / Login */}
         {isSignedIn ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
+            <Notifications />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 md:gap-4">
@@ -166,6 +169,10 @@ export const Header = () => {
                 <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")} className="hover:cursor-pointer">
                   <Mail className="h-4 w-4 mr-2" />
                   Referrals
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleNavigation("/terms")} className="hover:cursor-pointer">
+                  <Book className="h-4 w-4 mr-2" />
+                  Terms
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ redirectUrl: "/login" })}
