@@ -3,21 +3,23 @@ import { Bell, Trash2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Button } from '../ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
 import { formatDistanceToNow } from 'date-fns';
 
 const NotificationTextMap = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
+  [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
+  [NotificationType.MEETING_CREATED]: 'A meeting has been created',
 };
 
 export const Notifications = () => {
   const utils = api.useUtils();
-  
+
   const { data: notifications, isFetching: isFetchingNotifications } =
     api.notifications.getUnreadNotifications.useQuery();
 
@@ -48,10 +50,9 @@ export const Notifications = () => {
         {notifications?.map(notification => (
           <DropdownMenuItem
             key={notification.id}
-            className="flex items-center gap-2 focus:bg-transparent focus:text-foreground"
+            className="flex items-center gap-1 focus:bg-transparent focus:text-foreground pl-4"
             disabled={isReadingNotification}
           >
-            <Bell fill="currentColor" className="size-2" />
             {NotificationTextMap[notification.type]}
             <span className="text-sm text-muted-foreground">
               {formatDistanceToNow(notification.createdAt, { addSuffix: true })}

@@ -127,6 +127,26 @@ model Investor {
 
     stateId   Int?
     countryId Int?
+
+    meetings Meeting[] @relation("MeetingInvestors")
+}
+
+model Meeting {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    name      String
+    url       String
+    startDate DateTime
+    endDate   DateTime
+
+    project   Project? @relation(fields: [projectId], references: [id])
+    projectId String?
+
+    entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
+    entrepreneurId String?
+
+    investors Investor[] @relation("MeetingInvestors")
 }
 
 model Entrepreneur {
@@ -144,6 +164,8 @@ model Entrepreneur {
     state       State?    @relation(fields: [stateId], references: [id])
     country     Country?  @relation(fields: [countryId], references: [id])
 
+    preferredHours PreferredHours[]
+
     projects Project[]
 
     userId String @unique
@@ -151,6 +173,22 @@ model Entrepreneur {
 
     stateId   Int?
     countryId Int?
+    meetings  Meeting[]
+}
+
+model PreferredHours {
+    id     String               @id @default(uuid())
+    period PreferredHoursPeriod
+    time   String
+
+    entrepreneur   Entrepreneur @relation(fields: [entrepreneurId], references: [id])
+    entrepreneurId String
+}
+
+enum PreferredHoursPeriod {
+    MORNING
+    AFTERNOON
+    EVENING
 }
 
 enum ProjectStage {
@@ -199,10 +237,11 @@ model Project {
     investedInvestors  Investor[] @relation("InvestedInvestors")
     investedInvestorId String?
 
-    sector    Area   @relation(fields: [sectorId], references: [id])
+    sector    Area      @relation(fields: [sectorId], references: [id])
     sectorId  String
     countryId Int?
     stateId   Int?
+    Meeting   Meeting[]
 }
 
 model KnowYourNumbers {
@@ -267,6 +306,8 @@ model Connection {
 
 enum NotificationType {
     PROJECT_VIEW
+    MEETING_CREATED
+    MEETING_CANCELLED
     // POKE
     // MESSAGE
     // INVESTMENT_REQUEST

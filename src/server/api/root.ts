@@ -10,7 +10,8 @@ import { adminRouter } from "./routers/admin";
 import { partnerRouter } from "./routers/partner";
 import { connectionRouter } from "./routers/connection";
 import { notificationsRouter } from "./routers/notifications";
-
+import { meetingRouter } from "./routers/meeting";
+import { preferredHoursRouter } from "./routers/preferred-hours";
 export const appRouter = createTRPCRouter({
   area: areaRouter,
   country: countryRouter,
@@ -23,6 +24,8 @@ export const appRouter = createTRPCRouter({
   admin: adminRouter,
   connection: connectionRouter,
   notifications: notificationsRouter,
+  meeting: meetingRouter,
+  preferredHours: preferredHoursRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,26 +1,60 @@
 import { useUser } from '@clerk/nextjs';
-import { formatDistanceToNow } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
+import { addYears, formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
   Building2,
-  Calendar,
+  Calendar1Icon,
   CircleUserRound,
   Heart,
   Loader2,
   MapPin,
   MessageCircle,
   Presentation,
-  User
+  User,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
+import { Calendar } from '~/components/ui/calendar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
+import { Label } from '~/components/ui/label';
+import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+
+const availableHours = [
+  '07:00',
+  '08:00',
+  '09:00',
+  '10:00',
+  '11:00',
+  '12:00',
+  '13:00',
+  '14:00',
+  '15:00',
+  '16:00',
+  '17:00',
+  '18:00',
+  '19:00',
+  '20:00',
+  '21:00',
+  '22:00',
+  '23:00',
+  '00:00',
+];
 
 export default function CompanyDetails() {
   const { user } = useUser();
@@ -29,9 +63,19 @@ export default function CompanyDetails() {
   const { companyId } = router.query;
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
+  const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
+
+  const [date, setDate] = useState<Date | null>(null);
+  const [time, setTime] = useState<string | null>(null);
+
   const { data: project, isLoading } = api.project.getById.useQuery(
     { id: companyId as string },
     { enabled: !!companyId }
+  );
+
+  const { data: preferredHours } = api.preferredHours.getPreferredHoursByEntrepreneurId.useQuery(
+    { entrepreneurId: project?.Entrepreneur?.id ?? '' },
+    { enabled: !!project?.Entrepreneur?.id }
   );
 
   const isProjectOwner = user?.id === project?.Entrepreneur?.userId;
@@ -41,6 +85,14 @@ export default function CompanyDetails() {
   });
 
   const addInvestorViewMutation = api.project.addView.useMutation();
+  const scheduleMeetingMutation = api.meeting.scheduleMeeting.useMutation({
+    onSuccess: () => {
+      toast.success('Meeting scheduled successfully');
+    },
+    onError: error => {
+      toast.error(error.message);
+    },
+  });
 
   // Check if the current project is in the investor's favorites
   const isFavorite = useMemo(() => {
@@ -65,7 +117,14 @@ export default function CompanyDetails() {
   };
 
   const handleScheduleMeeting = async () => {
-    toast.error('Meeting scheduling is not available yet.');
+    if (companyId) {
+      scheduleMeetingMutation.mutate({
+        entrepreneurId: project?.Entrepreneur?.id ?? '',
+        date: date ?? new Date(),
+        investorIds: [investor?.id ?? ''],
+        projectId: companyId as string,
+      });
+    }
   };
 
   useEffect(() => {
@@ -153,7 +212,6 @@ export default function CompanyDetails() {
                     <span>Location not specified</span>
                   )}
 
-                
                   <span className="mx-2">•</span>
                   <span className="w-fit rounded-full bg-[#EFD687] px-2 py-0.5 text-sm text-black sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}
@@ -163,9 +221,85 @@ export default function CompanyDetails() {
               <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
                 {isInvestor && (
                   <>
-                    <Button onClick={handleScheduleMeeting} variant="secondary">
-                      <Calendar className="mr-2 h-4 w-4" /> Schedule Meeting
-                    </Button>
+                    <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
+                      <DialogTrigger>
+                        <Button disabled={scheduleMeetingMutation.isPending}>
+                          <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule Meeting
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Schedule Meeting</DialogTitle>
+                          <DialogDescription>
+                            Select a date and time for your meeting.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-8">
+                          <div className="flex flex-col gap-2">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              showOutsideDays={false}
+                              fromDate={new UTCDate()}
+                              toDate={addYears(new UTCDate(), 1)}
+                              selected={date ?? undefined}
+                              onSelect={date => {
+                                setDate(date ?? null);
+                                setTime(null);
+                              }}
+                              fromYear={2025}
+                              toYear={2030}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Label>Time</Label>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {availableHours.map((hour, i) => (
+                                <div
+                                  key={i}
+                                  className={cn(
+                                    'rounded-md border border-white/10 p-2 text-sm text-white/50',
+                                    time === hour && 'bg-white/10 text-white'
+                                  )}
+                                  onClick={() => setTime(hour)}
+                                >
+                                  {hour}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Label>Entrepreneur Preferred Hours</Label>
+                            {preferredHours?.length === 0 && (
+                              <p className="text-sm text-white/50">
+                                The entrepreneur has not set any preferred hours.
+                              </p>
+                            )}
+                            <div className="flex flex-col gap-2">
+                              {preferredHours?.map(hour => (
+                                <div
+                                  key={hour.id}
+                                  className="rounded-md border border-white/10 p-2 text-sm text-white/50 flex flex-row justify-between"
+                                >
+                                  <span className="text-xs text-white/50 font-medium">
+                                    {hour.period}
+                                  </span>
+                                  <span className="text-xs text-white/50 font-medium">
+                                    {hour.time}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleScheduleMeeting} disabled={!date || !time}>
+                            Schedule Meeting
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
                     <Button variant="secondary" disabled>
                       <Presentation className="mr-2 h-4 w-4" /> Request Pitch{' '}
                       <span className="text-xs text-white/50">Coming soon</span>
