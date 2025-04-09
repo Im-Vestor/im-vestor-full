@@ -103,6 +103,13 @@ export const meetingRouter = createTRPCRouter({
 
       console.log('meeting created', meeting);
 
+      await ctx.db.notification.create({
+        data: {
+          userId: input.entrepreneurId,
+          type: NotificationType.MEETING_CREATED,
+        },
+      });
+
       return meeting;
     }),
   cancelMeeting: protectedProcedure
