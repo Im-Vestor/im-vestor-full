@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Copy,
+  CreditCard,
   Facebook,
   Instagram,
   Linkedin,
@@ -10,8 +11,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { BusinessCardDialog } from "~/components/business-card";
 import { Button } from "~/components/ui/button";
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { api } from "~/utils/api";
+
 
 export default function Referral() {
   const { user } = useUser();
@@ -56,11 +60,13 @@ export default function Referral() {
                 Stay tuned for our official launch!
               </span>
             </p>
-            <Link href="/profile" className="w-full md:w-auto">
-              <Button className="mt-8 w-full rounded-full hover:opacity-75 md:w-auto">
-                Get your Business Card <ArrowRight />
-              </Button>
-            </Link>
+            <BusinessCardDialog
+              trigger={
+                <Button className="mt-8 w-full rounded-full hover:opacity-75 md:w-auto">
+                  Get your Business Card <ArrowRight />
+                </Button>
+              }
+            />
           </div>
 
           <div className="relative md:w-80 w-full">

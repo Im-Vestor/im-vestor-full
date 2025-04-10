@@ -49,7 +49,7 @@ export default function ResetPassword() {
       if (isClerkAPIResponseError(err)) {
         toast.error(
           err.errors[0]?.message ??
-            "Failed to reset password. Please try again.",
+          "Failed to reset password. Please try again.",
         );
       } else {
         toast.error("Failed to reset password. Please try again.");
@@ -105,39 +105,46 @@ export default function ResetPassword() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="font-normal text-neutral-200">
-                    New Password*
-                  </Label>
-                  <Input
-                    onChange={(e) => setPassword(e.target.value)}
-                    value={password}
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    disabled={isPending}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-normal text-neutral-200">
-                    Confirm Password*
-                  </Label>
-                  <Input
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    value={confirmPassword}
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    disabled={isPending}
-                  />
-                </div>
+                {code.length > 5 && (
+                  <>
+                    <div className="space-y-2">
+                      <Label className="font-normal text-neutral-200">
+                        New Password*
+                      </Label>
+                      <Input
+                        onChange={(e) => setPassword(e.target.value)}
+                        value={password}
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        disabled={isPending}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-normal text-neutral-200">
+                        Confirm Password*
+                      </Label>
+                      <Input
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={confirmPassword}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        disabled={isPending}
+                      />
+                      {password.length > 0 && confirmPassword.length > 0 && password !== confirmPassword && (
+                        <p className="text-red-500 text-sm">
+                          Passwords do not match
+                        </p>
+                      )}
+                    </div>
+                  </>)}
               </div>
-
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button type="submit" className="w-full" disabled={isPending || password.length > 0 && confirmPassword.length > 0 && password !== confirmPassword}>
                 {isPending ? (
                   "Resetting Password..."
                 ) : (

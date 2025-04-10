@@ -22,10 +22,6 @@ export default function EditCompany() {
   const [answers, setAnswers] = useState<Array<{ questionId: string; answer: string }>>([]);
 
   useEffect(() => {
-    console.log(answers);
-  }, [answers]);
-
-  useEffect(() => {
     if (project?.knowYourNumbers?.answers && project.knowYourNumbers.answers.length > 0) {
       setAnswers(project.knowYourNumbers.answers);
     } else {
@@ -89,8 +85,8 @@ export default function EditCompany() {
               <div>
                 <h2 className="text-xl font-bold">Practical Guide: KNOW YOUR NUMBERS</h2>
                 <h3 className="mt-2 text-lg">
-                How to Answer the 16 Most Frequently Asked Investor Questions
-              </h3>
+                  How to Answer the 16 Most Frequently Asked Investor Questions
+                </h3>
               </div>
               <Button onClick={handleSaveAnswers} disabled={isUpdating}>
                 <Save className="h-4 w-4" /> Save Answers
