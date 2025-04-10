@@ -25,58 +25,93 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { useTranslation } from "~/hooks/use-translation";
 import StarField from "~/components/ui/StarField";
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 60 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
-};
-
-const fadeInDown = {
-  initial: { opacity: 0, y: -60 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
-};
-
-const fadeInLeft = {
-  initial: { opacity: 0, x: -60 },
-  animate: { opacity: 1, x: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
-};
-
-const fadeInRight = {
-  initial: { opacity: 0, x: 60 },
-  animate: { opacity: 1, x: 0 },
-  transition: { duration: 0.8, ease: "easeOut" }
+const fadeIn = {
+  initial: {
+    opacity: 0,
+    filter: "blur(8px)",
+    scale: 0.95
+  },
+  animate: {
+    opacity: 1,
+    filter: "blur(0px)",
+    scale: 1,
+    transition: {
+      duration: 1,
+      ease: [0.25, 0.1, 0.25, 1],
+      opacity: { duration: 0.6 },
+      filter: { duration: 0.8 },
+      scale: { duration: 0.8 }
+    }
+  }
 };
 
 const fadeInScale = {
-  initial: { opacity: 0, scale: 0.8 },
-  animate: { opacity: 1, scale: 1 },
-  transition: { duration: 0.8, ease: "easeOut" }
+  initial: {
+    opacity: 0,
+    scale: 0.85,
+    filter: "blur(10px)"
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.2,
+      ease: [0.34, 1.56, 0.64, 1], // Spring-like easing
+      opacity: { duration: 0.8 },
+      filter: { duration: 0.8 }
+    }
+  }
 };
 
 const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.2,
-      delayChildren: 0.3
+      delayChildren: 0.1,
+      ease: [0.25, 0.1, 0.25, 1]
     }
   }
 };
 
 const popUp = {
-  initial: { opacity: 0, scale: 0.5, y: 20 },
-  animate: { opacity: 1, scale: 1, y: 0 },
-  transition: {
-    duration: 0.8,
-    ease: [0.175, 0.885, 0.32, 1.275]
+  initial: {
+    opacity: 0,
+    scale: 0.8,
+    filter: "blur(10px)"
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease: [0.34, 1.56, 0.64, 1],
+      opacity: { duration: 0.6 },
+      filter: { duration: 0.6 }
+    }
   }
 };
 
 const rotateIn = {
-  initial: { opacity: 0, rotate: -15, scale: 0.9 },
-  animate: { opacity: 1, rotate: 0, scale: 1 },
-  transition: { duration: 1, ease: "easeOut" }
+  initial: {
+    opacity: 0,
+    rotate: -15,
+    scale: 0.9,
+    filter: "blur(10px)"
+  },
+  animate: {
+    opacity: 1,
+    rotate: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1,
+      ease: [0.34, 1.56, 0.64, 1],
+      opacity: { duration: 0.6 },
+      filter: { duration: 0.6 }
+    }
+  }
 };
 
 export default function Home() {
@@ -178,14 +213,14 @@ export default function Home() {
               Im-Vestor
             </motion.span>
             <motion.h1
-              variants={fadeInLeft}
+              variants={fadeIn}
               transition={{ delay: 1.2 }}
               className="mt-16 px-4 font-['Segoe UI'] text-4xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
             >
               {t("weMeanBusiness")}
             </motion.h1>
             <motion.span
-              variants={fadeInRight}
+              variants={fadeIn}
               transition={{ delay: 1.4 }}
               className="mt-6 w-full md:w-2/3 font-['Segoe UI'] text-lg md:text-xl leading-[140%] text-white/50 font-light"
             >
@@ -400,11 +435,15 @@ export default function Home() {
                 </motion.div>
               </motion.div>
               <motion.div
-                variants={fadeInLeft}
+                variants={fadeIn}
                 whileHover={{
                   scale: 1.02,
+                  filter: "brightness(1.1) blur(0px)",
                   boxShadow: "0 0 20px rgba(56, 189, 248, 0.3)",
-                  transition: { duration: 0.4 }
+                  transition: {
+                    duration: 0.3,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
                 }}
                 className="col-span-1 rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#38bdf8]/10 to-background/80 p-6 backdrop-blur-md md:col-span-2 relative overflow-hidden group"
               >
@@ -445,11 +484,15 @@ export default function Home() {
               </motion.div>
 
               <motion.div
-                variants={fadeInRight}
+                variants={fadeIn}
                 whileHover={{
                   scale: 1.02,
+                  filter: "brightness(1.1) blur(0px)",
                   boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
-                  transition: { duration: 0.4 }
+                  transition: {
+                    duration: 0.3,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
                 }}
                 className="col-span-1 rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#a855f7]/10 to-background/80 p-6 backdrop-blur-md relative overflow-hidden group"
               >
@@ -485,11 +528,15 @@ export default function Home() {
               </motion.div>
 
               <motion.div
-                variants={fadeInUp}
+                variants={fadeIn}
                 whileHover={{
                   scale: 1.02,
+                  filter: "brightness(1.1) blur(0px)",
                   boxShadow: "0 0 20px rgba(34, 211, 238, 0.3)",
-                  transition: { duration: 0.4 }
+                  transition: {
+                    duration: 0.3,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
                 }}
                 className="row-span-1 rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#22d3ee]/10 to-background/80 p-6 backdrop-blur-md md:row-span-2 relative overflow-hidden group"
               >
@@ -542,11 +589,15 @@ export default function Home() {
               </motion.div>
 
               <motion.div
-                variants={fadeInDown}
+                variants={fadeIn}
                 whileHover={{
                   scale: 1.02,
+                  filter: "brightness(1.1) blur(0px)",
                   boxShadow: "0 0 20px rgba(250, 204, 21, 0.3)",
-                  transition: { duration: 0.4 }
+                  transition: {
+                    duration: 0.3,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
                 }}
                 className="rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#facc15]/10 to-background/80 p-6 backdrop-blur-md relative overflow-hidden group"
               >
@@ -585,8 +636,12 @@ export default function Home() {
                 variants={fadeInScale}
                 whileHover={{
                   scale: 1.02,
+                  filter: "brightness(1.1) blur(0px)",
                   boxShadow: "0 0 20px rgba(248, 113, 113, 0.3)",
-                  transition: { duration: 0.4 }
+                  transition: {
+                    duration: 0.3,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
                 }}
                 className="col-span-1 rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#f87171]/10 to-background/80 p-6 backdrop-blur-md md:col-span-2 relative overflow-hidden group"
               >
@@ -644,7 +699,7 @@ export default function Home() {
                 className="relative z-10 mb-20 px-4"
               >
                 <motion.h2
-                  variants={fadeInLeft}
+                  variants={fadeIn}
                   className="mb-12 mx-4 font-['Segoe UI'] text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent md:mx-0"
                 >
                   {t("businessRevolution")}
@@ -655,11 +710,15 @@ export default function Home() {
                 >
                   <div className="mx-auto flex max-w-4xl flex-col justify-center gap-10 md:flex-row">
                     <motion.div
-                      variants={fadeInLeft}
+                      variants={fadeIn}
                       whileHover={{
                         scale: 1.05,
+                        filter: "brightness(1.1) blur(0px)",
                         boxShadow: "0 0 25px rgba(229, 205, 130, 0.3)",
-                        transition: { duration: 0.4, ease: "easeOut" }
+                        transition: {
+                          duration: 0.3,
+                          ease: [0.25, 0.1, 0.25, 1]
+                        }
                       }}
                       className="flex flex-col items-center rounded-2xl border-2 border-white/10 bg-background/20 bg-opacity-30 px-6 py-16 backdrop-blur-md relative overflow-hidden group"
                     >
@@ -702,11 +761,15 @@ export default function Home() {
                       </Link>
                     </motion.div>
                     <motion.div
-                      variants={fadeInRight}
+                      variants={fadeIn}
                       whileHover={{
                         scale: 1.05,
+                        filter: "brightness(1.1) blur(0px)",
                         boxShadow: "0 0 25px rgba(229, 205, 130, 0.3)",
-                        transition: { duration: 0.4, ease: "easeOut" }
+                        transition: {
+                          duration: 0.3,
+                          ease: [0.25, 0.1, 0.25, 1]
+                        }
                       }}
                       className="flex flex-col items-center rounded-2xl border-2 border-white/10 bg-background/20 bg-opacity-30 px-6 py-16 backdrop-blur-md relative overflow-hidden group"
                     >
@@ -768,7 +831,7 @@ export default function Home() {
               className="mt-24 flex w-full flex-col justify-center gap-24 text-center md:flex-row md:text-start"
             >
               <motion.div
-                variants={fadeInLeft}
+                variants={fadeIn}
                 transition={{ duration: 1 }}
                 className="w-full md:w-[600px]"
               >
@@ -791,7 +854,7 @@ export default function Home() {
                 </p>
               </motion.div>
               <motion.div
-                variants={fadeInRight}
+                variants={fadeIn}
                 transition={{ duration: 1 }}
                 className="w-full md:w-1/2"
               >
@@ -849,7 +912,7 @@ export default function Home() {
 
           <StarField>
             <motion.footer
-              variants={fadeInUp}
+              variants={fadeIn}
               initial="initial"
               whileInView="animate"
               viewport={{ once: true }}

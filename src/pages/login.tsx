@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -19,6 +19,12 @@ export default function Login() {
   const [isPending, setIsPending] = useState(false);
 
   const { isLoaded, signIn, setActive } = useSignIn();
+
+  useEffect(() => {
+    if (user.isLoaded && user.isSignedIn) {
+      router.push("/profile");
+    }
+  }, [user.isLoaded, user.isSignedIn, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

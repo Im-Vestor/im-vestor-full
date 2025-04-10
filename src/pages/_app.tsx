@@ -11,6 +11,7 @@ import Head from "next/head";
 import "~/styles/globals.css";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "~/contexts/LanguageContext";
+import { GoogleAnalytics } from "~/lib/GoogleAnalytics";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <Toaster theme="dark" />
         <SpeedInsights />
         <Analytics />
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID ?? ""} />
         <Head>
           <title>Im-Vestor</title>
           <meta name="description" content="Imvestor" />
