@@ -214,8 +214,7 @@ export default function Investors() {
 function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
   return (
     <Link
-      // href={`/investors/${investor.id}`}
-      href="#"
+      href={`/investor/${investor.id}`}
       key={investor.id}
       className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
     >

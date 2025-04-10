@@ -1,11 +1,12 @@
 import { useClerk, useUser } from "@clerk/nextjs";
 import { type UserType } from "@prisma/client";
-import { LogOut, Mail, Menu, User, Users, X } from "lucide-react";
+import { Book, Clock, LogOut, Mail, Menu, User, Users, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
+import { Notifications } from "./notifications/notifications";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -41,6 +42,10 @@ const INVESTOR_MENUS = [
   {
     label: "Meetings",
     href: "/meetings",
+  },
+  {
+    label: "Daily Pitches",
+    href: "/daily-pitches",
   },
   {
     label: "News",
@@ -136,7 +141,9 @@ export const Header = () => {
 
         {/* User Profile / Login */}
         {isSignedIn ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
+            <Notifications />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 md:gap-4">
@@ -163,9 +170,19 @@ export const Header = () => {
                   <Users className="h-4 w-4 mr-2" />
                   Connections
                 </DropdownMenuItem>
+                {userType === "ENTREPRENEUR" && (
+                  <DropdownMenuItem onClick={() => void handleNavigation("/preferred-hours")} className="hover:cursor-pointer">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Preferred Hours
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")} className="hover:cursor-pointer">
                   <Mail className="h-4 w-4 mr-2" />
                   Referrals
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleNavigation("/terms")} className="hover:cursor-pointer">
+                  <Book className="h-4 w-4 mr-2" />
+                  Terms
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ redirectUrl: "/login" })}
