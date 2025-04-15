@@ -78,7 +78,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     seamlessNegotiationsShort: "Investors and entrepreneurs can communicate directly through the platform, schedule meetings, and negotiate terms openly.",
     pokeBoost: "Poke, Boost and Hyper Train",
     pokeBoostDesc: "Guarantee special addons in order to help your grow your profile.",
-    investmentsProtected: "You Protected",
+    investmentsProtected: "You're Protected",
     investmentsProtectedDesc: "Im-Vestor prioritizes the safety of all users. We ensure all projects and investors are thoroughly vetted, creating a trusted environment for business to thrive.",
     investmentsProtectedShort: "Im-Vestor prioritizes the safety of all users and a trusted environment for business to thrive.",
     businessRevolution: "Choose your path",
