@@ -1,6 +1,5 @@
 import { useUser } from '@clerk/nextjs';
-import { UTCDate } from '@date-fns/utc';
-import { addDays, format, formatDistanceToNow, startOfTomorrow } from 'date-fns';
+import { format, formatDistanceToNow, startOfTomorrow } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 
 import {
@@ -9,19 +8,20 @@ import {
   Calendar1Icon,
   CalendarIcon,
   CircleUserRound,
+  Clock,
   Heart,
   Loader2,
   MapPin,
   MessageCircle,
   Presentation,
   User,
-  Clock,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
 import {
@@ -36,7 +36,6 @@ import {
 import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
-import { ConfirmationDialog } from '~/components/confirmation-dialog';
 
 const availableHours = [
   '07:00',
@@ -64,13 +63,13 @@ export default function CompanyDetails() {
   const router = useRouter();
   const utils = api.useUtils();
   const { companyId } = router.query;
+
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
-  const tomorrowUTC = startOfTomorrow();
-  const dayAfterTomorrowUTC = addDays(tomorrowUTC, 1);
+  const tomorrow = startOfTomorrow();
 
   const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate(dayAfterTomorrowUTC));
+  const [selectedDate, setSelectedDate] = useState<Date>(tomorrow);
   const [time, setTime] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -97,7 +96,7 @@ export default function CompanyDetails() {
       setIsConfirmModalOpen(false);
       setOpenScheduleMeeting(false);
       setTime(null);
-      setSelectedDate(new UTCDate(dayAfterTomorrowUTC));
+      setSelectedDate(tomorrow);
       router.push('/meetings');
     },
     onError: error => {
@@ -151,7 +150,8 @@ export default function CompanyDetails() {
     if (companyId) {
       addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
     }
-  }, [companyId, addInvestorViewMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId]);
 
   if (isLoading || !project) {
     return (
@@ -271,12 +271,10 @@ export default function CompanyDetails() {
                               <DayPicker
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={date =>
-                                  setSelectedDate(new UTCDate(date ?? dayAfterTomorrowUTC))
-                                }
+                                onSelect={date => setSelectedDate(date ?? tomorrow)}
                                 captionLayout="buttons"
                                 showOutsideDays
-                                disabled={{ before: tomorrowUTC }}
+                                disabled={{ before: tomorrow }}
                                 defaultMonth={selectedDate}
                                 classNames={{
                                   root: 'w-full',
