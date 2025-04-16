@@ -1,10 +1,10 @@
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { Header } from "~/components/header";
-import { EntrepreneurProfile } from "~/components/profile/entrepreneur-profile";
-import { InvestorProfile } from "~/components/profile/investor-profile";
-import { PartnerProfile } from "~/components/profile/partner-profile";
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { Header } from '~/components/header';
+import { EntrepreneurProfile } from '~/components/profile/entrepreneur-profile';
+import { InvestorProfile } from '~/components/profile/investor-profile';
+import { PartnerProfile } from '~/components/profile/partner-profile';
 
 export default function Profile() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      void router.push("/login");
+      void router.push('/login');
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -20,9 +20,9 @@ export default function Profile() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
       <div className="mt-12">
-        {user?.publicMetadata.userType === "ENTREPRENEUR" ? (
+        {user?.publicMetadata.userType === 'ENTREPRENEUR' ? (
           <EntrepreneurProfile />
-        ) : user?.publicMetadata.userType === "INVESTOR" ? (
+        ) : user?.publicMetadata.userType === 'INVESTOR' ? (
           <InvestorProfile />
         ) : (
           <PartnerProfile />

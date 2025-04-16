@@ -20,7 +20,7 @@ const eveningHours = ['19:00', '20:00', '21:00', '22:00', '23:00', '00:00'];
 
 export default function PreferredHours() {
   const router = useRouter();
-  const utils = api.useUtils(); 
+  const utils = api.useUtils();
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<PreferredHoursPeriod | ''>('');
 

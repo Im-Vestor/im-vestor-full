@@ -1,43 +1,37 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { type Entrepreneur } from "@prisma/client";
-import { ImageIcon, Plus } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Button } from "~/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { PhoneInput } from "~/components/ui/phone-input";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { type Entrepreneur } from '@prisma/client';
+import { ImageIcon, Plus } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '~/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { PhoneInput } from '~/components/ui/phone-input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Textarea } from "~/components/ui/textarea";
-import { api } from "~/utils/api";
-import { sendImageToBackend } from "~/utils/file";
+} from '~/components/ui/select';
+import { Textarea } from '~/components/ui/textarea';
+import { api } from '~/utils/api';
+import { sendImageToBackend } from '~/utils/file';
 
 const entrepreneurFormSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
-  companyRole: z.string().min(1, "Role is required"),
-  companyName: z.string().min(1, "Company name is required"),
-  fiscalCode: z.string().min(1, "Fiscal code is required"),
-  mobileFone: z.string().min(1, "Mobile phone is required"),
-  about: z.string().min(12, "About me must be at least 12 characters"),
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  country: z.string().min(1, 'Country is required'),
+  state: z.string().min(1, 'State is required'),
+  companyRole: z.string().min(1, 'Role is required'),
+  companyName: z.string().min(1, 'Company name is required'),
+  fiscalCode: z.string().min(1, 'Fiscal code is required'),
+  mobileFone: z.string().min(1, 'Mobile phone is required'),
+  about: z.string().min(12, 'About me must be at least 12 characters'),
   photo: z.string().optional(),
   banner: z.string().optional(),
 });
@@ -47,78 +41,76 @@ interface EntrepreneurFormProps {
   onCancel: () => void;
 }
 
-export const EntrepreneurForm = ({
-  entrepreneur,
-  onCancel,
-}: EntrepreneurFormProps) => {
+export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormProps) => {
   const utils = api.useUtils();
 
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [country, setCountry] = useState<string>(entrepreneur?.countryId?.toString() ?? "");
+  const [country, setCountry] = useState<string>(entrepreneur?.countryId?.toString() ?? '');
 
-  const { data: countries, isLoading: isLoadingCountries } =
-    api.country.getAll.useQuery();
-  const { data: states, isLoading: isLoadingStates } =
-    api.country.getStates.useQuery({
+  const { data: countries, isLoading: isLoadingCountries } = api.country.getAll.useQuery();
+  const { data: states, isLoading: isLoadingStates } = api.country.getStates.useQuery(
+    {
       countryId: country,
-    }, {
+    },
+    {
       enabled: !!country,
-    });
+    }
+  );
 
   const { mutate: updateEntrepreneur, isPending: isUpdatingEntrepreneur } =
     api.entrepreneur.update.useMutation({
       onSuccess: () => {
-        toast.success("Profile updated successfully!");
+        toast.success('Profile updated successfully!');
         void utils.entrepreneur.getByUserId.invalidate();
         onCancel();
       },
-      onError: (error) => {
-        toast.error("Failed to update profile. Please try again.");
-        console.error("Update error:", error);
+      onError: error => {
+        toast.error('Failed to update profile. Please try again.');
+        console.error('Update error:', error);
       },
     });
 
   const form = useForm<z.infer<typeof entrepreneurFormSchema>>({
     resolver: zodResolver(entrepreneurFormSchema),
     defaultValues: {
-      firstName: entrepreneur?.firstName ?? "",
-      lastName: entrepreneur?.lastName ?? "",
-      country: entrepreneur?.countryId?.toString() ?? "",
-      state: entrepreneur?.stateId?.toString() ?? "",
-      companyRole: entrepreneur?.companyRole ?? "",
-      companyName: entrepreneur?.companyName ?? "",
-      fiscalCode: entrepreneur?.fiscalCode ?? "",
-      mobileFone: entrepreneur?.mobileFone ?? "",
-      about: entrepreneur?.about ?? "",
-      photo: entrepreneur?.photo ?? "",
-      banner: entrepreneur?.banner ?? "",
+      firstName: entrepreneur?.firstName ?? '',
+      lastName: entrepreneur?.lastName ?? '',
+      country: entrepreneur?.countryId?.toString() ?? '',
+      state: entrepreneur?.stateId?.toString() ?? '',
+      companyRole: entrepreneur?.companyRole ?? '',
+      companyName: entrepreneur?.companyName ?? '',
+      fiscalCode: entrepreneur?.fiscalCode ?? '',
+      mobileFone: entrepreneur?.mobileFone ?? '',
+      about: entrepreneur?.about ?? '',
+      photo: entrepreneur?.photo ?? '',
+      banner: entrepreneur?.banner ?? '',
     },
   });
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => updateEntrepreneur({ ...data }))}
+        onSubmit={form.handleSubmit(data => updateEntrepreneur({ ...data }))}
         className="space-y-4 rounded-lg border-2 border-white/10 bg-card"
       >
         {renderBannerUpload(
-          entrepreneur?.id ?? "",
+          entrepreneur?.id ?? '',
           entrepreneur?.banner ?? null,
-          form.getValues("banner") ?? null,
+          form.getValues('banner') ?? null,
           isUploadingBanner,
           setIsUploadingBanner,
-          (banner: string) => form.setValue("banner", banner),
+          (banner: string) => form.setValue('banner', banner)
         )}
         <div className="flex flex-col items-start gap-4 ml-6">
           <Label className="font-normal text-neutral-200">Profile Picture</Label>
           {renderPhotoUpload(
-            entrepreneur?.id ?? "",
+            entrepreneur?.id ?? '',
             entrepreneur?.photo ?? null,
-            form.getValues("photo") ?? null,
+            form.getValues('photo') ?? null,
             isUploadingPhoto,
             setIsUploadingPhoto,
-            (photo: string) => form.setValue("photo", photo),
+            (photo: string) => form.setValue('photo', photo)
           )}
         </div>
 
@@ -128,15 +120,9 @@ export const EntrepreneurForm = ({
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  First Name*
-                </Label>
+                <Label className="font-normal text-neutral-200">First Name*</Label>
                 <FormControl>
-                  <Input
-                    placeholder="John"
-                    {...field}
-                    disabled={isUpdatingEntrepreneur}
-                  />
+                  <Input placeholder="John" {...field} disabled={isUpdatingEntrepreneur} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -148,15 +134,9 @@ export const EntrepreneurForm = ({
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Last Name*
-                </Label>
+                <Label className="font-normal text-neutral-200">Last Name*</Label>
                 <FormControl>
-                  <Input
-                    placeholder="Doe"
-                    {...field}
-                    disabled={isUpdatingEntrepreneur}
-                  />
+                  <Input placeholder="Doe" {...field} disabled={isUpdatingEntrepreneur} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -170,13 +150,11 @@ export const EntrepreneurForm = ({
             name="fiscalCode"
             render={({ field: { value, onChange, ...fieldProps } }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Fiscal Code*
-                </Label>
+                <Label className="font-normal text-neutral-200">Fiscal Code*</Label>
                 <FormControl>
                   <Input
                     placeholder="01234567890"
-                    value={value || ""}
+                    value={value || ''}
                     onChange={e => onChange(e.target.value)}
                     {...fieldProps}
                     disabled={isUpdatingEntrepreneur}
@@ -192,9 +170,7 @@ export const EntrepreneurForm = ({
             name="mobileFone"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Mobile Phone*
-                </Label>
+                <Label className="font-normal text-neutral-200">Mobile Phone*</Label>
                 <FormControl>
                   <PhoneInput
                     {...field}
@@ -214,16 +190,14 @@ export const EntrepreneurForm = ({
             name="country"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Country*
-                </Label>
+                <Label className="font-normal text-neutral-200">Country*</Label>
                 <FormControl>
                   <Select
                     value={field.value}
                     onValueChange={(value: string) => {
                       field.onChange(value);
                       setCountry(value);
-                      form.setValue("state", "");
+                      form.setValue('state', '');
                     }}
                     disabled={isLoadingCountries}
                   >
@@ -231,11 +205,8 @@ export const EntrepreneurForm = ({
                       <SelectValue placeholder="Country*" />
                     </SelectTrigger>
                     <SelectContent>
-                      {countries?.map((country) => (
-                        <SelectItem
-                          key={country.id}
-                          value={country.id.toString()}
-                        >
+                      {countries?.map(country => (
+                        <SelectItem key={country.id} value={country.id.toString()}>
                           {country.name}
                         </SelectItem>
                       ))}
@@ -252,28 +223,19 @@ export const EntrepreneurForm = ({
             name="state"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  State*
-                </Label>
+                <Label className="font-normal text-neutral-200">State*</Label>
                 <FormControl>
                   <Select
                     value={field.value}
                     onValueChange={(value: string) => field.onChange(value)}
-                    disabled={
-                      !form.getValues("country") ||
-                      isLoadingCountries ||
-                      isLoadingStates
-                    }
+                    disabled={!form.getValues('country') || isLoadingCountries || isLoadingStates}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="State*" />
                     </SelectTrigger>
                     <SelectContent>
-                      {states?.map((state) => (
-                        <SelectItem
-                          key={state.id}
-                          value={state.id.toString()}
-                        >
+                      {states?.map(state => (
+                        <SelectItem key={state.id} value={state.id.toString()}>
                           {state.name}
                         </SelectItem>
                       ))}
@@ -292,15 +254,9 @@ export const EntrepreneurForm = ({
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Company Name*
-                </Label>
+                <Label className="font-normal text-neutral-200">Company Name*</Label>
                 <FormControl>
-                  <Input
-                    placeholder="Acme Inc."
-                    {...field}
-                    disabled={isUpdatingEntrepreneur}
-                  />
+                  <Input placeholder="Acme Inc." {...field} disabled={isUpdatingEntrepreneur} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -312,15 +268,9 @@ export const EntrepreneurForm = ({
             name="companyRole"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  Role*
-                </Label>
+                <Label className="font-normal text-neutral-200">Role*</Label>
                 <FormControl>
-                  <Input
-                    placeholder="CEO"
-                    {...field}
-                    disabled={isUpdatingEntrepreneur}
-                  />
+                  <Input placeholder="CEO" {...field} disabled={isUpdatingEntrepreneur} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -334,9 +284,7 @@ export const EntrepreneurForm = ({
             name="about"
             render={({ field }) => (
               <FormItem>
-                <Label className="font-normal text-neutral-200">
-                  About me*
-                </Label>
+                <Label className="font-normal text-neutral-200">About me*</Label>
                 <FormControl>
                   <Textarea
                     placeholder="I'm a startup founder..."
@@ -351,15 +299,11 @@ export const EntrepreneurForm = ({
         </div>
 
         <div className="mx-6 flex justify-end gap-4 pb-8 pt-8">
-          <Button
-            variant="secondary"
-            disabled={isUpdatingEntrepreneur}
-            onClick={onCancel}
-          >
+          <Button variant="secondary" disabled={isUpdatingEntrepreneur} onClick={onCancel}>
             Cancel
           </Button>
           <Button type="submit" disabled={isUpdatingEntrepreneur}>
-            {isUpdatingEntrepreneur ? "Saving..." : "Save Changes"}
+            {isUpdatingEntrepreneur ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </form>
@@ -373,14 +317,14 @@ const renderBannerUpload = (
   bannerUploaded: string | null,
   isUploadingBanner: boolean,
   setIsUploadingBanner: (isUploading: boolean) => void,
-  setBanner: (banner: string) => void,
+  setBanner: (banner: string) => void
 ) => {
   return (
     <div className="relative mb-8 w-full">
       <div className="h-48 w-full overflow-hidden rounded-t-lg bg-[#282B37]">
         {(bannerUploaded ?? currentBanner) && (
           <Image
-            src={bannerUploaded ?? currentBanner ?? ""}
+            src={bannerUploaded ?? currentBanner ?? ''}
             alt="Profile Banner"
             layout="fill"
             objectFit="cover"
@@ -392,14 +336,14 @@ const renderBannerUpload = (
         <label htmlFor="banner-upload" className="cursor-pointer">
           <div className="flex items-center gap-2 rounded-md border border-white/10 bg-background px-4 py-2 text-sm text-white hover:bg-background/90">
             <ImageIcon className="h-4 w-4" />
-            {isUploadingBanner ? "Uploading..." : "Change Banner"}
+            {isUploadingBanner ? 'Uploading...' : 'Change Banner'}
           </div>
           <input
             id="banner-upload"
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={async (e) => {
+            onChange={async e => {
               const file = e.target.files?.[0];
               if (!file) return;
 
@@ -407,7 +351,7 @@ const renderBannerUpload = (
 
               const imageUrl = await sendImageToBackend(file, userId);
 
-              setBanner(imageUrl ?? "");
+              setBanner(imageUrl ?? '');
 
               setIsUploadingBanner(false);
             }}
@@ -425,7 +369,7 @@ const renderPhotoUpload = (
   photoUploaded: string | null,
   isUploadingPhoto: boolean,
   setIsUploadingPhoto: (isUploading: boolean) => void,
-  setPhoto: (photo: string) => void,
+  setPhoto: (photo: string) => void
 ) => {
   return (
     <div className="relative">
@@ -433,7 +377,7 @@ const renderPhotoUpload = (
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] hover:cursor-pointer hover:opacity-75">
           {(photoUploaded ?? currentPhoto) ? (
             <Image
-              src={photoUploaded ?? currentPhoto ?? ""}
+              src={photoUploaded ?? currentPhoto ?? ''}
               alt="Profile"
               width={96}
               height={96}
@@ -449,7 +393,7 @@ const renderPhotoUpload = (
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={async (e) => {
+          onChange={async e => {
             const file = e.target.files?.[0];
             if (!file) return;
 
@@ -457,7 +401,7 @@ const renderPhotoUpload = (
 
             const imageUrl = await sendImageToBackend(file, userId);
 
-            setPhoto(imageUrl ?? "");
+            setPhoto(imageUrl ?? '');
 
             setIsUploadingPhoto(false);
           }}

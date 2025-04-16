@@ -1,54 +1,48 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
-import { format } from "date-fns";
-import { ArrowLeft, ArrowRight, CalendarIcon } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { FinishCard } from "~/components/finish-card";
-import { Header } from "~/components/header";
-import { SignUpCard } from "~/components/sign-up-card";
-import { Button } from "~/components/ui/button";
-import { Calendar } from "~/components/ui/calendar";
-import { Checkbox } from "~/components/ui/checkbox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { PhoneInput } from "~/components/ui/phone-input";
-import { PopoverContent } from "~/components/ui/popover";
-import { api } from "~/utils/api";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Popover, PopoverTrigger } from '@radix-ui/react-popover';
+import { format } from 'date-fns';
+import { ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { FinishCard } from '~/components/finish-card';
+import { Header } from '~/components/header';
+import { SignUpCard } from '~/components/sign-up-card';
+import { Button } from '~/components/ui/button';
+import { Calendar } from '~/components/ui/calendar';
+import { Checkbox } from '~/components/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { PhoneInput } from '~/components/ui/phone-input';
+import { PopoverContent } from '~/components/ui/popover';
+import { api } from '~/utils/api';
 
 const formSchema = z
   .object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    firstName: z.string().min(2, 'First name must be at least 2 characters'),
+    lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
-    mobileFone: z.string().min(1, "Mobile phone is required"),
+    mobileFone: z.string().min(1, 'Mobile phone is required'),
     birthDate: z.date({
-      required_error: "Birth date is required",
+      required_error: 'Birth date is required',
     }),
     referralToken: z.string().optional(),
-    acceptTerms: z.boolean().refine((val) => val === true, {
-      message: "You must accept the terms and conditions",
+    acceptTerms: z.boolean().refine(val => val === true, {
+      message: 'You must accept the terms and conditions',
     }),
-    acceptConfidentiality: z.boolean().refine((val) => val === true, {
-      message: "You must accept the confidentiality agreement",
+    acceptConfidentiality: z.boolean().refine(val => val === true, {
+      message: 'You must accept the confidentiality agreement',
     }),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ["confirmPassword"],
+    path: ['confirmPassword'],
   });
 
 export default function SignupEntrepreneur() {
@@ -58,33 +52,29 @@ export default function SignupEntrepreneur() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      mobileFone: "",
-      birthDate: new Date(
-        new Date().setFullYear(new Date().getFullYear() - 18),
-      ),
-      referralToken: (router.query.referralToken as string) ?? "",
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      mobileFone: '',
+      birthDate: new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+      referralToken: (router.query.referralToken as string) ?? '',
       acceptTerms: true,
       acceptConfidentiality: true,
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
-
-
 
   const { mutateAsync: registerEntrepreneur, isPending: isRegistering } =
     api.entrepreneur.create.useMutation({
       onSuccess: () => {
-        toast.success("Account created successfully!");
-        void router.push("/login");
+        toast.success('Account created successfully!');
+        void router.push('/login');
       },
-      onError: (error) => {
-        toast.error("Failed to create account. " + error.message);
-        console.error("Registration error:", error);
+      onError: error => {
+        toast.error('Failed to create account. ' + error.message);
+        console.error('Registration error:', error);
       },
     });
 
@@ -94,7 +84,7 @@ export default function SignupEntrepreneur() {
         <Header />
       </div>
       <div
-        className={`md:max-w-[40rem] ${step !== 5 && "rounded-2xl border-4 border-white/10 bg-background bg-opacity-30 p-6 backdrop-blur-md"}`}
+        className={`md:max-w-[40rem] ${step !== 5 && 'rounded-2xl border-4 border-white/10 bg-background bg-opacity-30 p-6 backdrop-blur-md'}`}
       >
         {step !== 5 && (
           <button
@@ -121,15 +111,9 @@ export default function SignupEntrepreneur() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          First Name*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">First Name*</Label>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="John"
-                            disabled={isRegistering}
-                          />
+                          <Input {...field} placeholder="John" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -141,15 +125,9 @@ export default function SignupEntrepreneur() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Last Name*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Last Name*</Label>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Doe"
-                            disabled={isRegistering}
-                          />
+                          <Input {...field} placeholder="Doe" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,9 +139,7 @@ export default function SignupEntrepreneur() {
                     name="mobileFone"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Mobile Phone*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Mobile Phone*</Label>
                         <FormControl>
                           <PhoneInput
                             {...field}
@@ -181,31 +157,21 @@ export default function SignupEntrepreneur() {
                     name="birthDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <Label className="font-normal text-neutral-200">
-                          Birth Date*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Birth Date*</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className="border-none"
-                              >
+                              <Button variant={'outline'} className="border-none">
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, 'PPP')
                                 ) : (
-                                  <span className="font-normal text-[#E5E7EA]">
-                                    Select date
-                                  </span>
+                                  <span className="font-normal text-[#E5E7EA]">Select date</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent
-                            className="w-auto border-none p-0"
-                            align="start"
-                          >
+                          <PopoverContent className="w-auto border-none p-0" align="start">
                             <Calendar
                               mode="single"
                               captionLayout="dropdown"
@@ -227,9 +193,7 @@ export default function SignupEntrepreneur() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Email*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Email*</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -248,9 +212,7 @@ export default function SignupEntrepreneur() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Password*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Password*</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -269,9 +231,7 @@ export default function SignupEntrepreneur() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">
-                          Confirm Password*
-                        </Label>
+                        <Label className="font-normal text-neutral-200">Confirm Password*</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -304,11 +264,7 @@ export default function SignupEntrepreneur() {
                           Referral Token (optional)
                         </Label>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="8AC7SHAS"
-                            disabled={isRegistering}
-                          />
+                          <Input {...field} placeholder="8AC7SHAS" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -337,7 +293,8 @@ export default function SignupEntrepreneur() {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <Label>I accept the{" "}
+                          <Label>
+                            I accept the{' '}
                             <Link
                               href="/terms"
                               target="_blank"
@@ -375,34 +332,33 @@ export default function SignupEntrepreneur() {
 
             {step === 4 && (
               <SignUpCard
-                name={
-                  form.getValues("firstName") + " " + form.getValues("lastName")
-                }
+                name={form.getValues('firstName') + ' ' + form.getValues('lastName')}
                 type="entrepreneur"
                 features={[
-                  "1 active project at a time",
-                  "Up to 5 investors per project",
-                  "Investor Search",
-                  "View investor profiles",
-                  "1 free pokes per month",
+                  '1 active project at a time',
+                  'Up to 5 investors per project',
+                  'Investor Search',
+                  'View investor profiles',
+                  '1 free pokes per month',
                 ]}
               />
             )}
 
             {step === 5 && (
               <>
-                <FinishCard name={form.getValues("firstName")} />
+                <FinishCard name={form.getValues('firstName')} />
               </>
             )}
 
             {step !== 5 && (
               <Button
-                type={"button"}
+                type={'button'}
                 className="mt-12 w-full"
                 disabled={
                   isRegistering ||
                   (step === 1 && !form.formState.isValid) ||
-                  (step === 3 && (!form.getValues("acceptTerms") || !form.getValues("acceptConfidentiality")))
+                  (step === 3 &&
+                    (!form.getValues('acceptTerms') || !form.getValues('acceptConfidentiality')))
                 }
                 onClick={async () => {
                   let isValid = false;
@@ -410,23 +366,20 @@ export default function SignupEntrepreneur() {
                   switch (step) {
                     case 1:
                       isValid = await form.trigger([
-                        "firstName",
-                        "lastName",
-                        "email",
-                        "password",
-                        "confirmPassword",
-                        "mobileFone",
-                        "birthDate",
+                        'firstName',
+                        'lastName',
+                        'email',
+                        'password',
+                        'confirmPassword',
+                        'mobileFone',
+                        'birthDate',
                       ]);
                       break;
                     case 2:
                       isValid = true; // Referral token is optional
                       break;
                     case 3:
-                      isValid = await form.trigger([
-                        "acceptTerms",
-                        "acceptConfidentiality",
-                      ]);
+                      isValid = await form.trigger(['acceptTerms', 'acceptConfidentiality']);
                       break;
                     case 4:
                       isValid = true;
@@ -437,15 +390,15 @@ export default function SignupEntrepreneur() {
                   if (isValid) {
                     setStep(step + 1);
                   } else {
-                    console.error("Invalid form");
+                    console.error('Invalid form');
                     console.error(form.formState.errors);
                   }
                 }}
               >
                 {isRegistering ? (
-                  "Creating account..."
+                  'Creating account...'
                 ) : step === 4 ? (
-                  "Take your pass"
+                  'Take your pass'
                 ) : (
                   <>
                     Continue <ArrowRight className="ml-2" />

@@ -1,13 +1,12 @@
-import { Building, Loader2, Pencil, User } from "lucide-react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { api } from "~/utils/api";
-import { PartnerForm } from "./partner-form";
+import { Building, Loader2, Pencil, User } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
+import { PartnerForm } from './partner-form';
 
 export const PartnerProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const { data: partner, isPending: isLoading } =
-    api.partner.getByUserId.useQuery();
+  const { data: partner, isPending: isLoading } = api.partner.getByUserId.useQuery();
 
   if (isLoading) {
     return (
@@ -17,9 +16,7 @@ export const PartnerProfile = () => {
     );
   }
   if (isEditing) {
-    return (
-      <PartnerForm partner={partner} onCancel={() => setIsEditing(false)} />
-    );
+    return <PartnerForm partner={partner} onCancel={() => setIsEditing(false)} />;
   }
 
   return (
@@ -36,16 +33,14 @@ export const PartnerProfile = () => {
 
       <div className="px-12 pt-16">
         <div className="mt-4 flex items-center justify-between">
-          <h2 className="text-3xl font-semibold">
-            {partner?.firstName + " " + partner?.lastName}
-          </h2>
+          <h2 className="text-3xl font-semibold">{partner?.firstName + ' ' + partner?.lastName}</h2>
           <Button
             variant="outline"
             className="flex items-center gap-2"
             onClick={() => setIsEditing(!isEditing)}
           >
             <Pencil className="h-2 w-2" />
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
         </div>
         <p className="mt-1 flex items-center gap-1 text-gray-400">

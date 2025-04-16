@@ -1,9 +1,4 @@
-import {
-  type Country,
-  type State,
-  type Entrepreneur,
-  type Project,
-} from "@prisma/client";
+import { type Country, type State, type Entrepreneur, type Project } from '@prisma/client';
 import {
   ArrowRight,
   Building2,
@@ -13,20 +8,19 @@ import {
   MapPin,
   Pencil,
   User,
-} from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { api } from "~/utils/api";
-import { EntrepreneurForm } from "./entrepreneur-form";
-import Link from "next/link";
+} from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
+import { EntrepreneurForm } from './entrepreneur-form';
+import Link from 'next/link';
 
 export const EntrepreneurProfile = () => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const { data: entrepreneur, isPending: isLoading } =
-    api.entrepreneur.getByUserId.useQuery();
+  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
 
   if (isLoading) {
     return (
@@ -37,12 +31,7 @@ export const EntrepreneurProfile = () => {
   }
 
   if (isEditing || !entrepreneur?.country) {
-    return (
-      <EntrepreneurForm
-        entrepreneur={entrepreneur}
-        onCancel={() => setIsEditing(false)}
-      />
-    );
+    return <EntrepreneurForm entrepreneur={entrepreneur} onCancel={() => setIsEditing(false)} />;
   }
 
   return (
@@ -83,7 +72,7 @@ export const EntrepreneurProfile = () => {
       <div className="md:px-12 px-6 pt-16">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-semibold">
-            {entrepreneur?.firstName + " " + entrepreneur?.lastName}
+            {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
           </h2>
           <Button
             variant="outline"
@@ -91,34 +80,30 @@ export const EntrepreneurProfile = () => {
             onClick={() => setIsEditing(!isEditing)}
           >
             <Pencil className="h-2 w-2" />
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
         </div>
         <p className="mt-3 text-lg text-gray-400">
-          {entrepreneur?.companyRole ?? "Entrepreneur"}
-          {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ""}
+          {entrepreneur?.companyRole ?? 'Entrepreneur'}
+          {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ''}
         </p>
         <p className="mt-1 flex items-center gap-1 text-gray-400">
           <MapPin className="mr-0.5 h-4 w-4" />
           {entrepreneur?.state && entrepreneur?.country
             ? `${entrepreneur.state.name}, ${entrepreneur.country.name}`
-            : "Not specified"}
+            : 'Not specified'}
         </p>
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
-        <p className="mt-3 text-gray-400">
-          {entrepreneur?.about ?? "No description"}
-        </p>
+        <p className="mt-3 text-gray-400">{entrepreneur?.about ?? 'No description'}</p>
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">Projects</h3>
         {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
           <div className="mt-4 flex flex-col gap-4">
-            {entrepreneur?.projects.map((project) => (
+            {entrepreneur?.projects.map(project => (
               <ProjectCard
                 key={project.id}
-                project={
-                  project as Project & { state: State; country: Country }
-                }
+                project={project as Project & { state: State; country: Country }}
                 profileData={
                   entrepreneur as Entrepreneur & {
                     state: State;
@@ -129,10 +114,7 @@ export const EntrepreneurProfile = () => {
             ))}
           </div>
         )}
-        <Button
-          className="mt-4 md:w-1/3"
-          onClick={() => router.push("/companies/create")}
-        >
+        <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
           Add your Company
           <ArrowRight className="ml-2" />
         </Button>
@@ -181,7 +163,9 @@ function ProjectCard({
                   {project.state?.name}, {project.country?.name}
                 </span>
               )}
-              <p className="text-sm sm:text-base line-clamp-2 sm:line-clamp-none">{project.quickSolution}</p>
+              <p className="text-sm sm:text-base line-clamp-2 sm:line-clamp-none">
+                {project.quickSolution}
+              </p>
             </div>
           </div>
         </div>
@@ -189,7 +173,7 @@ function ProjectCard({
           <Link
             href={`/companies/edit/${project.id}`}
             className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <Pencil className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="sm:inline">Edit</span>
@@ -197,7 +181,7 @@ function ProjectCard({
           <Link
             href={`/companies/know-your-numbers/${project.id}`}
             className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <DollarSign className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="hidden sm:inline">Know your Numbers</span>

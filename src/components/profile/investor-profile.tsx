@@ -1,14 +1,13 @@
-import { Loader2, MapPin, Pencil, User } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { api } from "~/utils/api";
-import { InvestorForm } from "./investor-form";
+import { Loader2, MapPin, Pencil, User } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
+import { InvestorForm } from './investor-form';
 
 export const InvestorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const { data: investor, isPending: isLoading } =
-    api.investor.getByUserId.useQuery();
+  const { data: investor, isPending: isLoading } = api.investor.getByUserId.useQuery();
 
   if (isLoading) {
     return (
@@ -18,9 +17,7 @@ export const InvestorProfile = () => {
     );
   }
   if (isEditing || !investor?.country) {
-    return (
-      <InvestorForm investor={investor} onCancel={() => setIsEditing(false)} />
-    );
+    return <InvestorForm investor={investor} onCancel={() => setIsEditing(false)} />;
   }
 
   return (
@@ -61,7 +58,7 @@ export const InvestorProfile = () => {
       <div className="px-12 pt-16">
         <div className="mt-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold">
-            {investor?.firstName + " " + investor?.lastName}
+            {investor?.firstName + ' ' + investor?.lastName}
           </h2>
           <Button
             variant="outline"
@@ -69,7 +66,7 @@ export const InvestorProfile = () => {
             onClick={() => setIsEditing(!isEditing)}
           >
             <Pencil className="h-2 w-2" />
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
         </div>
         <hr className="my-4 sm:my-6 border-white/10" />
@@ -77,13 +74,11 @@ export const InvestorProfile = () => {
           <MapPin className="mr-0.5 h-4 w-4" />
           {investor?.state && investor?.country
             ? `${investor.state.name}, ${investor.country.name}`
-            : "Not specified"}
+            : 'Not specified'}
         </p>
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
-        <p className="mt-3 text-gray-400">
-          {investor?.about ?? "No description"}
-        </p>
+        <p className="mt-3 text-gray-400">{investor?.about ?? 'No description'}</p>
         <h3 className="mt-12 font-semibold">Portfolio</h3>
         <p>TODO</p>
       </div>

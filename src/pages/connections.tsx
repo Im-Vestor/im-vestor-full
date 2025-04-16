@@ -30,7 +30,10 @@ export default function Connections() {
         <div className="mt-4 flex flex-col gap-4">
           {data?.connections && data.connections.length > 0 ? (
             data.connections.map(connection => (
-              <ConnectionCard key={connection.connection.id} connection={connection as ConnectionResponse} />
+              <ConnectionCard
+                key={connection.connection.id}
+                connection={connection as ConnectionResponse}
+              />
             ))
           ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -69,13 +72,17 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
 
   const user = connection.user;
   const userType = user.userType;
-  const firstName = user.entrepreneur?.firstName ?? user.investor?.firstName ?? user.partner?.firstName ?? '';
-  const lastName = user.entrepreneur?.lastName ?? user.investor?.lastName ?? user.partner?.lastName ?? '';
+  const firstName =
+    user.entrepreneur?.firstName ?? user.investor?.firstName ?? user.partner?.firstName ?? '';
+  const lastName =
+    user.entrepreneur?.lastName ?? user.investor?.lastName ?? user.partner?.lastName ?? '';
 
   const connectMutation = api.connection.connect.useMutation({
     onSuccess: data => {
       void utils.connection.getMyConnections.invalidate();
-      toast.success(`${data.connected ? 'Connected with' : 'Disconnected from'} ${firstName} ${lastName}!`);
+      toast.success(
+        `${data.connected ? 'Connected with' : 'Disconnected from'} ${firstName} ${lastName}!`
+      );
     },
     onError: () => {
       toast.error('Failed to update connection status.');
@@ -113,13 +120,12 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
                     {firstName} {lastName}
                   </h3>
                   {connection.mutual && (
-                    <span className="rounded bg-white/10 px-2 py-0.5 text-xs">
-                      Mutual
-                    </span>
+                    <span className="rounded bg-white/10 px-2 py-0.5 text-xs">Mutual</span>
                   )}
                 </div>
                 <p className="text-white/70">
-                  {connection.type === 'following' ? 'You follow them' : 'Follow you'} since {new Date(connection.connection.createdAt).toLocaleDateString()}
+                  {connection.type === 'following' ? 'You follow them' : 'Follow you'} since{' '}
+                  {new Date(connection.connection.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </div>

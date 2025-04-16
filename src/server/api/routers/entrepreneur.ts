@@ -1,13 +1,9 @@
-import { clerkClient } from "@clerk/nextjs/server";
-import { UserType } from "@prisma/client";
-import { z } from "zod";
+import { clerkClient } from '@clerk/nextjs/server';
+import { UserType } from '@prisma/client';
+import { z } from 'zod';
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import { createReferralLink, generateCode } from "~/utils/referral";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const entrepreneurRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -20,7 +16,7 @@ export const entrepreneurRouter = createTRPCRouter({
             country: true,
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
         },
         country: true,
@@ -28,32 +24,30 @@ export const entrepreneurRouter = createTRPCRouter({
       },
     });
   }),
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.entrepreneur.findUniqueOrThrow({
-        where: { id: input.id },
-        include: {
-          projects: {
-            include: {
-              state: true,
-              country: true,
-              sector: true,
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    return ctx.db.entrepreneur.findUniqueOrThrow({
+      where: { id: input.id },
+      include: {
+        projects: {
+          include: {
+            state: true,
+            country: true,
+            sector: true,
           },
-          country: true,
-          state: true,
-          user: {
-            select: {
-              id: true,
-            }
-          }
+          orderBy: {
+            createdAt: 'desc',
+          },
         },
-      });
-    }),
+        country: true,
+        state: true,
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  }),
   create: publicProcedure
     .input(
       z.object({
@@ -64,7 +58,7 @@ export const entrepreneurRouter = createTRPCRouter({
         referralToken: z.string().optional(),
         email: z.string().email(),
         password: z.string().min(8),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const userToCheck = await ctx.db.user.findUnique({
@@ -72,9 +66,8 @@ export const entrepreneurRouter = createTRPCRouter({
       });
 
       if (userToCheck) {
-        throw new Error("User already exists");
+        throw new Error('User already exists');
       }
-
 
       const client = await clerkClient();
 
@@ -100,12 +93,7 @@ export const entrepreneurRouter = createTRPCRouter({
 
       if (input.referralToken) {
         if (input.referralToken) {
-          await createReferralLink(
-            input.referralToken,
-            user.id,
-            input.firstName,
-            input.lastName,
-          );
+          await createReferralLink(input.referralToken, user.id, input.firstName, input.lastName);
         }
       }
 
@@ -133,7 +121,7 @@ export const entrepreneurRouter = createTRPCRouter({
         banner: z.string().optional(),
         mobileFone: z.string().min(1),
         fiscalCode: z.string().min(1),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       if (input.photo) {

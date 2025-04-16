@@ -1,13 +1,9 @@
-import { clerkClient } from "@clerk/nextjs/server";
-import { UserType } from "@prisma/client";
-import { z } from "zod";
+import { clerkClient } from '@clerk/nextjs/server';
+import { UserType } from '@prisma/client';
+import { z } from 'zod';
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import { createReferralLink, generateCode } from "~/utils/referral";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const partnerRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -25,7 +21,7 @@ export const partnerRouter = createTRPCRouter({
         referralToken: z.string().optional(),
         email: z.string().email(),
         password: z.string().min(8),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const userToCheck = await ctx.db.user.findUnique({
@@ -33,7 +29,7 @@ export const partnerRouter = createTRPCRouter({
       });
 
       if (userToCheck) {
-        throw new Error("User already exists");
+        throw new Error('User already exists');
       }
 
       const client = await clerkClient();
@@ -50,12 +46,12 @@ export const partnerRouter = createTRPCRouter({
       });
 
       if (!clerkUser) {
-        throw new Error("Failed to create user in Clerk.");
+        throw new Error('Failed to create user in Clerk.');
       }
 
       const user = await ctx.db.user.create({
         data: {
-          id: clerkUser ? clerkUser.id : "",
+          id: clerkUser ? clerkUser.id : '',
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.INVESTOR,
@@ -64,14 +60,9 @@ export const partnerRouter = createTRPCRouter({
 
       if (input.referralToken) {
         try {
-          await createReferralLink(
-            input.referralToken,
-            user.id,
-            input.firstName,
-            input.lastName,
-          );
+          await createReferralLink(input.referralToken, user.id, input.firstName, input.lastName);
         } catch (error) {
-          console.error("Failed to create referral link", error);
+          console.error('Failed to create referral link', error);
         }
       }
 
@@ -92,7 +83,7 @@ export const partnerRouter = createTRPCRouter({
         lastName: z.string().min(1),
         mobileFone: z.string().min(1),
         companyName: z.string().min(1),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.partner.update({

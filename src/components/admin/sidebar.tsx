@@ -1,5 +1,14 @@
-import Image from "next/image";
-import { LayoutDashboard, DollarSign, LineChart, HelpCircle, Users, Building2, Bell, Settings } from "lucide-react";
+import Image from 'next/image';
+import {
+  LayoutDashboard,
+  DollarSign,
+  LineChart,
+  HelpCircle,
+  Users,
+  Building2,
+  Bell,
+  Settings,
+} from 'lucide-react';
 
 export function Sidebar() {
   return (
@@ -18,7 +27,10 @@ export function Sidebar() {
       <nav className="p-2">
         <ul className="space-y-1">
           <li>
-            <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-md bg-primary/10 text-primary">
+            <a
+              href="#"
+              className="flex items-center gap-3 px-3 py-2 rounded-md bg-primary/10 text-primary"
+            >
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
             </a>
@@ -89,5 +101,5 @@ export function Sidebar() {
         </ul>
       </nav>
     </aside>
-  )
+  );
 }

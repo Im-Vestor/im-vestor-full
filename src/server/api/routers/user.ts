@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
@@ -25,7 +25,7 @@ export const userRouter = createTRPCRouter({
           referred: true,
         },
         orderBy: {
-          joinedAt: "desc",
+          joinedAt: 'desc',
         },
       });
 
@@ -37,7 +37,7 @@ export const userRouter = createTRPCRouter({
               investedInvestors: {
                 some: {
                   id: {
-                    in: referrals.map((referral) => referral.referred.id),
+                    in: referrals.map(referral => referral.referred.id),
                   },
                 },
               },
@@ -45,7 +45,7 @@ export const userRouter = createTRPCRouter({
             {
               Entrepreneur: {
                 userId: {
-                  in: referrals.map((referral) => referral.referred.id),
+                  in: referrals.map(referral => referral.referred.id),
                 },
               },
             },
@@ -66,13 +66,12 @@ export const userRouter = createTRPCRouter({
       });
 
       // Match the businesses to the referrals
-      const referralsWithBusinesses = referrals.map((referral) => {
+      const referralsWithBusinesses = referrals.map(referral => {
         const referralBusinesses = businesses.filter(
-          (business) =>
+          business =>
             business.investedInvestors.some(
-              (investor) => investor.user.id === referral.referred.id,
-            ) ||
-            business.Entrepreneur?.userId === referral.referred.id,
+              investor => investor.user.id === referral.referred.id
+            ) || business.Entrepreneur?.userId === referral.referred.id
         );
 
         return {

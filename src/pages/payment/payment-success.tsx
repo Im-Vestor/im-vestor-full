@@ -1,6 +1,6 @@
-import { CheckCircle, LogIn } from "lucide-react";
-import Link from "next/link";
-import { Button } from "~/components/ui/button";
+import { CheckCircle, LogIn } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '~/components/ui/button';
 
 export default function PaymentSuccess() {
   return (
@@ -12,7 +12,8 @@ export default function PaymentSuccess() {
           Payment Successful!
         </h1>
         <p className="mt-6 max-w-md text-xl text-gray-300">
-          Thank you for your payment. Your transaction has been completed successfully. You can now access all the features of your account.
+          Thank you for your payment. Your transaction has been completed successfully. You can now
+          access all the features of your account.
         </p>
         <Link href="/login" className="mt-12">
           <Button size="lg" className="hover:opacity-75 text-lg">
@@ -23,4 +24,4 @@ export default function PaymentSuccess() {
       </div>
     </main>
   );
-} 
+}

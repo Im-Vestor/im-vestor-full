@@ -1,8 +1,13 @@
-import { Search, Bell, Upload, Edit, Trash } from "lucide-react"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion"
-import { Button } from "~/components/ui/button"
-import Image from "next/image";
-import AdminLayout from "~/pages/admin";
+import { Search, Bell, Upload, Edit, Trash } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '~/components/ui/accordion';
+import { Button } from '~/components/ui/button';
+import Image from 'next/image';
+import AdminLayout from '~/pages/admin';
 
 export function DashboardContent() {
   return (
@@ -60,12 +65,12 @@ export function DashboardContent() {
         <VideoSection />
       </div>
     </div>
-  )
+  );
 }
 
 interface TicketColumnProps {
-  title: string
-  showMore?: boolean
+  title: string;
+  showMore?: boolean;
 }
 
 function TicketColumn({ title, showMore }: TicketColumnProps) {
@@ -73,7 +78,9 @@ function TicketColumn({ title, showMore }: TicketColumnProps) {
     <div className="bg-dark-sidebar rounded-md p-4 border border-border">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium">{title}</h3>
-        {showMore && <button className="text-xs text-text-secondary hover:text-text-primary">Ver mais</button>}
+        {showMore && (
+          <button className="text-xs text-text-secondary hover:text-text-primary">Ver mais</button>
+        )}
       </div>
       <div className="space-y-4">
         <TicketCard />
@@ -81,22 +88,24 @@ function TicketColumn({ title, showMore }: TicketColumnProps) {
         <TicketCard />
       </div>
     </div>
-  )
+  );
 }
 
 interface TicketCardProps {
-  withImage?: boolean
+  withImage?: boolean;
 }
 
 function TicketCard({ withImage }: TicketCardProps) {
   return (
     <div className="bg-dark rounded-md p-3 border border-border">
       <div className="flex justify-between items-start mb-2">
-        <span className="bg-badge-yellow text-background text-xs px-2 py-0.5 rounded-sm font-medium">Bug</span>
+        <span className="bg-badge-yellow text-background text-xs px-2 py-0.5 rounded-sm font-medium">
+          Bug
+        </span>
       </div>
       <p className="text-xs text-text-secondary mb-2">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+        labore et dolore magna aliqua.
       </p>
       {withImage && (
         <div className="mt-2 rounded-md overflow-hidden">
@@ -110,7 +119,7 @@ function TicketCard({ withImage }: TicketCardProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function FaqSection() {
@@ -132,7 +141,11 @@ function FaqSection() {
         </Accordion>
 
         <div className="flex justify-end mt-2">
-          <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1 text-text-secondary">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs flex items-center gap-1 text-text-secondary"
+          >
             Adicionar FAQ <span className="text-lg">+</span>
           </Button>
         </div>
@@ -153,18 +166,22 @@ function FaqSection() {
         </Accordion>
 
         <div className="flex justify-end mt-2">
-          <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1 text-text-secondary">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs flex items-center gap-1 text-text-secondary"
+          >
             Adicionar FAQ <span className="text-lg">+</span>
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface FaqItemProps {
-  question: string
-  answer?: string
+  question: string;
+  answer?: string;
 }
 
 function FaqItem({ question, answer }: FaqItemProps) {
@@ -177,10 +194,10 @@ function FaqItem({ question, answer }: FaqItemProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 py-3 text-sm text-text-secondary bg-dark">
-        {answer ?? "Resposta não disponível."}
+        {answer ?? 'Resposta não disponível.'}
       </AccordionContent>
     </AccordionItem>
-  )
+  );
 }
 
 function VideoSection() {
@@ -204,7 +221,9 @@ function VideoSection() {
 
           <div className="border border-border rounded-md flex flex-col items-center justify-center p-6 text-center">
             <Upload className="mb-2 text-text-secondary" size={24} />
-            <p className="text-xs text-text-secondary mb-1">Clica para fazer upload ou arrasta e larga</p>
+            <p className="text-xs text-text-secondary mb-1">
+              Clica para fazer upload ou arrasta e larga
+            </p>
             <p className="text-xs text-text-secondary mb-3">Tamanho máximo: 50MB</p>
             <Button size="sm" className="bg-blue hover:bg-blue/90 text-xs">
               Adicionar Vídeo
@@ -250,14 +269,16 @@ function VideoSection() {
       </div>
 
       <div className="mt-4">
-        <Button className="w-full bg-badge-yellow hover:bg-badge-yellow/90 text-background">Adicionar Categoria</Button>
+        <Button className="w-full bg-badge-yellow hover:bg-badge-yellow/90 text-background">
+          Adicionar Categoria
+        </Button>
       </div>
     </div>
-  )
+  );
 }
 
 interface VideoCardProps {
-  title: string
+  title: string;
 }
 
 function VideoCard({ title }: VideoCardProps) {
@@ -287,7 +308,7 @@ function VideoCard({ title }: VideoCardProps) {
         <h4 className="text-sm font-medium">{title}</h4>
       </div>
     </div>
-  )
+  );
 }
 
 // --- Add Default Export for the Page ---
@@ -299,4 +320,3 @@ export default function AdminSupportPage() {
   );
 }
 // --- End Default Export ---
-

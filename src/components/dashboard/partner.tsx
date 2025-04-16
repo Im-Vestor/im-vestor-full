@@ -1,7 +1,7 @@
-import { Copy, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { Header } from "~/components/header";
-import { api } from "~/utils/api";
+import { Copy, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Header } from '~/components/header';
+import { api } from '~/utils/api';
 
 export default function PartnerDashboard() {
   // const [page, setPage] = useState(0);
@@ -19,8 +19,7 @@ export default function PartnerDashboard() {
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold">Your referal code</h1>
               <p className="text-sm text-white/50">
-                Share this code with your friends and earn 10% of their
-                earnings.
+                Share this code with your friends and earn 10% of their earnings.
               </p>
             </div>
             <div className="w-40 rounded-sm border-2 border-white/10 bg-background bg-opacity-30 py-2 pl-6 text-lg font-bold placeholder:text-white">
@@ -30,10 +29,8 @@ export default function PartnerDashboard() {
                 ) : (
                   <Copy
                     onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        user?.referralCode ?? "",
-                      );
-                      toast.success("Copied to clipboard!");
+                      await navigator.clipboard.writeText(user?.referralCode ?? '');
+                      toast.success('Copied to clipboard!');
                     }}
                     className="absolute right-4 h-4 w-4 cursor-pointer hover:opacity-75"
                   />

@@ -1,5 +1,5 @@
-import { CheckIcon } from "lucide-react";
-import Image from "next/image";
+import { CheckIcon } from 'lucide-react';
+import Image from 'next/image';
 
 export const SignUpCard = ({
   name,
@@ -7,13 +7,13 @@ export const SignUpCard = ({
   features,
 }: {
   name: string;
-  type: "entrepreneur" | "investor";
+  type: 'entrepreneur' | 'investor';
   features: string[];
 }) => {
   return (
     <div className="flex md:w-96 w-72 flex-col items-center justify-center">
       <Image
-        src={"/images/card-hole.png"}
+        src={'/images/card-hole.png'}
         alt="Card Hole"
         width={120}
         height={120}
@@ -21,7 +21,7 @@ export const SignUpCard = ({
       />
       <div className="mt-4 w-full rounded-xl bg-card">
         <h1 className="mb-2 mt-6 text-center text-4xl font-semibold text-[#E5CD82]">
-          {type === "entrepreneur" ? "Entrepreneur" : "Investor"}
+          {type === 'entrepreneur' ? 'Entrepreneur' : 'Investor'}
         </h1>
         <h2 className="mt-2 text-center text-lg text-[#DCDDE0]">{name}</h2>
         <hr className="my-4 w-full border-background border-4" />

@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 // Define precise types for the connections
 export const connectionTypeSchema = z.object({
@@ -15,21 +15,27 @@ export const connectionTypeSchema = z.object({
     imageUrl: z.string().nullable(),
     userType: z.string(),
     referralCode: z.string(),
-    entrepreneur: z.object({
-      id: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-    }).nullable(),
-    investor: z.object({
-      id: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-    }).nullable(),
-    partner: z.object({
-      id: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-    }).nullable(),
+    entrepreneur: z
+      .object({
+        id: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+      })
+      .nullable(),
+    investor: z
+      .object({
+        id: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+      })
+      .nullable(),
+    partner: z
+      .object({
+        id: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+      })
+      .nullable(),
   }),
   type: z.enum(['following', 'follower']),
   mutual: z.boolean(),
@@ -43,7 +49,7 @@ export const connectionRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page } = input;
       const perPage = 10;
-      const skip = ((page ?? 0) * perPage);
+      const skip = (page ?? 0) * perPage;
 
       // Get people the user follows
       const following = await ctx.db.connection.findMany({
@@ -75,7 +81,7 @@ export const connectionRouter = createTRPCRouter({
 
       // Create a map of following IDs for quick lookup
       const followingMap = new Map(following.map(conn => [conn.followingId, conn]));
-      
+
       // Create a map of follower IDs for quick lookup
       const followerMap = new Map(followers.map(conn => [conn.followerId, conn]));
 
@@ -107,7 +113,7 @@ export const connectionRouter = createTRPCRouter({
         connections: paginatedConnections,
       };
     }),
-    
+
   connect: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {

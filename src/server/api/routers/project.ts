@@ -380,7 +380,7 @@ export const projectRouter = createTRPCRouter({
         console.error('Project not found');
         return;
       }
-      
+
       const investor = await ctx.db.investor.findUnique({
         where: {
           userId: ctx.auth.userId,

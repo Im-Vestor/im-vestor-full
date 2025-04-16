@@ -1,7 +1,7 @@
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import PartnerDashboard from "../../components/dashboard/partner";
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import PartnerDashboard from '../../components/dashboard/partner';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -9,13 +9,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      void router.push("/login");
+      void router.push('/login');
     }
   }, [isLoaded, isSignedIn, router]);
 
-  return (
-    <>
-      {user?.publicMetadata.userType === "PARTNER" && <PartnerDashboard />}
-    </>
-  );
+  return <>{user?.publicMetadata.userType === 'PARTNER' && <PartnerDashboard />}</>;
 }

@@ -259,15 +259,21 @@ export default function CompanyDetails() {
                                 <CalendarIcon className="h-6 w-6 text-background" />
                               </div>
                               <div className="flex flex-col">
-                                <p className="text-base font-medium">{format(selectedDate, 'MMMM d, yyyy')}</p>
-                                <p className="text-xs text-white/50">{format(selectedDate, 'EEEE')}</p>
+                                <p className="text-base font-medium">
+                                  {format(selectedDate, 'MMMM d, yyyy')}
+                                </p>
+                                <p className="text-xs text-white/50">
+                                  {format(selectedDate, 'EEEE')}
+                                </p>
                               </div>
                             </div>
                             <div className="mt-4">
                               <DayPicker
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={date => setSelectedDate(new UTCDate(date ?? dayAfterTomorrowUTC))}
+                                onSelect={date =>
+                                  setSelectedDate(new UTCDate(date ?? dayAfterTomorrowUTC))
+                                }
                                 captionLayout="buttons"
                                 showOutsideDays
                                 disabled={{ before: tomorrowUTC }}
@@ -276,7 +282,8 @@ export default function CompanyDetails() {
                                   root: 'w-full',
                                   months: 'w-full',
                                   month: 'w-full',
-                                  caption: 'flex flex-row justify-center pt-1 relative items-center space-x-2 mb-4',
+                                  caption:
+                                    'flex flex-row justify-center pt-1 relative items-center space-x-2 mb-4',
                                   caption_between: 'flex flex-row justify-center gap-1',
                                   nav: 'space-x-1 flex items-center text-white',
                                   nav_button_previous: 'absolute left-1',
@@ -308,7 +315,8 @@ export default function CompanyDetails() {
                                   variant="outline"
                                   className={cn(
                                     'h-9',
-                                    time === hour && 'bg-primary text-primary-foreground opacity-100'
+                                    time === hour &&
+                                      'bg-primary text-primary-foreground opacity-100'
                                   )}
                                   onClick={() => setTime(hour)}
                                 >
@@ -323,7 +331,9 @@ export default function CompanyDetails() {
                               ) : (
                                 <div className="flex flex-row gap-2">
                                   {preferredHours?.map((hour, i) => (
-                                    <p key={i} className="text-white/50">{hour.time}</p>
+                                    <p key={i} className="text-white/50">
+                                      {hour.time}
+                                    </p>
                                   ))}
                                 </div>
                               )}
@@ -516,7 +526,6 @@ export default function CompanyDetails() {
               </div>
             </div>
 
-
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 <CalendarIcon className="h-4 w-4 text-white/70 flex-shrink-0" />
@@ -526,9 +535,7 @@ export default function CompanyDetails() {
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="h-4 w-4 text-white/70 flex-shrink-0" />
-                <span className="text-sm font-medium text-white">
-                  {time}
-                </span>
+                <span className="text-sm font-medium text-white">{time}</span>
               </div>
             </div>
           </div>

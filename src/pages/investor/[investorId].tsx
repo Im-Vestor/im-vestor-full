@@ -1,9 +1,4 @@
-import {
-  ArrowLeft,
-  Loader2,
-  MapPin,
-  User
-} from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, User } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Header } from '~/components/header';
@@ -19,7 +14,7 @@ export default function InvestorDetails() {
   );
 
   if (isLoading || !investor) {
-  return (
+    return (
       <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
         <Header />
         <div className="mt-16 flex items-center justify-center sm:mt-32">

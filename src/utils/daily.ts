@@ -47,7 +47,7 @@ export const createDailyCall = async (date: Date) => {
     console.log('[createDailyCall] Response status:', dailyRes.status);
 
     // Type the response body when parsing JSON
-    const responseBody = await dailyRes.json() as DailyRoomResponse;
+    const responseBody = (await dailyRes.json()) as DailyRoomResponse;
     console.log('[createDailyCall] Response body:', JSON.stringify(responseBody, null, 2));
 
     // Now access properties safely
@@ -66,7 +66,6 @@ export const createDailyCall = async (date: Date) => {
     console.log('[createDailyCall] Successfully created room:', { name, url });
 
     return { name, url };
-
   } catch (error) {
     console.error('[createDailyCall] Fetch or processing error:', error);
     // Re-throw the error to be caught by the tRPC handler

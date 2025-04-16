@@ -1,28 +1,28 @@
-import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
-import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { useClerk, useSignIn, useUser } from '@clerk/nextjs';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
+import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
 
 export default function Login() {
   const user = useUser();
   const router = useRouter();
   const { signOut } = useClerk();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isPending, setIsPending] = useState(false);
 
   const { isLoaded, signIn, setActive } = useSignIn();
 
   useEffect(() => {
     if (user.isLoaded && user.isSignedIn) {
-      router.push("/profile");
+      router.push('/profile');
     }
   }, [user.isLoaded, user.isSignedIn, router]);
 
@@ -36,7 +36,7 @@ export default function Login() {
     try {
       if (user.isLoaded && user.isSignedIn) {
         await signOut({
-          redirectUrl: "/login",
+          redirectUrl: '/login',
         });
       }
 
@@ -45,19 +45,17 @@ export default function Login() {
         password,
       });
 
-      if (signInAttempt.status === "complete") {
+      if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        await router.push("/profile");
+        await router.push('/profile');
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
-        toast.error(
-          err.errors[0]?.message ?? "Failed to login. Please try again.",
-        );
+        toast.error(err.errors[0]?.message ?? 'Failed to login. Please try again.');
       } else {
-        toast.error("Failed to login. Please try again.");
+        toast.error('Failed to login. Please try again.');
         console.error(JSON.stringify(err, null, 2));
       }
     } finally {
@@ -84,9 +82,7 @@ export default function Login() {
           <div className="w-full max-w-md space-y-8">
             <div>
               <h2 className="mt-6 text-3xl font-bold text-[#E5CD82]">Login</h2>
-              <p className="mt-2 text-sm text-gray-300">
-                Please sign in to your account
-              </p>
+              <p className="mt-2 text-sm text-gray-300">Please sign in to your account</p>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -94,7 +90,7 @@ export default function Login() {
                 <div className="space-y-2">
                   <Label className="font-normal text-neutral-200">Email*</Label>
                   <Input
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     value={email}
                     id="email"
                     name="email"
@@ -105,11 +101,9 @@ export default function Login() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-normal text-neutral-200">
-                    Password*
-                  </Label>
+                  <Label className="font-normal text-neutral-200">Password*</Label>
                   <Input
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     value={password}
                     id="password"
                     name="password"
@@ -123,11 +117,7 @@ export default function Login() {
 
               <div className="flex justify-end">
                 <Link href="/forgot-password">
-                  <Button
-                    variant="link"
-                    className="h-6 font-normal text-neutral-200"
-                    size="sm"
-                  >
+                  <Button variant="link" className="h-6 font-normal text-neutral-200" size="sm">
                     Forgot password?
                   </Button>
                 </Link>
@@ -135,7 +125,7 @@ export default function Login() {
 
               <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? (
-                  "Logging in..."
+                  'Logging in...'
                 ) : (
                   <>
                     Login <ArrowRight className="ml-2" />
@@ -146,11 +136,9 @@ export default function Login() {
 
             <div className="mt-6">
               <p className="mt-8 text-center text-xs">
-                Don&apos;t have an account?{" "}
+                Don&apos;t have an account?{' '}
                 <Link href="/sign-up" className="underline hover:opacity-70">
-                  <span className="text-[#F0D687] underline hover:opacity-70">
-                    Create one
-                  </span>
+                  <span className="text-[#F0D687] underline hover:opacity-70">Create one</span>
                 </Link>
               </p>
             </div>

@@ -1,19 +1,11 @@
-import { useUser } from "@clerk/nextjs";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Copy,
-  Facebook,
-  Instagram,
-  Linkedin,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { toast } from "sonner";
-import { BusinessCardDialog } from "~/components/business-card";
-import { Button } from "~/components/ui/button";
-import { api } from "~/utils/api";
-
+import { useUser } from '@clerk/nextjs';
+import { ArrowLeft, ArrowRight, Copy, Facebook, Instagram, Linkedin } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { BusinessCardDialog } from '~/components/business-card';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
 
 export default function Referral() {
   const { user } = useUser();
@@ -35,25 +27,19 @@ export default function Referral() {
             </Link>
 
             <div className="flex flex-col items-center">
-              <Image
-                src="/logo/imvestor.png"
-                alt="Imvestor"
-                width={48}
-                height={48}
-              />
+              <Image src="/logo/imvestor.png" alt="Imvestor" width={48} height={48} />
               <h3 className="mt-2 text-xl font-bold">Im-Vestor</h3>
             </div>
             <h1 className="mt-8 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-center text-3xl font-medium tracking-wide text-transparent md:text-left md:text-4xl">
-              Welcome,{" "}
+              Welcome,{' '}
               <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text">
                 {user?.firstName}
               </span>
             </h1>
             <p className="mt-8 text-center text-gray-300 md:text-left">
-              Our platform connects entrepreneurs and investors, providing
-              resources to help businesses thrive. Get ready to explore
-              opportunities, make valuable connections, and accelerate your
-              growth.{" "}
+              Our platform connects entrepreneurs and investors, providing resources to help
+              businesses thrive. Get ready to explore opportunities, make valuable connections, and
+              accelerate your growth.{' '}
               <span className="bg-gradient-to-r from-[#E5CD82] via-[#C2AE72] to-[#978760] bg-clip-text text-transparent">
                 Stay tuned for our official launch!
               </span>
@@ -87,10 +73,8 @@ export default function Referral() {
                 <div className="relative flex items-center justify-center">
                   <Copy
                     onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        referral?.referralCode ?? "",
-                      );
-                      toast.success("Copied to clipboard!");
+                      await navigator.clipboard.writeText(referral?.referralCode ?? '');
+                      toast.success('Copied to clipboard!');
                     }}
                     className="absolute right-2 h-4 w-4 cursor-pointer hover:opacity-75"
                   />
@@ -101,9 +85,9 @@ export default function Referral() {
               <div className="flex w-full justify-center gap-8 md:justify-between md:px-8 opacity-60 duration-300">
                 <Link
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                    "https://imvestor.com",
+                    'https://imvestor.com'
                   )}&text=${encodeURIComponent(
-                    `Join Imvestor using my referral code: ${referral?.referralCode}`,
+                    `Join Imvestor using my referral code: ${referral?.referralCode}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -112,9 +96,9 @@ export default function Referral() {
                 </Link>
                 <Link
                   href={`https://www.instagram.com/share?url=${encodeURIComponent(
-                    "https://imvestor.com",
+                    'https://imvestor.com'
                   )}&caption=${encodeURIComponent(
-                    `Join Imvestor using my referral code: ${referral?.referralCode}`,
+                    `Join Imvestor using my referral code: ${referral?.referralCode}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -123,9 +107,9 @@ export default function Referral() {
                 </Link>
                 <Link
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                    "https://imvestor.com",
+                    'https://imvestor.com'
                   )}&quote=${encodeURIComponent(
-                    `Join Imvestor using my referral code: ${referral?.referralCode}`,
+                    `Join Imvestor using my referral code: ${referral?.referralCode}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -138,25 +122,21 @@ export default function Referral() {
         </main>
 
         <div className="hidden flex-col items-center justify-center pb-24 md:flex">
-          <div className="mt-12 text-center text-5xl font-bold text-[#E5CD82]">
-            My Referral
-          </div>
+          <div className="mt-12 text-center text-5xl font-bold text-[#E5CD82]">My Referral</div>
           <div className="mt-6 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-center text-xl font-bold">
             Total: {referral?.referralsAsReferrer.length}
           </div>
-          {referral?.referralsAsReferrer.map((ref) => (
+          {referral?.referralsAsReferrer.map(ref => (
             <div
               key={ref.name}
               className="mt-10 flex items-center justify-center gap-8 rounded-md bg-[#1b1c24] px-24 py-3"
             >
-              <div className="text-center text-lg font-bold text-white">
-                {ref.name}
-              </div>
+              <div className="text-center text-lg font-bold text-white">{ref.name}</div>
               <div className="text-center text-lg text-white">
-                Joined on{" "}
-                {ref.joinedAt.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
+                Joined on{' '}
+                {ref.joinedAt.toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
                 })}
               </div>
             </div>

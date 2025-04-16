@@ -1,11 +1,9 @@
-import Image from "next/image";
-import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from "lucide-react";
+import Image from 'next/image';
+import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-react';
 
 export default function Dashboard() {
-
   return (
     <div className="flex h-screen bg-background text-foreground">
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Dashboard Content */}
@@ -30,7 +28,9 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-2xl font-bold">17</div>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+0.2%</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
+                  +0.2%
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Utilizadores 24H</div>
             </div>
@@ -43,7 +43,9 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-2xl font-bold">120€</div>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+6.2%</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
+                  +6.2%
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Inscrições 24H</div>
             </div>
@@ -56,7 +58,9 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-2xl font-bold">8</div>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">-12.1%</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
+                  -12.1%
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Projetos Financiados 24H</div>
             </div>
@@ -69,7 +73,9 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-2xl font-bold">264€</div>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+6.2%</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
+                  +6.2%
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Add-Ons 24H</div>
             </div>
@@ -165,7 +171,8 @@ export default function Dashboard() {
             <div className="bg-card rounded-lg p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">
-                  Areas de Investimento <span className="text-sm text-muted-foreground">(mais impactantes)</span>
+                  Areas de Investimento{' '}
+                  <span className="text-sm text-muted-foreground">(mais impactantes)</span>
                 </h3>
               </div>
               <div className="flex justify-center mb-4">
@@ -233,10 +240,18 @@ export default function Dashboard() {
         </main>
       </div>
     </div>
-  )
+  );
 }
 
-function CountryAccessItem({ country, flag, percentage }: { country: string; flag: string; percentage: number }) {
+function CountryAccessItem({
+  country,
+  flag,
+  percentage,
+}: {
+  country: string;
+  flag: string;
+  percentage: number;
+}) {
   return (
     <div className="flex items-center gap-2">
       <div className="text-xl">{flag}</div>
@@ -246,11 +261,14 @@ function CountryAccessItem({ country, flag, percentage }: { country: string; fla
           <span className="text-sm">{percentage}%</span>
         </div>
         <div className="h-1.5 w-full bg-accent rounded-full overflow-hidden">
-          <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${percentage}%` }}></div>
+          <div
+            className="h-full bg-yellow-400 rounded-full"
+            style={{ width: `${percentage}%` }}
+          ></div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function SupportItem({ label, value, color }: { label: string; value: number; color: string }) {
@@ -261,13 +279,24 @@ function SupportItem({ label, value, color }: { label: string; value: number; co
         <span className="text-sm">{value}</span>
       </div>
       <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full`} style={{ width: `${(value / 16) * 100}%` }}></div>
+        <div
+          className={`h-full ${color} rounded-full`}
+          style={{ width: `${(value / 16) * 100}%` }}
+        ></div>
       </div>
     </div>
-  )
+  );
 }
 
-function MeetingReport({ id, description, tag }: { id: string; description: string; tag?: string }) {
+function MeetingReport({
+  id,
+  description,
+  tag,
+}: {
+  id: string;
+  description: string;
+  tag?: string;
+}) {
   return (
     <div className="border-b border-white/10 pb-4">
       <div className="flex justify-between mb-1">
@@ -288,11 +317,13 @@ function MeetingReport({ id, description, tag }: { id: string; description: stri
       <p className="text-xs text-muted-foreground mb-2">{description}</p>
       {tag && (
         <div className="flex">
-          <span className="text-xs px-2 py-0.5 rounded bg-destructive/20 text-destructive">{tag}</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-destructive/20 text-destructive">
+            {tag}
+          </span>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function RevenueChart() {
@@ -300,16 +331,25 @@ function RevenueChart() {
   // For this example, we'll create a simple visual representation
   return (
     <div className="relative h-full w-full flex items-end justify-between gap-1 pb-4">
-      {[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map((hour) => (
+      {[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(hour => (
         <div key={hour} className="flex-1 flex items-end gap-0.5 h-full">
-          <div className="w-1/3 bg-yellow-400 rounded-t-sm" style={{ height: `${Math.random() * 70 + 20}%` }}></div>
-          <div className="w-1/3 bg-indigo-500 rounded-t-sm" style={{ height: `${Math.random() * 50 + 10}%` }}></div>
-          <div className="w-1/3 bg-blue-500 rounded-t-sm" style={{ height: `${Math.random() * 60 + 15}%` }}></div>
+          <div
+            className="w-1/3 bg-yellow-400 rounded-t-sm"
+            style={{ height: `${Math.random() * 70 + 20}%` }}
+          ></div>
+          <div
+            className="w-1/3 bg-indigo-500 rounded-t-sm"
+            style={{ height: `${Math.random() * 50 + 10}%` }}
+          ></div>
+          <div
+            className="w-1/3 bg-blue-500 rounded-t-sm"
+            style={{ height: `${Math.random() * 60 + 15}%` }}
+          ></div>
           <div className="absolute -bottom-2 text-[8px] text-muted-foreground">{hour}:00</div>
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function InvestmentPieChart() {
@@ -328,5 +368,5 @@ function InvestmentPieChart() {
       {/* Red segment - 25% */}
       <path d="M 50 50 L 28.68 85 A 40 40 0 0 1 50 10 Z" fill="#ef4444" />
     </svg>
-  )
+  );
 }

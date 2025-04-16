@@ -1,9 +1,9 @@
-import { S3Client } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
-import { env } from "~/env";
+import { S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { env } from '~/env';
 
 const s3Client = new S3Client({
-  region: "auto",
+  region: 'auto',
   endpoint: `https://${env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
     accessKeyId: env.CLOUDFLARE_ACCESS_KEY_ID,
@@ -14,13 +14,13 @@ const s3Client = new S3Client({
 export async function uploadFileToBucket(file: File, userId: string) {
   const Key =
     userId +
-    "/" +
-    file.name.replaceAll(" ", "-").split(".")[0] +
-    "-" +
+    '/' +
+    file.name.replaceAll(' ', '-').split('.')[0] +
+    '-' +
     Date.now() +
-    "." +
-    file.name.split(".")[1];
-    
+    '.' +
+    file.name.split('.')[1];
+
   const Bucket = env.CLOUDFLARE_BUCKET;
 
   let res;
@@ -41,11 +41,9 @@ export async function uploadFileToBucket(file: File, userId: string) {
 
     return {
       ...res,
-      imageUrl: "https://imvestor.gustavofior.com/" + Key,
+      imageUrl: 'https://imvestor.gustavofior.com/' + Key,
     };
   } catch (e) {
     throw e;
   }
 }
-
-

@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { useRouter } from "next/router";
-import { Sidebar } from "~/components/admin/sidebar";
-import { Header } from "~/components/admin/header";
-import { useUser } from "@clerk/nextjs";
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { Sidebar } from '~/components/admin/sidebar';
+import { Header } from '~/components/admin/header';
+import { useUser } from '@clerk/nextjs';
 
 export default function Admin({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -31,4 +31,3 @@ export default function Admin({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

@@ -1,74 +1,74 @@
-import { useClerk, useUser } from "@clerk/nextjs";
-import { type UserType } from "@prisma/client";
-import { Book, Clock, LogOut, Mail, Menu, User, Users, X } from "lucide-react";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { api } from "~/utils/api";
-import { Notifications } from "./notifications/notifications";
-import { Button } from "./ui/button";
+import { useClerk, useUser } from '@clerk/nextjs';
+import { type UserType } from '@prisma/client';
+import { Book, Clock, LogOut, Mail, Menu, User, Users, X } from 'lucide-react';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { api } from '~/utils/api';
+import { Notifications } from './notifications/notifications';
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from './ui/dropdown-menu';
 
 const ENTREPRENEUR_MENUS = [
   {
-    label: "Investors",
-    href: "/investors",
+    label: 'Investors',
+    href: '/investors',
   },
   {
-    label: "Meetings",
-    href: "/meetings",
+    label: 'Meetings',
+    href: '/meetings',
   },
   {
-    label: "News",
-    href: "/news/entrepreneur",
+    label: 'News',
+    href: '/news/entrepreneur',
   },
   {
-    label: "Shop",
-    href: "/shop",
+    label: 'Shop',
+    href: '/shop',
   },
 ];
 
 const INVESTOR_MENUS = [
   {
-    label: "Projects",
-    href: "/projects",
+    label: 'Projects',
+    href: '/projects',
   },
   {
-    label: "Meetings",
-    href: "/meetings",
+    label: 'Meetings',
+    href: '/meetings',
   },
   {
-    label: "Daily Pitches",
-    href: "/daily-pitches",
+    label: 'Daily Pitches',
+    href: '/daily-pitches',
   },
   {
-    label: "News",
-    href: "/news/investor",
+    label: 'News',
+    href: '/news/investor',
   },
   {
-    label: "Shop",
-    href: "/shop",
+    label: 'Shop',
+    href: '/shop',
   },
 ];
 
 const PARTNER_MENUS = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
+    label: 'Dashboard',
+    href: '/dashboard',
   },
   {
-    label: "Referrals",
-    href: "/referral/list",
+    label: 'Referrals',
+    href: '/referral/list',
   },
   {
-    label: "News",
-    href: "/news/partner",
+    label: 'News',
+    href: '/news/partner',
   },
 ];
 
@@ -77,11 +77,10 @@ export const Header = () => {
   const path = usePathname();
   const { user, isSignedIn } = useUser();
 
-  const isSignUpRoute = path?.startsWith("/sign-up");
-  const { data: userDetails } = api.user.getUser.useQuery(
-    undefined,
-    { enabled: !isSignUpRoute && !!isSignedIn }
-  );
+  const isSignUpRoute = path?.startsWith('/sign-up');
+  const { data: userDetails } = api.user.getUser.useQuery(undefined, {
+    enabled: !isSignUpRoute && !!isSignedIn,
+  });
 
   const { signOut } = useClerk();
 
@@ -96,9 +95,9 @@ export const Header = () => {
 
   // Get correct menu based on user type
   const getMenus = () => {
-    if (userType === "INVESTOR") return INVESTOR_MENUS;
-    if (userType === "ENTREPRENEUR") return ENTREPRENEUR_MENUS;
-    if (userType === "PARTNER") return PARTNER_MENUS;
+    if (userType === 'INVESTOR') return INVESTOR_MENUS;
+    if (userType === 'ENTREPRENEUR') return ENTREPRENEUR_MENUS;
+    if (userType === 'PARTNER') return PARTNER_MENUS;
     return [];
   };
 
@@ -125,12 +124,12 @@ export const Header = () => {
         {/* Desktop Navigation */}
         {isSignedIn && (
           <div className="hidden md:flex items-center justify-center gap-1 lg:gap-3">
-            {getMenus().map((menu) => (
+            {getMenus().map(menu => (
               <Button
                 key={menu.href}
                 variant="ghost"
                 size="sm"
-                className={`${path === menu.href ? "text-[#EFD687]" : ""}`}
+                className={`${path === menu.href ? 'text-[#EFD687]' : ''}`}
                 onClick={() => void handleNavigation(menu.href)}
               >
                 {menu.label}
@@ -150,7 +149,7 @@ export const Header = () => {
                   <span className="hidden md:inline">{user?.firstName}</span>
                   {userDetails?.imageUrl ? (
                     <Image
-                      src={userDetails?.imageUrl ?? ""}
+                      src={userDetails?.imageUrl ?? ''}
                       alt="Profile"
                       width={24}
                       height={24}
@@ -162,30 +161,45 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => void handleNavigation("/profile")} className="hover:cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => void handleNavigation('/profile')}
+                  className="hover:cursor-pointer"
+                >
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void handleNavigation("/connections")} className="hover:cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => void handleNavigation('/connections')}
+                  className="hover:cursor-pointer"
+                >
                   <Users className="h-4 w-4 mr-2" />
                   Connections
                 </DropdownMenuItem>
-                {userType === "ENTREPRENEUR" && (
-                  <DropdownMenuItem onClick={() => void handleNavigation("/preferred-hours")} className="hover:cursor-pointer">
+                {userType === 'ENTREPRENEUR' && (
+                  <DropdownMenuItem
+                    onClick={() => void handleNavigation('/preferred-hours')}
+                    className="hover:cursor-pointer"
+                  >
                     <Clock className="h-4 w-4 mr-2" />
                     Preferred Hours
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => void handleNavigation("/referral/share")} className="hover:cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => void handleNavigation('/referral/share')}
+                  className="hover:cursor-pointer"
+                >
                   <Mail className="h-4 w-4 mr-2" />
                   Referrals
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void handleNavigation("/terms")} className="hover:cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => void handleNavigation('/terms')}
+                  className="hover:cursor-pointer"
+                >
                   <Book className="h-4 w-4 mr-2" />
                   Terms
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => signOut({ redirectUrl: "/login" })}
+                  onClick={() => signOut({ redirectUrl: '/login' })}
                   className="hover:cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -212,12 +226,12 @@ export const Header = () => {
       {/* Mobile Navigation Menu */}
       {isSignedIn && isMobileMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 md:hidden">
-          {getMenus().map((menu) => (
+          {getMenus().map(menu => (
             <Button
               key={menu.href}
               variant="ghost"
               size="sm"
-              className={`justify-start ${path === menu.href ? "text-[#EFD687]" : ""}`}
+              className={`justify-start ${path === menu.href ? 'text-[#EFD687]' : ''}`}
               onClick={() => void handleMobileNavigation(menu.href)}
             >
               {menu.label}

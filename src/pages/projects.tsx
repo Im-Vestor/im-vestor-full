@@ -76,7 +76,8 @@ export default function Companies() {
     favorites: favorites,
   };
 
-  const { data: projects, isLoading: isLoadingProjects } = api.project.getAllWithFilters.useQuery(filterParams);
+  const { data: projects, isLoading: isLoadingProjects } =
+    api.project.getAllWithFilters.useQuery(filterParams);
 
   const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
 
@@ -253,11 +254,7 @@ export default function Companies() {
                 <p className="text-sm text-white/50">
                   {`Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} projects`}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 0}
-                >
+                <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
                   Previous
                 </Button>
                 <Button

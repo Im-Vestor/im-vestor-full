@@ -1,11 +1,11 @@
-import { Building2, Loader2, UserRoundIcon } from "lucide-react";
-import { useState } from "react";
-import { Header } from "~/components/header";
-import { Button } from "~/components/ui/button";
-import { api } from "~/utils/api";
-import { ProjectStatus } from "@prisma/client";
-import Image from "next/image";
-import { cn } from "~/lib/utils";
+import { Building2, Loader2, UserRoundIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Header } from '~/components/header';
+import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
+import { ProjectStatus } from '@prisma/client';
+import Image from 'next/image';
+import { cn } from '~/lib/utils';
 
 export default function List() {
   const [page, setPage] = useState(0);
@@ -26,7 +26,7 @@ export default function List() {
           )}
 
           <div className="mt-4 flex flex-col gap-4">
-            {data?.referralsWithBusinesses.map((referralWithBusiness) => (
+            {data?.referralsWithBusinesses.map(referralWithBusiness => (
               <div
                 className="mb-4 rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6"
                 key={referralWithBusiness.referral.id}
@@ -53,8 +53,7 @@ export default function List() {
                       {referralWithBusiness.referral.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-white/50">
-                      Joined on{" "}
-                      {referralWithBusiness.referral?.joinedAt.toLocaleDateString()}
+                      Joined on {referralWithBusiness.referral?.joinedAt.toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -64,7 +63,7 @@ export default function List() {
                 </h2>
 
                 <div className="mt-3 sm:mt-4 grid gap-2 sm:grid-cols-1 md:grid-cols-2">
-                  {referralWithBusiness.businesses.map((business) => (
+                  {referralWithBusiness.businesses.map(business => (
                     <div key={business.id} className="flex items-center gap-3">
                       {business.logo ? (
                         <div className="size-10 sm:size-12 flex-shrink-0 overflow-hidden rounded-md">
@@ -84,17 +83,14 @@ export default function List() {
                       <div className="flex flex-col gap-1 sm:gap-1.5">
                         <p className="text-xs sm:text-sm font-semibold">{business.name}</p>
                         <div
-                          className={cn(
-                            "rounded-full px-2 py-0.5 text-xs font-medium",
-                            {
-                              "bg-green-500/20 text-green-500":
-                                business.status === ProjectStatus.ACTIVE,
-                              "bg-red-500/20 text-red-500":
-                                business.status === ProjectStatus.COMPLETED,
-                              "bg-neutral-500/20 text-neutral-500":
-                                business.status === ProjectStatus.INACTIVE,
-                            },
-                          )}
+                          className={cn('rounded-full px-2 py-0.5 text-xs font-medium', {
+                            'bg-green-500/20 text-green-500':
+                              business.status === ProjectStatus.ACTIVE,
+                            'bg-red-500/20 text-red-500':
+                              business.status === ProjectStatus.COMPLETED,
+                            'bg-neutral-500/20 text-neutral-500':
+                              business.status === ProjectStatus.INACTIVE,
+                          })}
                         >
                           {business.status.charAt(0).toUpperCase() +
                             business.status.slice(1).toLowerCase()}
@@ -107,9 +103,7 @@ export default function List() {
             ))}
 
             {data?.referralsWithBusinesses.length === 0 && (
-              <p className="text-center text-sm text-white/50">
-                No referrals found.
-              </p>
+              <p className="text-center text-sm text-white/50">No referrals found.</p>
             )}
           </div>
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center sm:justify-end gap-2">
@@ -131,11 +125,7 @@ export default function List() {
                 size="sm"
                 className="h-8 sm:h-10"
                 onClick={() => setPage(page + 1)}
-                disabled={
-                  (data?.referralsWithBusinesses?.length ?? 0) -
-                  (page + 1) * 20 <=
-                  0
-                }
+                disabled={(data?.referralsWithBusinesses?.length ?? 0) - (page + 1) * 20 <= 0}
               >
                 Next
               </Button>

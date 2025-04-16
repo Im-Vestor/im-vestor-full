@@ -1,19 +1,14 @@
-import {
-  type Area,
-  type Country,
-  type Investor,
-  type State,
-} from "@prisma/client";
-import { Loader2, MessageCircle, SearchIcon, UserRound } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Header } from "~/components/header";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import { api } from "~/utils/api";
+import { type Area, type Country, type Investor, type State } from '@prisma/client';
+import { Loader2, MessageCircle, SearchIcon, UserRound } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Header } from '~/components/header';
+import { Button } from '~/components/ui/button';
+import { Checkbox } from '~/components/ui/checkbox';
+import { Input } from '~/components/ui/input';
+import { api } from '~/utils/api';
 
 type InvestmentRange = {
   id: string;
@@ -24,11 +19,11 @@ type InvestmentRange = {
 
 // Define investment ranges
 const INVESTMENT_RANGES: InvestmentRange[] = [
-  { id: "1", label: "Less than $100k", max: 100000 },
-  { id: "2", label: "$100k - $500k", min: 100000, max: 500000 },
-  { id: "3", label: "$500k - $1M", min: 500000, max: 1000000 },
-  { id: "4", label: "$1M - $5M", min: 1000000, max: 5000000 },
-  { id: "5", label: "$5M+", min: 5000000 },
+  { id: '1', label: 'Less than $100k', max: 100000 },
+  { id: '2', label: '$100k - $500k', min: 100000, max: 500000 },
+  { id: '3', label: '$500k - $1M', min: 500000, max: 1000000 },
+  { id: '4', label: '$1M - $5M', min: 1000000, max: 5000000 },
+  { id: '5', label: '$5M+', min: 5000000 },
 ];
 
 type InvestorWithRelations = Investor & {
@@ -40,7 +35,7 @@ type InvestorWithRelations = Investor & {
 export default function Investors() {
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
 
   // Filter states
@@ -59,8 +54,7 @@ export default function Investors() {
     page: page,
   };
 
-  const { data, isLoading } =
-    api.investor.getInvestorsRelatedToEntrepreneur.useQuery(filterParams);
+  const { data, isLoading } = api.investor.getInvestorsRelatedToEntrepreneur.useQuery(filterParams);
 
   const visibleAreas = areas?.slice(0, visibleAreasCount);
 
@@ -68,7 +62,7 @@ export default function Investors() {
     if (checked) {
       setSelectedAreas([...selectedAreas, areaId]);
     } else {
-      setSelectedAreas(selectedAreas.filter((id) => id !== areaId));
+      setSelectedAreas(selectedAreas.filter(id => id !== areaId));
     }
   };
 
@@ -78,7 +72,7 @@ export default function Investors() {
       return;
     }
 
-    const range = INVESTMENT_RANGES.find((r) => r.id === id);
+    const range = INVESTMENT_RANGES.find(r => r.id === id);
     if (range) {
       setInvestmentFilters({ min: range.min, max: range.max });
     }
@@ -107,18 +101,16 @@ export default function Investors() {
             <div className="w-full md:w-1/5">
               <p className="font-medium">Areas of Interest</p>
               <div className="ml-2 mt-1.5 flex gap-2 max-w-[150px] flex-col">
-                {visibleAreas?.map((area) => (
+                {visibleAreas?.map(area => (
                   <div key={area.id} className="flex items-center gap-2">
                     <Checkbox
                       id={area.id.toString()}
                       checked={selectedAreas.includes(area.id.toString())}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={checked =>
                         handleAreaChange(area.id.toString(), checked === true)
                       }
                     />
-                    <p className="text-sm">
-                      {area.name}
-                    </p>
+                    <p className="text-sm">{area.name}</p>
                   </div>
                 ))}
                 {areas && areas.length > visibleAreasCount && (
@@ -140,15 +132,14 @@ export default function Investors() {
               </div>
               <p className="mt-2 font-medium">Investment Range</p>
               <div className="ml-2 mt-1.5 flex flex-col gap-2">
-                {INVESTMENT_RANGES.map((range) => (
+                {INVESTMENT_RANGES.map(range => (
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
                       id={range.id}
                       checked={
-                        investmentFilters.min === range.min &&
-                        investmentFilters.max === range.max
+                        investmentFilters.min === range.min && investmentFilters.max === range.max
                       }
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={checked =>
                         handleInvestmentFilterChange(range.id, checked === true)
                       }
                     />
@@ -164,7 +155,7 @@ export default function Investors() {
                   placeholder="Search investors by name"
                   className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
@@ -185,14 +176,10 @@ export default function Investors() {
               <div className="mt-8 flex items-center justify-end gap-2">
                 <p className="text-sm text-white/50">
                   {isLoading
-                    ? "Loading investors..."
+                    ? 'Loading investors...'
                     : `Showing ${data?.investors?.length ?? 0} of ${data?.total ?? 0} investors`}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 0}
-                >
+                <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
                   Previous
                 </Button>
                 <Button
@@ -252,7 +239,7 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
             </div>
             {investor.areas && investor.areas.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {investor.areas.slice(0, 2).map((area) => (
+                {investor.areas.slice(0, 2).map(area => (
                   <span
                     key={area.id}
                     className="rounded-full bg-[#323645] px-6 py-1 text-sm font-light"
@@ -271,9 +258,9 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
 
           <div className="flex flex-col">
             <Button
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
-                toast.success("Poke not implemented yet!");
+                toast.success('Poke not implemented yet!');
               }}
               className="gap-2 self-start md:self-auto"
               size="sm"

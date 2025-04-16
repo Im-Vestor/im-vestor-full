@@ -1,6 +1,6 @@
-import { LogIn, RefreshCw, XCircle } from "lucide-react";
-import Link from "next/link";
-import { Button } from "~/components/ui/button";
+import { LogIn, RefreshCw, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '~/components/ui/button';
 
 export default function PaymentError() {
   return (
@@ -12,10 +12,15 @@ export default function PaymentError() {
           Payment Failed
         </h1>
         <p className="mt-6 max-w-md text-xl text-gray-300">
-          We apologize, but there was an error processing your payment. Please try again or contact our support team if the problem persists.
+          We apologize, but there was an error processing your payment. Please try again or contact
+          our support team if the problem persists.
         </p>
         <div className="mt-12 flex flex-col gap-4 sm:flex-row">
-          <Button size="lg" onClick={() => window.history.back()} className="hover:opacity-75 text-lg">
+          <Button
+            size="lg"
+            onClick={() => window.history.back()}
+            className="hover:opacity-75 text-lg"
+          >
             <RefreshCw className="mr-2 h-6 w-6" />
             Try Again
           </Button>
@@ -29,4 +34,4 @@ export default function PaymentError() {
       </div>
     </main>
   );
-} 
+}

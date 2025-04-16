@@ -111,9 +111,7 @@ export default function Meetings() {
                 const entryStartTime = subMinutes(meetingStartDate, 5);
 
                 const canEnterMeeting =
-                  meeting.url &&
-                  !isAfter(now, meetingEndDate) &&
-                  !isBefore(now, entryStartTime);
+                  meeting.url && !isAfter(now, meetingEndDate) && !isBefore(now, entryStartTime);
 
                 return (
                   <div className="rounded-xl border-2 border-white/10 bg-card p-6" key={meeting.id}>
@@ -140,7 +138,8 @@ export default function Meetings() {
                           {meeting.project?.name ?? ''}
                         </p>
                         <p className="text-sm text-white/50">
-                          {meeting.project?.state?.name ?? ''}, {meeting.project?.country?.name ?? ''}
+                          {meeting.project?.state?.name ?? ''},{' '}
+                          {meeting.project?.country?.name ?? ''}
                         </p>
                       </div>
                     </div>

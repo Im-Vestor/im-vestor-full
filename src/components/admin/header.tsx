@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell } from 'lucide-react';
 
 export function Header() {
   return (
@@ -13,5 +13,5 @@ export function Header() {
         </button>
       </div>
     </header>
-  )
+  );
 }
