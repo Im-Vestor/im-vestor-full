@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/nextjs';
 import { UTCDate } from '@date-fns/utc';
 import { format, addHours, subMinutes, isBefore, isAfter } from 'date-fns';
 import { CalendarIcon, ClockIcon, Loader2 } from 'lucide-react';
@@ -15,11 +16,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/comp
 import { api } from '~/utils/api';
 
 export default function Meetings() {
+  const { user } = useUser();
   const utils = api.useUtils();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate());
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [meetingToCancelId, setMeetingToCancelId] = useState<string | null>(null);
+
+  const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
 
   const { data: meetings, isLoading } = api.meeting.getMeetingsByDate.useQuery(
     { date: selectedDate },
@@ -102,6 +106,14 @@ export default function Meetings() {
         </div>
         <div className="w-3/5 min-h-50 rounded-xl border-2 border-white/10 bg-card p-12">
           <div className="mb-4 flex flex-col gap-4">
+            {isEntrepreneur && (
+              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                <p className="text-sm">Manage your preferred hours</p>
+                <Link href="/preferred-hours">
+                  <Button variant="outline">Manage</Button>
+                </Link>
+              </div>
+            )}
             {isLoading ? (
               Array.from({ length: 2 }).map((_, index) => (
                 <div className="rounded-xl border-2 border-white/10 bg-card p-6" key={index}>

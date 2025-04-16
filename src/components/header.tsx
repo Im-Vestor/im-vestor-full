@@ -1,6 +1,6 @@
 import { useClerk, useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Book, Clock, LogOut, Mail, Menu, User, Users, X } from 'lucide-react';
+import { Book, LogOut, Mail, Menu, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
@@ -175,15 +175,6 @@ export const Header = () => {
                   <Users className="h-4 w-4 mr-2" />
                   Connections
                 </DropdownMenuItem>
-                {userType === 'ENTREPRENEUR' && (
-                  <DropdownMenuItem
-                    onClick={() => void handleNavigation('/preferred-hours')}
-                    className="hover:cursor-pointer"
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    Preferred Hours
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem
                   onClick={() => void handleNavigation('/referral/share')}
                   className="hover:cursor-pointer"
