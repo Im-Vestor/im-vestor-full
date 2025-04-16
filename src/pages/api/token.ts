@@ -9,7 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { roomName, isOwner } = req.body as { roomName: string; isOwner: boolean };
 
   if (req.method === 'POST' && roomName) {
-    console.log(`Getting token for room '${roomName}' as owner: ${isOwner}`);
 
     const options = {
       method: 'POST',

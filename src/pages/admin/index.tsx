@@ -1,24 +1,22 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+'use server';
+
+import { redirect } from 'next/navigation';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { Sidebar } from '~/components/admin/sidebar';
 import { Header } from '~/components/admin/header';
-import { useUser } from '@clerk/nextjs';
 
-export default function Admin({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, isLoaded } = useUser();
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
 
-  useEffect(() => {
-    if (isLoaded) {
-      const isAdmin = user?.publicMetadata?.userType === 'ADMIN';
-      if (!user || !isAdmin) {
-        router.push('/');
-      }
-    }
-  }, [user, isLoaded, router]);
+  if (!userId) {
+    redirect('/login');
+  }
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
+  const clerkUser = await currentUser();
+  const isAdmin = clerkUser?.publicMetadata?.userIsAdmin;
+
+  if (!isAdmin) {
+    redirect('/404');
   }
 
   return (

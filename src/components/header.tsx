@@ -175,15 +175,6 @@ export const Header = () => {
                   <Users className="h-4 w-4 mr-2" />
                   Connections
                 </DropdownMenuItem>
-                {userType === 'ENTREPRENEUR' && (
-                  <DropdownMenuItem
-                    onClick={() => void handleNavigation('/preferred-hours')}
-                    className="hover:cursor-pointer"
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    Preferred Hours
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem
                   onClick={() => void handleNavigation('/referral/share')}
                   className="hover:cursor-pointer"

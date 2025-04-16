@@ -24,4 +24,10 @@ export const notificationsRouter = createTRPCRouter({
         },
       });
     }),
+  readAllNotifications: protectedProcedure.mutation(async ({ ctx }) => {
+    return await ctx.db.notification.updateMany({
+      where: { userId: ctx.auth.userId },
+      data: { read: true },
+    });
+  }),
 });
