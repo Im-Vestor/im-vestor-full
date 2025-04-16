@@ -11,7 +11,6 @@ interface DailyRoomResponse {
 }
 
 export const createDailyCall = async (date: Date) => {
-  console.log('[createDailyCall] Received date:', date);
   const notBefore = date;
   const notAfter = addHours(date, 1);
 
@@ -38,17 +37,12 @@ export const createDailyCall = async (date: Date) => {
   };
 
   const apiUrl = `${env.DAILY_REST_DOMAIN ?? 'https://api.daily.co/v1'}/rooms`;
-  console.log('[createDailyCall] Sending request to:', apiUrl);
-  console.log('[createDailyCall] Request options:', JSON.stringify(options, null, 2));
 
   try {
     const dailyRes = await fetch(apiUrl, options);
 
-    console.log('[createDailyCall] Response status:', dailyRes.status);
-
     // Type the response body when parsing JSON
     const responseBody = (await dailyRes.json()) as DailyRoomResponse;
-    console.log('[createDailyCall] Response body:', JSON.stringify(responseBody, null, 2));
 
     // Now access properties safely
     if (!dailyRes.ok || responseBody.error) {
@@ -63,7 +57,6 @@ export const createDailyCall = async (date: Date) => {
     }
 
     const { name, url } = responseBody; // Destructure safely
-    console.log('[createDailyCall] Successfully created room:', { name, url });
 
     return { name, url };
   } catch (error) {

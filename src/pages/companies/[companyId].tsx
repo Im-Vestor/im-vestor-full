@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { UTCDate } from '@date-fns/utc';
-import { addDays, format, formatDistanceToNow, startOfTomorrow } from 'date-fns';
+import { addDays, format, formatDistanceToNow, startOfToday } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 
 import {
@@ -66,11 +66,11 @@ export default function CompanyDetails() {
   const { companyId } = router.query;
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
-  const tomorrowUTC = startOfTomorrow();
-  const dayAfterTomorrowUTC = addDays(tomorrowUTC, 1);
+  const today = startOfToday();
+  const dayAftertodayUTC = addDays(today, 1);
 
   const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate(dayAfterTomorrowUTC));
+  const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate(dayAftertodayUTC));
   const [time, setTime] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -97,7 +97,7 @@ export default function CompanyDetails() {
       setIsConfirmModalOpen(false);
       setOpenScheduleMeeting(false);
       setTime(null);
-      setSelectedDate(new UTCDate(dayAfterTomorrowUTC));
+      setSelectedDate(new UTCDate(dayAftertodayUTC));
       router.push('/meetings');
     },
     onError: error => {
@@ -151,7 +151,7 @@ export default function CompanyDetails() {
     if (companyId) {
       addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
     }
-  }, [companyId, addInvestorViewMutation]);
+  }, [companyId]);
 
   if (isLoading || !project) {
     return (
@@ -272,11 +272,11 @@ export default function CompanyDetails() {
                                 mode="single"
                                 selected={selectedDate}
                                 onSelect={date =>
-                                  setSelectedDate(new UTCDate(date ?? dayAfterTomorrowUTC))
+                                  setSelectedDate(new UTCDate(date ?? dayAftertodayUTC))
                                 }
                                 captionLayout="buttons"
                                 showOutsideDays
-                                disabled={{ before: tomorrowUTC }}
+                                disabled={{ before: today }}
                                 defaultMonth={selectedDate}
                                 classNames={{
                                   root: 'w-full',
@@ -316,7 +316,7 @@ export default function CompanyDetails() {
                                   className={cn(
                                     'h-9',
                                     time === hour &&
-                                      'bg-primary text-primary-foreground opacity-100'
+                                    'bg-primary text-primary-foreground opacity-100'
                                   )}
                                   onClick={() => setTime(hour)}
                                 >

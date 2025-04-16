@@ -1,8 +1,9 @@
 import { UTCDate } from '@date-fns/utc';
 import { format, addHours, subMinutes, isBefore, isAfter } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, ClockIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ import { api } from '~/utils/api';
 
 export default function Meetings() {
   const utils = api.useUtils();
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate());
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [meetingToCancelId, setMeetingToCancelId] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function Meetings() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
       <div className="mt-12 flex gap-6">
-        <div className="h-fit w-2/5 rounded-xl border-2 border-white/10 bg-card p-12">
+        <div className="min-h-50 h-fit w-2/5 rounded-xl border-2 border-white/10 bg-card p-12">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl bg-[#EFD687] p-4">
               <CalendarIcon className="h-8 w-8 text-black" />
@@ -97,8 +99,8 @@ export default function Meetings() {
             />
           </div>
         </div>
-        <div className="w-3/5 rounded-xl border-2 border-white/10 bg-card p-12">
-          <div className="mt-4 flex flex-col gap-4">
+        <div className="w-3/5 min-h-50 rounded-xl border-2 border-white/10 bg-card p-12">
+          <div className="mb-4 flex flex-col gap-4">
             {isLoading ? (
               <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -115,32 +117,51 @@ export default function Meetings() {
 
                 return (
                   <div className="rounded-xl border-2 border-white/10 bg-card p-6" key={meeting.id}>
-                    <p className="text-sm text-white/50">
-                      Starts at:{' '}
-                      <span className="text-white">
-                        {new Date(meeting.startDate).toLocaleString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </p>
-
-                    <div className="mt-4 flex items-center gap-3">
-                      <Image
-                        src={meeting.project?.logo ?? ''}
-                        alt="Company Logo"
-                        width={72}
-                        height={72}
-                        className="h-12 w-12 rounded-md object-cover"
-                      />
-                      <div className="flex flex-col">
-                        <p className="text-sm font-medium text-white">
-                          {meeting.project?.name ?? ''}
-                        </p>
-                        <p className="text-sm text-white/50">
-                          {meeting.project?.state?.name ?? ''},{' '}
-                          {meeting.project?.country?.name ?? ''}
-                        </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={meeting.project?.logo ?? ''}
+                          alt="Company Logo"
+                          width={72}
+                          height={72}
+                          className="h-12 w-12 cursor-pointer rounded-md object-cover"
+                          onClick={() => router.push(`/projects/${meeting.project?.name}`)}
+                        />
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium text-white">
+                            {meeting.project?.name ?? ''}
+                          </p>
+                          <p className="text-sm text-white/50">
+                            {meeting.project?.state?.name ?? ''},{' '}
+                            {meeting.project?.country?.name ?? ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-start gap-3">
+                        <div className="flex items-center gap-3">
+                          <CalendarIcon className="h-4 w-4" />
+                          <p className="text-sm text-white/50">
+                            {format(meeting.startDate, 'EEE, MMMM d')}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <ClockIcon className="h-4 w-4" />
+                          <p className="text-sm text-white/50">
+                            <span className="text-white">
+                              {new Date(meeting.startDate).toLocaleString('en-GB', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            <span className="text-white/50"> - </span>
+                            <span className="text-white">
+                              {new Date(meeting.endDate).toLocaleString('en-GB', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
 

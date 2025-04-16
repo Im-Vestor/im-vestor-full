@@ -25,15 +25,15 @@ export const meetingRouter = createTRPCRouter({
       const whereClause =
         userType === UserType.ENTREPRENEUR
           ? {
-              entrepreneurId: user?.entrepreneur?.id,
-            }
+            entrepreneurId: user?.entrepreneur?.id,
+          }
           : {
-              investors: {
-                some: {
-                  id: user?.investor?.id,
-                },
+            investors: {
+              some: {
+                id: user?.investor?.id,
               },
-            };
+            },
+          };
 
       const meetings = await ctx.db.meeting.findMany({
         where: {
@@ -84,9 +84,7 @@ export const meetingRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      console.log('date to be scheduled', input.date);
       const now = new Date();
-      console.log('current server time', now);
 
       if (input.date < now) {
         console.error('Validation failed: Meeting time is in the past.', {
@@ -114,8 +112,6 @@ export const meetingRouter = createTRPCRouter({
           projectId: input.projectId,
         },
       });
-
-      console.log('meeting created', meeting);
 
       await ctx.db.notification.create({
         data: {
