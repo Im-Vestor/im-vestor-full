@@ -4,7 +4,6 @@ import {
   Building2,
   CircleUserRound,
   DollarSign,
-  Loader2,
   MapPin,
   Pencil,
   User,
@@ -16,6 +15,7 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { EntrepreneurForm } from './entrepreneur-form';
 import Link from 'next/link';
+import { SkeletonProfile } from './skeleton-profile';
 
 export const EntrepreneurProfile = () => {
   const router = useRouter();
@@ -23,11 +23,7 @@ export const EntrepreneurProfile = () => {
   const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
 
   if (isLoading) {
-    return (
-      <div className="mt-32 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <SkeletonProfile />;
   }
 
   if (isEditing || !entrepreneur?.country) {

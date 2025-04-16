@@ -42,11 +42,13 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
   { id: '5', label: '$5M+', min: 5000000 },
 ];
 
+const INITIAL_VISIBLE_AREAS = 5; // Define a constant for the initial count
+
 export default function Companies() {
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
-  const [showAllAreas, setShowAllAreas] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [visibleAreasCount, setVisibleAreasCount] = useState(INITIAL_VISIBLE_AREAS);
 
   // Filter states
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
@@ -78,8 +80,6 @@ export default function Companies() {
 
   const { data: projects, isLoading: isLoadingProjects } =
     api.project.getAllWithFilters.useQuery(filterParams);
-
-  const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
 
   const handleSectorChange = (sectorId: string, checked: boolean) => {
     if (checked) {
@@ -121,6 +121,14 @@ export default function Companies() {
     }
   };
 
+  const handleShowMoreAreas = () => {
+    setVisibleAreasCount(prevCount => Math.min(prevCount + 10, areas?.length ?? 0));
+  };
+
+  const handleShowLessAreas = () => {
+    setVisibleAreasCount(INITIAL_VISIBLE_AREAS);
+  };
+
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
@@ -131,8 +139,8 @@ export default function Companies() {
           ) : (
             <div className="w-full md:w-1/5">
               <p className="font-medium">Sector</p>
-              <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
-                {visibleAreas?.map(area => (
+              <div className="ml-2 mt-1.5 flex gap-1 max-w-[150px] flex-col">
+                {areas?.slice(0, visibleAreasCount).map(area => (
                   <div key={area.id} className="flex items-center gap-2">
                     <Checkbox
                       id={area.id.toString()}
@@ -146,17 +154,25 @@ export default function Companies() {
                     </p>
                   </div>
                 ))}
-                {areas && areas.length > 3 && (
+                {areas && areas.length > visibleAreasCount && (
                   <button
-                    onClick={() => setShowAllAreas(!showAllAreas)}
+                    onClick={handleShowMoreAreas}
                     className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
                   >
-                    {showAllAreas ? 'Show less' : `See more (${areas.length - 3})`}
+                    See more ({Math.min(10, areas.length - visibleAreasCount)})
+                  </button>
+                )}
+                {visibleAreasCount > INITIAL_VISIBLE_AREAS && (
+                  <button
+                    onClick={handleShowLessAreas}
+                    className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
+                  >
+                    Show less
                   </button>
                 )}
               </div>
               <p className="mt-2 font-medium">Investor Slots</p>
-              <div className="ml-2 mt-1.5 flex flex-col">
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="1-5-slots"
@@ -167,7 +183,7 @@ export default function Companies() {
                 </div>
               </div>
               <p className="mt-2 font-medium">Stage</p>
-              <div className="ml-2 mt-1.5 flex flex-col">
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
                 {PROJECT_STAGES.map(stage => (
                   <div key={stage.value} className="flex items-center gap-2">
                     <Checkbox
@@ -180,7 +196,7 @@ export default function Companies() {
                 ))}
               </div>
               <p className="mt-2 font-medium">Revenue</p>
-              <div className="ml-2 mt-1.5 flex flex-col">
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
                 {REVENUE_RANGES.map(range => (
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
@@ -195,7 +211,7 @@ export default function Companies() {
                 ))}
               </div>
               <p className="mt-2 font-medium">Initial Investment</p>
-              <div className="ml-2 mt-1.5 flex flex-col">
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
                 {INVESTMENT_RANGES.map(range => (
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
@@ -223,11 +239,11 @@ export default function Companies() {
             </div>
           )}
           <div className="mt-6 w-full md:mt-0 md:w-4/5">
-            <div className="flex items-center rounded-md bg-background">
+            <div className="flex items-center rounded-md bg-white/10 border-2 border-white/10">
               <SearchIcon className="ml-3 h-5 w-5 text-white" />
               <Input
-                placeholder="Search"
-                className="bg-transparent"
+                placeholder="Search investors by name"
+                className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -337,21 +353,72 @@ function FilterSidebarSkeleton() {
   return (
     <div className="w-full md:w-1/5 space-y-4">
       <div>
-        <Skeleton className="h-5 w-1/3 rounded" />
+        <Skeleton className="h-5 w-1/3 rounded mb-2" />
         <div className="ml-2 mt-1.5 space-y-2">
-          <Skeleton className="h-4 w-3/4 rounded" />
-          <Skeleton className="h-4 w-3/4 rounded" />
-          <Skeleton className="h-4 w-3/4 rounded" />
+          {[...Array(INITIAL_VISIBLE_AREAS)].map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+            </div>
+          ))}
         </div>
       </div>
-      {[...Array<number>(5)].map((_, i) => (
-        <div key={i}>
-          <Skeleton className="h-5 w-1/3 rounded" />
-          <div className="ml-2 mt-1.5 space-y-2">
-            <Skeleton className="h-4 w-3/4 rounded" />
+
+      <div>
+        <Skeleton className="h-5 w-2/5 rounded mb-2" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded" />
+            <Skeleton className="h-4 w-1/4 rounded" />
           </div>
         </div>
-      ))}
+      </div>
+
+      <div>
+        <Skeleton className="h-5 w-1/4 rounded mb-2" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          {PROJECT_STAGES.slice(0, 3).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-1/2 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Skeleton className="h-5 w-1/3 rounded mb-2" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          {REVENUE_RANGES.slice(0, 3).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Skeleton className="h-5 w-2/5 rounded mb-2" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          {INVESTMENT_RANGES.slice(0, 3).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Skeleton className="h-5 w-1/3 rounded mb-2" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded" />
+            <Skeleton className="h-4 w-1/2 rounded" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

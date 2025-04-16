@@ -1,24 +1,9 @@
-'use server';
-
-import { redirect } from 'next/navigation';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { type GetServerSideProps } from 'next';
+import { getAuth } from '@clerk/nextjs/server';
 import { Sidebar } from '~/components/admin/sidebar';
 import { Header } from '~/components/admin/header';
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect('/login');
-  }
-
-  const clerkUser = await currentUser();
-  const isAdmin = clerkUser?.publicMetadata?.userIsAdmin;
-
-  if (!isAdmin) {
-    redirect('/404');
-  }
-
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-dark text-text-primary">
       <Sidebar />
@@ -29,3 +14,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const { userId, sessionClaims } = getAuth(ctx.req);
+
+  if (!userId) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  const isAdmin = (sessionClaims?.publicMetadata as { userIsAdmin?: boolean })?.userIsAdmin;
+
+  if (!isAdmin) {
+    return {
+      redirect: {
+        destination: '/404',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};
