@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { api } from '~/utils/api';
-import { Notifications } from './notifications/notifications';
+import { Notifications } from './notifications';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
