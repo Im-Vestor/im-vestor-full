@@ -1,10 +1,13 @@
 import { useUser } from '@clerk/nextjs';
 import { UTCDate } from '@date-fns/utc';
-import { addYears, formatDistanceToNow } from 'date-fns';
+import { addDays, format, formatDistanceToNow, startOfTomorrow } from 'date-fns';
+import { DayPicker } from 'react-day-picker';
+
 import {
   ArrowLeft,
   Building2,
   Calendar1Icon,
+  CalendarIcon,
   CircleUserRound,
   Heart,
   Loader2,
@@ -12,6 +15,7 @@ import {
   MessageCircle,
   Presentation,
   User,
+  Clock,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -20,7 +24,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
-import { Calendar } from '~/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -30,10 +33,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog';
-import { Label } from '~/components/ui/label';
 import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+import { ConfirmationDialog } from '~/components/confirmation-dialog';
 
 const availableHours = [
   '07:00',
@@ -63,10 +66,13 @@ export default function CompanyDetails() {
   const { companyId } = router.query;
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
-  const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
+  const tomorrowUTC = startOfTomorrow();
+  const dayAfterTomorrowUTC = addDays(tomorrowUTC, 1);
 
-  const [date, setDate] = useState<Date | null>(null);
+  const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new UTCDate(dayAfterTomorrowUTC));
   const [time, setTime] = useState<string | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const { data: project, isLoading } = api.project.getById.useQuery(
     { id: companyId as string },
@@ -88,21 +94,26 @@ export default function CompanyDetails() {
   const scheduleMeetingMutation = api.meeting.scheduleMeeting.useMutation({
     onSuccess: () => {
       toast.success('Meeting scheduled successfully');
+      setIsConfirmModalOpen(false);
+      setOpenScheduleMeeting(false);
+      setTime(null);
+      setSelectedDate(new UTCDate(dayAfterTomorrowUTC));
+      router.push('/meetings');
     },
     onError: error => {
       toast.error(error.message);
+      setIsConfirmModalOpen(false);
     },
   });
 
-  // Check if the current project is in the investor's favorites
   const isFavorite = useMemo(() => {
     if (!investor?.favoriteProjects || !companyId) return false;
     return investor.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId);
   }, [investor?.favoriteProjects, companyId]);
 
   const favoriteOrUnfavoriteMutation = api.investor.favoriteOrUnfavorite.useMutation({
-    onSuccess: () => {
-      void utils.investor.getByUserId.invalidate();
+    onSuccess: async () => {
+      await utils.investor.getByUserId.invalidate();
       toast.success(`${isFavorite ? 'Removed from' : 'Added to'} favorites!`);
     },
     onError: () => {
@@ -117,22 +128,30 @@ export default function CompanyDetails() {
   };
 
   const handleScheduleMeeting = async () => {
-    if (companyId) {
+    if (companyId && selectedDate && time) {
+      const meetingDateTime = new Date(selectedDate);
+      meetingDateTime.setHours(parseInt(time.split(':')[0] ?? '0'));
+
       scheduleMeetingMutation.mutate({
         entrepreneurId: project?.Entrepreneur?.id ?? '',
-        date: date ?? new Date(),
+        date: meetingDateTime,
         investorIds: [investor?.id ?? ''],
         projectId: companyId as string,
       });
     }
   };
 
+  const handleOpenConfirmDialog = () => {
+    if (selectedDate && time) {
+      setIsConfirmModalOpen(true);
+    }
+  };
+
   useEffect(() => {
     if (companyId) {
-      void addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
+      addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyId]);
+  }, [companyId, addInvestorViewMutation]);
 
   if (isLoading || !project) {
     return (
@@ -149,7 +168,6 @@ export default function CompanyDetails() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8 pb-48">
       <Header />
       <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8">
-        {/* Company Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
@@ -213,7 +231,7 @@ export default function CompanyDetails() {
                   )}
 
                   <span className="mx-2">•</span>
-                  <span className="w-fit rounded-full bg-[#EFD687] px-2 py-0.5 text-sm text-black sm:px-6">
+                  <span className="w-fit rounded-full bg-[#EFD687] px-2 py-0.5 text-sm text-background sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}
                   </span>
                 </div>
@@ -222,79 +240,102 @@ export default function CompanyDetails() {
                 {isInvestor && (
                   <>
                     <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
-                      <DialogTrigger>
-                        <Button disabled={scheduleMeetingMutation.isPending}>
+                      <DialogTrigger asChild>
+                        <Button>
                           <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule Meeting
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="sm:max-w-3xl w-full mx-6">
                         <DialogHeader>
                           <DialogTitle>Schedule Meeting</DialogTitle>
                           <DialogDescription>
                             Select a date and time for your meeting.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="flex flex-col gap-8">
-                          <div className="flex flex-col gap-2">
-                            <Calendar
-                              mode="single"
-                              captionLayout="dropdown"
-                              showOutsideDays={false}
-                              fromDate={new UTCDate()}
-                              toDate={addYears(new UTCDate(), 1)}
-                              selected={date ?? undefined}
-                              onSelect={date => {
-                                setDate(date ?? null);
-                                setTime(null);
-                              }}
-                              fromYear={2025}
-                              toYear={2030}
-                            />
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <div className="w-full md:w-1/2 h-fit rounded-xl border border-white/10 bg-card p-4">
+                            <div className="flex items-center gap-4">
+                              <div className="rounded-lg bg-[#EFD687] p-3">
+                                <CalendarIcon className="h-6 w-6 text-background" />
+                              </div>
+                              <div className="flex flex-col">
+                                <p className="text-base font-medium">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                                <p className="text-xs text-white/50">{format(selectedDate, 'EEEE')}</p>
+                              </div>
+                            </div>
+                            <div className="mt-4">
+                              <DayPicker
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={date => setSelectedDate(new UTCDate(date ?? dayAfterTomorrowUTC))}
+                                captionLayout="buttons"
+                                showOutsideDays
+                                disabled={{ before: tomorrowUTC }}
+                                defaultMonth={selectedDate}
+                                classNames={{
+                                  root: 'w-full',
+                                  months: 'w-full',
+                                  month: 'w-full',
+                                  caption: 'flex flex-row justify-center pt-1 relative items-center space-x-2 mb-4',
+                                  caption_between: 'flex flex-row justify-center gap-1',
+                                  nav: 'space-x-1 flex items-center text-white',
+                                  nav_button_previous: 'absolute left-1',
+                                  nav_button_next: 'absolute right-1',
+                                  table: 'w-full border-collapse space-y-1',
+                                  head_row: 'flex w-full justify-between',
+                                  head_cell:
+                                    'text-white/50 rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center',
+                                  row: 'flex w-full mt-2 justify-between',
+                                  cell: 'flex-1 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-primary [&:has([aria-selected])]:text-primary-foreground first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 rounded-md',
+                                  day: 'h-9 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-white/10 rounded-md',
+                                  day_selected:
+                                    'bg-[#EFD687] text-background hover:bg-[#EFD687] hover:text-background focus:bg-[#EFD687] focus:text-background',
+                                  day_today: 'bg-white/5 text-white',
+                                  day_outside: 'text-white/30 opacity-50',
+                                  day_disabled: 'text-white/30',
+                                  day_hidden: 'invisible',
+                                }}
+                                className="p-0"
+                              />
+                            </div>
                           </div>
-                          <div className="flex flex-col gap-2">
-                            <Label>Time</Label>
-                            <div className="mt-2 flex flex-wrap gap-2">
+                          <div className="w-full md:w-1/2 rounded-xl border border-white/10 bg-card p-4 flex flex-col">
+                            <p className="font-medium mb-2">Select Time</p>
+                            <div className="flex-grow overflow-y-auto grid grid-cols-3 gap-2 pr-2">
                               {availableHours.map((hour, i) => (
-                                <div
+                                <Button
                                   key={i}
+                                  variant="outline"
                                   className={cn(
-                                    'rounded-md border border-white/10 p-2 text-sm text-white/50',
-                                    time === hour && 'bg-white/10 text-white'
+                                    'h-9',
+                                    time === hour && 'bg-primary text-primary-foreground opacity-100'
                                   )}
                                   onClick={() => setTime(hour)}
                                 >
                                   {hour}
-                                </div>
+                                </Button>
                               ))}
                             </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <Label>Entrepreneur Preferred Hours</Label>
-                            {preferredHours?.length === 0 && (
-                              <p className="text-sm text-white/50">
-                                The entrepreneur has not set any preferred hours.
-                              </p>
-                            )}
-                            <div className="flex flex-col gap-2">
-                              {preferredHours?.map(hour => (
-                                <div
-                                  key={hour.id}
-                                  className="rounded-md border border-white/10 p-2 text-sm text-white/50 flex flex-row justify-between"
-                                >
-                                  <span className="text-xs text-white/50 font-medium">
-                                    {hour.period}
-                                  </span>
-                                  <span className="text-xs text-white/50 font-medium">
-                                    {hour.time}
-                                  </span>
+                            <div className="mt-4">
+                              <p className="font-medium mb-2">Preferred Time</p>
+                              {preferredHours?.length === 0 ? (
+                                <p className="text-white/50">No preferred time set</p>
+                              ) : (
+                                <div className="flex flex-row gap-2">
+                                  {preferredHours?.map((hour, i) => (
+                                    <p key={i} className="text-white/50">{hour.time}</p>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           </div>
                         </div>
                         <DialogFooter>
-                          <Button onClick={handleScheduleMeeting} disabled={!date || !time}>
-                            Schedule Meeting
+                          <Button
+                            onClick={handleOpenConfirmDialog}
+                            disabled={!selectedDate || !time}
+                          >
+                            Review Schedule
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -313,7 +354,6 @@ export default function CompanyDetails() {
 
         <hr className="my-6 border-white/10 sm:my-8" />
 
-        {/* Company Details */}
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
           <div>
             <h2 className="text-lg font-semibold sm:text-xl">About</h2>
@@ -415,7 +455,6 @@ export default function CompanyDetails() {
           </div>
         </div>
 
-        {/* FAQs */}
         {project.faqs && project.faqs.length > 0 && (
           <div className="mt-8 sm:mt-12">
             <h2 className="text-lg font-semibold sm:text-xl">FAQ</h2>
@@ -430,7 +469,6 @@ export default function CompanyDetails() {
           </div>
         )}
 
-        {/* Files/Documents */}
         {project.files && project.files.length > 0 && (
           <div className="mt-8 sm:mt-12">
             <h2 className="text-lg font-semibold sm:text-xl">Documents</h2>
@@ -447,6 +485,58 @@ export default function CompanyDetails() {
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        isOpen={isConfirmModalOpen}
+        setIsOpen={setIsConfirmModalOpen}
+        title="Confirm Meeting Schedule"
+        onConfirm={handleScheduleMeeting}
+        confirmText="Confirm Schedule"
+        isConfirming={scheduleMeetingMutation.isPending}
+      >
+        <div className="py-6 space-y-4">
+          <div className="flex items-center gap-6 rounded-lg border border-white/10 p-4 bg-card">
+            <div className="flex items-center gap-3">
+              {project.logo ? (
+                <Image
+                  src={project.logo}
+                  alt={`${project.name} Logo`}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-md object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-white/10">
+                  <Building2 className="size-5 text-neutral-400" />
+                </div>
+              )}
+              <div>
+                <p className="font-semibold text-base">{project.name}</p>
+                <p className="text-sm text-white/60">Meeting Confirmation</p>
+              </div>
+            </div>
+
+
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <CalendarIcon className="h-4 w-4 text-white/70 flex-shrink-0" />
+                <span className="text-sm font-medium text-white">
+                  {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock className="h-4 w-4 text-white/70 flex-shrink-0" />
+                <span className="text-sm font-medium text-white">
+                  {time}
+                </span>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-white/50 px-1">
+            Ensure the date and time are correct before confirming the schedule.
+          </p>
+        </div>
+      </ConfirmationDialog>
 
       {isProjectOwner && <ProjectViews projectId={companyId as string} />}
     </main>

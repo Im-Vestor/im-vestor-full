@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Copy,
-  CreditCard,
   Facebook,
   Instagram,
   Linkedin,
@@ -13,7 +12,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { BusinessCardDialog } from "~/components/business-card";
 import { Button } from "~/components/ui/button";
-import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { api } from "~/utils/api";
 
 

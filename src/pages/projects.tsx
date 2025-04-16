@@ -1,5 +1,5 @@
 import { type Country, type Project, type State, type ProjectStage } from '@prisma/client';
-import { Building2, Heart, Loader2, SearchIcon } from 'lucide-react';
+import { Building2, Heart, SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -7,6 +7,7 @@ import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
+import { Skeleton } from '~/components/ui/skeleton';
 import { PROJECT_STAGES } from '~/data/project-stages';
 import { api } from '~/utils/api';
 
@@ -42,7 +43,7 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
 ];
 
 export default function Companies() {
-  const { data: areas } = api.area.getAll.useQuery();
+  const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const [showAllAreas, setShowAllAreas] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -75,7 +76,7 @@ export default function Companies() {
     favorites: favorites,
   };
 
-  const { data: projects, isLoading } = api.project.getAllWithFilters.useQuery(filterParams);
+  const { data: projects, isLoading: isLoadingProjects } = api.project.getAllWithFilters.useQuery(filterParams);
 
   const visibleAreas = showAllAreas ? areas : areas?.slice(0, 3);
 
@@ -124,98 +125,102 @@ export default function Companies() {
       <Header />
       <div className="mt-12">
         <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:flex-row md:px-16 md:py-12">
-          <div className="w-full md:w-1/5">
-            <p className="font-medium">Sector</p>
-            <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
-              {visibleAreas?.map(area => (
-                <div key={area.id} className="flex items-center gap-2">
+          {isLoadingAreas ? (
+            <FilterSidebarSkeleton />
+          ) : (
+            <div className="w-full md:w-1/5">
+              <p className="font-medium">Sector</p>
+              <div className="ml-2 mt-1.5 flex max-w-[150px] flex-col">
+                {visibleAreas?.map(area => (
+                  <div key={area.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={area.id.toString()}
+                      checked={selectedSectors.includes(area.id.toString())}
+                      onCheckedChange={checked =>
+                        handleSectorChange(area.id.toString(), checked === true)
+                      }
+                    />
+                    <p key={area.id} className="text-sm">
+                      {area.name}
+                    </p>
+                  </div>
+                ))}
+                {areas && areas.length > 3 && (
+                  <button
+                    onClick={() => setShowAllAreas(!showAllAreas)}
+                    className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
+                  >
+                    {showAllAreas ? 'Show less' : `See more (${areas.length - 3})`}
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 font-medium">Investor Slots</p>
+              <div className="ml-2 mt-1.5 flex flex-col">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id={area.id.toString()}
-                    checked={selectedSectors.includes(area.id.toString())}
-                    onCheckedChange={checked =>
-                      handleSectorChange(area.id.toString(), checked === true)
-                    }
+                    id="1-5-slots"
+                    checked={oneToFiveSlots}
+                    onCheckedChange={checked => setOneToFiveSlots(checked === true)}
                   />
-                  <p key={area.id} className="text-sm">
-                    {area.name}
-                  </p>
+                  <p className="text-sm">1 - 5</p>
                 </div>
-              ))}
-              {areas && areas.length > 3 && (
-                <button
-                  onClick={() => setShowAllAreas(!showAllAreas)}
-                  className="mt-1 text-start text-sm text-white/50 hover:text-white hover:underline"
-                >
-                  {showAllAreas ? 'Show less' : `See more (${areas.length - 3})`}
-                </button>
-              )}
-            </div>
-            <p className="mt-2 font-medium">Investor Slots</p>
-            <div className="ml-2 mt-1.5 flex flex-col">
-              <div className="flex items-center gap-2">
+              </div>
+              <p className="mt-2 font-medium">Stage</p>
+              <div className="ml-2 mt-1.5 flex flex-col">
+                {PROJECT_STAGES.map(stage => (
+                  <div key={stage.value} className="flex items-center gap-2">
+                    <Checkbox
+                      id={stage.value}
+                      checked={selectedStages.includes(stage.value)}
+                      onCheckedChange={checked => handleStageChange(stage.value, checked === true)}
+                    />
+                    <p className="text-sm">{stage.label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 font-medium">Revenue</p>
+              <div className="ml-2 mt-1.5 flex flex-col">
+                {REVENUE_RANGES.map(range => (
+                  <div key={range.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={range.id}
+                      checked={revenueFilters.min === range.min && revenueFilters.max === range.max}
+                      onCheckedChange={checked =>
+                        handleRevenueFilterChange(range.id, checked === true)
+                      }
+                    />
+                    <p className="text-sm">{range.label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 font-medium">Initial Investment</p>
+              <div className="ml-2 mt-1.5 flex flex-col">
+                {INVESTMENT_RANGES.map(range => (
+                  <div key={range.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={range.id}
+                      checked={
+                        investmentFilters.min === range.min && investmentFilters.max === range.max
+                      }
+                      onCheckedChange={checked =>
+                        handleInvestmentFilterChange(range.id, checked === true)
+                      }
+                    />
+                    <p className="text-sm">{range.label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 font-medium">Favorites</p>
+              <div className="ml-2 mt-1.5 flex items-center gap-2">
                 <Checkbox
-                  id="1-5-slots"
-                  checked={oneToFiveSlots}
-                  onCheckedChange={checked => setOneToFiveSlots(checked === true)}
+                  id="favorites"
+                  checked={favorites}
+                  onCheckedChange={checked => setFavorites(checked === true)}
                 />
-                <p className="text-sm">1 - 5</p>
+                <p className="text-sm">Only Favorites</p>
               </div>
             </div>
-            <p className="mt-2 font-medium">Stage</p>
-            <div className="ml-2 mt-1.5 flex flex-col">
-              {PROJECT_STAGES.map(stage => (
-                <div key={stage.value} className="flex items-center gap-2">
-                  <Checkbox
-                    id={stage.value}
-                    checked={selectedStages.includes(stage.value)}
-                    onCheckedChange={checked => handleStageChange(stage.value, checked === true)}
-                  />
-                  <p className="text-sm">{stage.label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 font-medium">Revenue</p>
-            <div className="ml-2 mt-1.5 flex flex-col">
-              {REVENUE_RANGES.map(range => (
-                <div key={range.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={range.id}
-                    checked={revenueFilters.min === range.min && revenueFilters.max === range.max}
-                    onCheckedChange={checked =>
-                      handleRevenueFilterChange(range.id, checked === true)
-                    }
-                  />
-                  <p className="text-sm">{range.label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 font-medium">Initial Investment</p>
-            <div className="ml-2 mt-1.5 flex flex-col">
-              {INVESTMENT_RANGES.map(range => (
-                <div key={range.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={range.id}
-                    checked={
-                      investmentFilters.min === range.min && investmentFilters.max === range.max
-                    }
-                    onCheckedChange={checked =>
-                      handleInvestmentFilterChange(range.id, checked === true)
-                    }
-                  />
-                  <p className="text-sm">{range.label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 font-medium">Favorites</p>
-            <div className="ml-2 mt-1.5 flex items-center gap-2">
-              <Checkbox
-                id="favorites"
-                checked={favorites}
-                onCheckedChange={checked => setFavorites(checked === true)}
-              />
-              <p className="text-sm">Only Favorites</p>
-            </div>
-          </div>
+          )}
           <div className="mt-6 w-full md:mt-0 md:w-4/5">
             <div className="flex items-center rounded-md bg-background">
               <SearchIcon className="ml-3 h-5 w-5 text-white" />
@@ -227,10 +232,12 @@ export default function Companies() {
               />
             </div>
             <div className="mt-4 flex flex-col gap-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="size-8 animate-spin text-white" />
-                </div>
+              {isLoadingProjects ? (
+                <>
+                  <CompanyCardSkeleton />
+                  <CompanyCardSkeleton />
+                  <CompanyCardSkeleton />
+                </>
               ) : projects?.projects && projects?.projects.length > 0 ? (
                 projects?.projects.map(project => (
                   <CompanyCard key={project.id} project={project} />
@@ -241,23 +248,27 @@ export default function Companies() {
                 </p>
               )}
             </div>
-            <div className="mt-8 flex items-center justify-end gap-2">
-              <p className="text-sm text-white/50">
-                {isLoading
-                  ? 'Loading projects...'
-                  : `Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} projects`}
-              </p>
-              <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setPage(page + 1)}
-                disabled={(projects?.total ?? 0) - (page + 1) * 20 <= 0}
-              >
-                Next
-              </Button>
-            </div>
+            {!isLoadingProjects && (
+              <div className="mt-8 flex items-center justify-end gap-2">
+                <p className="text-sm text-white/50">
+                  {`Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} projects`}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(page + 1)}
+                  disabled={(projects?.total ?? 0) - (page + 1) * 20 <= 0}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -306,5 +317,44 @@ function CompanyCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+function CompanyCardSkeleton() {
+  return (
+    <div className="rounded-xl border-2 border-white/10 bg-card p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+        <Skeleton className="h-[72px] w-[72px] flex-shrink-0 rounded-lg" />
+        <div className="flex flex-col gap-2 w-full">
+          <Skeleton className="h-6 w-3/5 rounded" />
+          <Skeleton className="h-4 w-2/5 rounded" />
+          <Skeleton className="h-4 w-full rounded mt-1" />
+          <Skeleton className="h-4 w-4/5 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FilterSidebarSkeleton() {
+  return (
+    <div className="w-full md:w-1/5 space-y-4">
+      <div>
+        <Skeleton className="h-5 w-1/3 rounded" />
+        <div className="ml-2 mt-1.5 space-y-2">
+          <Skeleton className="h-4 w-3/4 rounded" />
+          <Skeleton className="h-4 w-3/4 rounded" />
+          <Skeleton className="h-4 w-3/4 rounded" />
+        </div>
+      </div>
+      {[...Array<number>(5)].map((_, i) => (
+        <div key={i}>
+          <Skeleton className="h-5 w-1/3 rounded" />
+          <div className="ml-2 mt-1.5 space-y-2">
+            <Skeleton className="h-4 w-3/4 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

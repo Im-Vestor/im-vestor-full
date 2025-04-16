@@ -1,6 +1,8 @@
 import { Search, Bell, Upload, Edit, Trash } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion"
 import { Button } from "~/components/ui/button"
+import Image from "next/image";
+import AdminLayout from "~/pages/admin";
 
 export function DashboardContent() {
   return (
@@ -98,9 +100,11 @@ function TicketCard({ withImage }: TicketCardProps) {
       </p>
       {withImage && (
         <div className="mt-2 rounded-md overflow-hidden">
-          <img
+          <Image
             src="/placeholder.svg?height=80&width=220"
             alt="Ticket screenshot"
+            width={220}
+            height={80}
             className="w-full h-20 object-cover"
           />
         </div>
@@ -121,7 +125,6 @@ function FaqSection() {
           <FaqItem
             question="Posso encontrar um investidor para os meus projetos sem pagar?"
             answer="Se o teu projeto precisar até 5 mil euros de financiamento, podes, regista-te já no plano free"
-            defaultOpen
           />
           <FaqItem question="Posso ter mais do que um investidor no meu projeto?" />
           <FaqItem question="Posso registar mais do que um projeto ?" />
@@ -142,7 +145,6 @@ function FaqSection() {
           <FaqItem
             question="Posso encontrar negócios projetos e produtos para investir sem ter de pagar ao site?"
             answer="Podes, encontra projectos produtos e negócios para investir até 5 mil euros, regista-te já no plano experimental free."
-            defaultOpen
           />
           <FaqItem question="Se ocupar uma slot de investidor e desistir tenho de pagar alguma coisa?" />
           <FaqItem question="Poderei esconder a minha identidade?" />
@@ -163,10 +165,9 @@ function FaqSection() {
 interface FaqItemProps {
   question: string
   answer?: string
-  defaultOpen?: boolean
 }
 
-function FaqItem({ question, answer, defaultOpen }: FaqItemProps) {
+function FaqItem({ question, answer }: FaqItemProps) {
   return (
     <AccordionItem value={question} className="border border-border rounded-md overflow-hidden">
       <AccordionTrigger className="px-4 py-3 text-sm font-medium flex hover:no-underline">
@@ -176,7 +177,7 @@ function FaqItem({ question, answer, defaultOpen }: FaqItemProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 py-3 text-sm text-text-secondary bg-dark">
-        {answer || "Resposta não disponível."}
+        {answer ?? "Resposta não disponível."}
       </AccordionContent>
     </AccordionItem>
   )
@@ -262,7 +263,13 @@ interface VideoCardProps {
 function VideoCard({ title }: VideoCardProps) {
   return (
     <div className="relative border border-border rounded-md overflow-hidden group">
-      <img src="/placeholder.svg?height=150&width=250" alt={title} className="w-full h-36 object-cover" />
+      <Image
+        src="/placeholder.svg?height=150&width=250"
+        alt={title}
+        width={250}
+        height={150}
+        className="w-full h-36 object-cover"
+      />
       <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
         <div className="w-12 h-12 rounded-full bg-background/80 flex items-center justify-center">
           <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
@@ -282,4 +289,14 @@ function VideoCard({ title }: VideoCardProps) {
     </div>
   )
 }
+
+// --- Add Default Export for the Page ---
+export default function AdminSupportPage() {
+  return (
+    <AdminLayout>
+      <DashboardContent />
+    </AdminLayout>
+  );
+}
+// --- End Default Export ---
 

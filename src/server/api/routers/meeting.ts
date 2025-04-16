@@ -3,6 +3,7 @@ import { addDays, addHours } from 'date-fns';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
+import { TRPCError } from '@trpc/server';
 
 export const meetingRouter = createTRPCRouter({
   getMeetingsByDate: protectedProcedure
@@ -24,15 +25,15 @@ export const meetingRouter = createTRPCRouter({
       const whereClause =
         userType === UserType.ENTREPRENEUR
           ? {
-              entrepreneurId: user?.entrepreneur?.id,
-            }
+            entrepreneurId: user?.entrepreneur?.id,
+          }
           : {
-              investors: {
-                some: {
-                  id: user?.investor?.id,
-                },
+            investors: {
+              some: {
+                id: user?.investor?.id,
               },
-            };
+            },
+          };
 
       const meetings = await ctx.db.meeting.findMany({
         where: {
@@ -84,6 +85,16 @@ export const meetingRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       console.log('date to be scheduled', input.date);
+      const now = new Date();
+      console.log('current server time', now);
+
+      if (input.date < now) {
+        console.error('Validation failed: Meeting time is in the past.', { inputDate: input.date, now });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Selected meeting time is in the past. Please select a future time.',
+        });
+      }
 
       const { name, url } = await createDailyCall(input.date);
 
@@ -105,7 +116,7 @@ export const meetingRouter = createTRPCRouter({
 
       await ctx.db.notification.create({
         data: {
-          userId: input.entrepreneurId,
+          userId: (await ctx.db.entrepreneur.findUnique({ where: { id: input.entrepreneurId }, select: { userId: true } }))?.userId ?? '',
           type: NotificationType.MEETING_CREATED,
         },
       });
