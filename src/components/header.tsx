@@ -1,6 +1,6 @@
 import { useClerk, useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Book, Clock, LogOut, Mail, Menu, User, Users, X } from 'lucide-react';
+import { Book, LogOut, Mail, Menu, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
