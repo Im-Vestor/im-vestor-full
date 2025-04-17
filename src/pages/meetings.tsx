@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 import { api } from '~/utils/api';
 
@@ -114,9 +115,41 @@ export default function Meetings() {
               </div>
             )}
             {isLoading ? (
-              <div className="flex h-full items-center justify-center mt-6">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
+              Array.from({ length: 2 }).map((_, index) => (
+                <div className="rounded-xl border-2 border-white/10 bg-card p-6" key={index}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-12 w-12 rounded-md" />
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start gap-3">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-36" />
+                      </div>
+                    </div>
+                  </div>
+                  <Skeleton className="my-4 h-px w-full" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1">
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Skeleton className="h-8 w-28" />
+                      <Skeleton className="h-8 w-28" />
+                    </div>
+                  </div>
+                </div>
+              ))
             ) : meetings && meetings.length > 0 ? (
               meetings?.map(meeting => {
                 const now = new Date();

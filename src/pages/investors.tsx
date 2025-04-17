@@ -100,7 +100,7 @@ export default function Investors() {
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/5">
               <p className="font-medium">Areas of Interest</p>
-              <div className="ml-2 mt-1.5 flex gap-2 max-w-[150px] flex-col">
+              <div className="ml-2 mt-1.5 flex gap-1 max-w-[150px] flex-col">
                 {visibleAreas?.map(area => (
                   <div key={area.id} className="flex items-center gap-2">
                     <Checkbox

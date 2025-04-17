@@ -1,20 +1,17 @@
-import { Loader2, MapPin, Pencil, User } from 'lucide-react';
+import { MapPin, Pencil, User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { InvestorForm } from './investor-form';
+import { SkeletonProfile } from './skeleton-profile';
 
 export const InvestorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { data: investor, isPending: isLoading } = api.investor.getByUserId.useQuery();
 
   if (isLoading) {
-    return (
-      <div className="mt-32 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <SkeletonProfile />;
   }
   if (isEditing || !investor?.country) {
     return <InvestorForm investor={investor} onCancel={() => setIsEditing(false)} />;

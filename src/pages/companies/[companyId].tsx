@@ -231,7 +231,7 @@ export default function CompanyDetails() {
                   )}
 
                   <span className="mx-2">•</span>
-                  <span className="w-fit rounded-full bg-[#EFD687] px-2 py-0.5 text-sm text-background sm:px-6">
+                  <span className="w-fit rounded-full bg-white/10 border border-white/10 px-2 py-0.5 text-sm text-primary sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}
                   </span>
                 </div>
@@ -253,7 +253,7 @@ export default function CompanyDetails() {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex flex-col md:flex-row gap-4">
-                          <div className="w-full md:w-1/2 h-fit rounded-xl border border-white/10 bg-card p-4">
+                          <div className="w-full md:w-1/2 h-full rounded-xl border border-white/10 bg-card p-4">
                             <div className="flex items-center gap-4">
                               <div className="rounded-lg bg-[#EFD687] p-3">
                                 <CalendarIcon className="h-6 w-6 text-background" />
@@ -323,7 +323,7 @@ export default function CompanyDetails() {
                               ))}
                             </div>
                             <div className="mt-4">
-                              <p className="font-medium mb-2">Preferred Time</p>
+                              <p className="font-medium mb-2">Entrepreneur Preferred Time</p>
                               {preferredHours?.length === 0 ? (
                                 <p className="text-white/50">No preferred time set</p>
                               ) : (
