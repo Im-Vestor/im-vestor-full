@@ -83,7 +83,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     seamlessNegotiationsShort:
       'Investors and entrepreneurs can communicate directly through the platform, schedule meetings, and negotiate terms openly.',
     pokeBoost: 'Poke, Boost and Hyper Train',
-    pokeBoostDesc: 'Guarantee special addons in order to help your grow your profile.',
+    pokeBoostDesc: 'Guarantee special addons in order to help you grow your profile.',
     investmentsProtected: "You're Protected",
     investmentsProtectedDesc:
       'Im-Vestor prioritizes the safety of all users. We ensure all projects and investors are thoroughly vetted, creating a trusted environment for business to thrive.',
@@ -97,7 +97,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       'Unlock exclusive access to high-quality startups, streamline your deal flow, and keep a close watch on the latest emerging companies.',
     copyright: '© 2024 Im-Vestor. All rights reserved.',
     receiveUpdates: 'Receive',
-    beNotified: 'and be notified first-hand when Vestor is launched, and receive a',
+    beNotified: 'and be notified first-hand when Im-Vestor is launched, and receive a',
     forBeingFirst: 'for being among the first',
     revolution: 'Business Revolution',
   },
