@@ -1,7 +1,7 @@
 import { useUser } from '@clerk/nextjs';
 import { UTCDate } from '@date-fns/utc';
-import { format, addHours, subMinutes, isBefore, isAfter } from 'date-fns';
-import { CalendarIcon, ClockIcon, Loader2 } from 'lucide-react';
+import { addHours, format, isAfter, isBefore, subMinutes } from 'date-fns';
+import { CalendarIcon, ClockIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -24,6 +24,7 @@ export default function Meetings() {
   const [meetingToCancelId, setMeetingToCancelId] = useState<string | null>(null);
 
   const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
+  const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
   const { data: meetings, isLoading } = api.meeting.getMeetingsByDate.useQuery(
     { date: selectedDate },
@@ -262,9 +263,11 @@ export default function Meetings() {
                   <br />
                   Need to schedule one? Find a project first.
                 </p>
-                <Link href="/projects">
-                  <Button variant="secondary">Find Projects</Button>
-                </Link>
+                {isInvestor && (
+                  <Link href="/projects">
+                    <Button variant="secondary">Find Projects</Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
