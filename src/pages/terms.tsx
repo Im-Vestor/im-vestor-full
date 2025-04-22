@@ -208,7 +208,54 @@ export default function Terms() {
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-[#E5CD82]">
-              6. Objectivo do site im-Vestor.com
+              6. Gravação de Reuniões e Retenção de Vídeo
+            </h2>
+            <p>
+              6.1. As reuniões realizadas na plataforma poderão ser gravadas para efeitos de
+              acompanhamento, registo contratual ou resolução de conflitos entre utilizadores ou com
+              a administração da plataforma.
+            </p>
+            <p>
+              6.2. As gravações serão conservadas por um período máximo de 5 (cinco) anos, conforme
+              previsto na legislação aplicável, nomeadamente o Código Civil Português.
+            </p>
+            <p>
+              6.3. Os utilizadores serão devidamente informados da gravação no início de cada
+              reunião e poderão aceder às suas gravações mediante pedido, dentro dos limites legais
+              estabelecidos.
+            </p>
+            <p>
+              6.4. A recolha, conservação e eventual partilha das gravações respeitará o disposto no
+              Regulamento Geral sobre a Proteção de Dados (RGPD), sendo garantido o direito à
+              informação, acesso, retificação e oposição nos termos da lei.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-[#E5CD82]">
+              7. Participação em Reuniões — Identidade e Presença
+            </h2>
+            <p>
+              7.1. É expressamente proibida a participação em reuniões na plataforma utilizando
+              avatares digitais, imagens geradas por inteligência artificial ou qualquer outro meio
+              que simule ou substitua a presença real do utilizador, seja representando a sua
+              própria imagem ou a de terceiros.
+            </p>
+            <p>
+              7.2. Todas as reuniões devem ser obrigatoriamente assistidas com recurso a câmara de
+              vídeo e microfone ligados, garantindo a transparência, autenticidade e confiança entre
+              as partes envolvidas.
+            </p>
+            <p>
+              7.3. O incumprimento desta cláusula poderá resultar em advertência, suspensão ou
+              exclusão definitiva da plataforma, sem prejuízo de outras sanções legais que se
+              apliquem.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-[#E5CD82]">
+              8. Objectivo do site im-Vestor.com
             </h2>
             <p>
               O site im-Vestor.com tem como objectivo connectar empreendedores a investidores e
