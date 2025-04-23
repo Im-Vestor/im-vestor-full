@@ -6,10 +6,6 @@ export const SkeletonProfile = () => {
     <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
       <Skeleton className="h-48 w-full rounded-t-lg" />
 
-      <div className="absolute bottom-0 left-12 translate-y-1/2">
-        <Skeleton className="h-24 w-24 rounded-full ring-4 ring-[#1E202A]" />
-      </div>
-
       <div className="md:px-12 px-6 pt-16">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
@@ -17,7 +13,7 @@ export const SkeletonProfile = () => {
         </div>
         <Skeleton className="mt-3 h-6 w-64" />
         <div className="mt-1 flex items-center gap-1">
-          <MapPin className="mr-0.5 h-4 w-4 text-gray-600" />
+          <MapPin className="mr-0.5 h-4 w-4 text-gray-600/30" />
           <Skeleton className="h-5 w-40" />
         </div>
 
@@ -31,7 +27,7 @@ export const SkeletonProfile = () => {
         <Skeleton className="my-4 sm:my-6 h-px w-full" />
 
         <Skeleton className="mt-12 h-6 w-20" />
-        <div className="mt-4 rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6">
+        <div className="mt-4 rounded-xl border-2 border-card bg-card p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0">
             <div className="flex gap-4 sm:gap-6">
               <Skeleton className="h-16 w-16 sm:h-[72px] sm:w-[72px] flex-shrink-0 rounded-lg" />

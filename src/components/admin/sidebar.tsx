@@ -8,6 +8,7 @@ import {
   Building2,
   Bell,
   Settings,
+  Calendar,
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -17,9 +18,9 @@ export function Sidebar() {
         <Image
           src="/images/logo.png"
           alt="Im-Vestor Logo"
-          width={32}
-          height={32}
-          className="h-8 w-8"
+          width={100}
+          height={100}
+          className="h-8 w-10"
         />
         <h1 className="text-xl font-semibold text-foreground">Im-Vestor</h1>
       </div>
@@ -28,14 +29,14 @@ export function Sidebar() {
         <ul className="space-y-1">
           <li>
             <a
-              href="#"
-              className="flex items-center gap-3 px-3 py-2 rounded-md bg-primary/10 text-primary"
+              href="/admin/dashboard"
+              className="flex items-center gap-3 px-3 py-2 rounded-md"
             >
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
             </a>
           </li>
-          <li>
+          {/*           <li>
             <a
               href="#"
               className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
@@ -52,10 +53,10 @@ export function Sidebar() {
               <LineChart className="h-5 w-5" />
               <span>Análises</span>
             </a>
-          </li>
+          </li> */}
           <li>
             <a
-              href="#"
+              href="/admin/support"
               className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             >
               <HelpCircle className="h-5 w-5" />
@@ -64,13 +65,14 @@ export function Sidebar() {
           </li>
           <li>
             <a
-              href="#"
+              href="/admin/meetings"
               className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             >
-              <Users className="h-5 w-5" />
-              <span>Utilizadores</span>
+              <Calendar className="h-5 w-5" />
+              <span>Meetings</span>
             </a>
           </li>
+          {/*
           <li>
             <a
               href="#"
@@ -97,7 +99,7 @@ export function Sidebar() {
               <Settings className="h-5 w-5" />
               <span>Sistema</span>
             </a>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </aside>
