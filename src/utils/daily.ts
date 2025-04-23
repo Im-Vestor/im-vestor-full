@@ -23,7 +23,7 @@ export const createDailyCall = async (date: Date) => {
   };
 
   const requestBody = {
-    privacy: 'private',
+    privacy: 'public',
     properties: roomProperties,
   };
 

@@ -1,9 +1,9 @@
 import { NotificationType, UserType } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 import { addDays, addHours } from 'date-fns';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
-import { TRPCError } from '@trpc/server';
 
 export const meetingRouter = createTRPCRouter({
   getMeetingsByDate: protectedProcedure
@@ -25,15 +25,15 @@ export const meetingRouter = createTRPCRouter({
       const whereClause =
         userType === UserType.ENTREPRENEUR
           ? {
-            entrepreneurId: user?.entrepreneur?.id,
-          }
+              entrepreneurId: user?.entrepreneur?.id,
+            }
           : {
-            investors: {
-              some: {
-                id: user?.investor?.id,
+              investors: {
+                some: {
+                  id: user?.investor?.id,
+                },
               },
-            },
-          };
+            };
 
       const meetings = await ctx.db.meeting.findMany({
         where: {
@@ -44,18 +44,22 @@ export const meetingRouter = createTRPCRouter({
           },
         },
         include: {
-          project: {
+          negotiation: {
             select: {
-              name: true,
-              logo: true,
-              country: {
+              project: {
                 select: {
                   name: true,
-                },
-              },
-              state: {
-                select: {
-                  name: true,
+                  logo: true,
+                  country: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                  state: {
+                    select: {
+                      name: true,
+                    },
+                  },
                 },
               },
             },
@@ -73,60 +77,6 @@ export const meetingRouter = createTRPCRouter({
       });
 
       return meetings;
-    }),
-  scheduleMeeting: protectedProcedure
-    .input(
-      z.object({
-        date: z.date(),
-        investorIds: z.array(z.string()),
-        entrepreneurId: z.string(),
-        projectId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const now = new Date();
-
-      if (input.date < now) {
-        console.error('Validation failed: Meeting time is in the past.', {
-          inputDate: input.date,
-          now,
-        });
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Selected meeting time is in the past. Please select a future time.',
-        });
-      }
-
-      const { name, url } = await createDailyCall(input.date);
-
-      const meeting = await ctx.db.meeting.create({
-        data: {
-          name,
-          url,
-          startDate: input.date,
-          endDate: addHours(input.date, 1),
-          entrepreneurId: input.entrepreneurId,
-          investors: {
-            connect: input.investorIds.map(id => ({ id })),
-          },
-          projectId: input.projectId,
-        },
-      });
-
-      await ctx.db.notification.create({
-        data: {
-          userId:
-            (
-              await ctx.db.entrepreneur.findUnique({
-                where: { id: input.entrepreneurId },
-                select: { userId: true },
-              })
-            )?.userId ?? '',
-          type: NotificationType.MEETING_CREATED,
-        },
-      });
-
-      return meeting;
     }),
   cancelMeeting: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -173,20 +123,19 @@ export const meetingRouter = createTRPCRouter({
 
       return meeting;
     }),
-  createInstantMeeting: protectedProcedure
-    .mutation(async () => {
-      const now = new Date();
-      const expiryDate = addHours(now, 1);
-      try {
-        const { url } = await createDailyCall(expiryDate);
-        return { url };
-      } catch (error) {
-        console.error('Failed to create Daily.co instant room:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create instant meeting room.',
-          cause: error,
-        });
-      }
-    }),
+  createInstantMeeting: protectedProcedure.mutation(async () => {
+    const now = new Date();
+    const expiryDate = addHours(now, 1);
+    try {
+      const { url } = await createDailyCall(expiryDate);
+      return { url };
+    } catch (error) {
+      console.error('Failed to create Daily.co instant room:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create instant meeting room.',
+        cause: error,
+      });
+    }
+  }),
 });

@@ -1,15 +1,6 @@
+import { Calendar, HelpCircle, LayoutDashboard } from 'lucide-react';
 import Image from 'next/image';
-import {
-  LayoutDashboard,
-  DollarSign,
-  LineChart,
-  HelpCircle,
-  Users,
-  Building2,
-  Bell,
-  Settings,
-  Calendar,
-} from 'lucide-react';
+import Link from 'next/link';
 
 export function Sidebar() {
   return (
@@ -28,13 +19,10 @@ export function Sidebar() {
       <nav className="p-2">
         <ul className="space-y-1">
           <li>
-            <a
-              href="/admin/dashboard"
-              className="flex items-center gap-3 px-3 py-2 rounded-md"
-            >
+            <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-md">
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
-            </a>
+            </Link>
           </li>
           {/*           <li>
             <a
@@ -55,22 +43,22 @@ export function Sidebar() {
             </a>
           </li> */}
           <li>
-            <a
+            <Link
               href="/admin/support"
               className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             >
               <HelpCircle className="h-5 w-5" />
               <span>Suporte</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a
+            <Link
               href="/admin/meetings"
               className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             >
               <Calendar className="h-5 w-5" />
               <span>Meetings</span>
-            </a>
+            </Link>
           </li>
           {/*
           <li>

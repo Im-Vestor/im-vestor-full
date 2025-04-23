@@ -140,17 +140,17 @@ export default function Companies() {
             <div className="w-full md:w-1/5">
               <p className="font-medium">Sector</p>
               <div className="ml-2 mt-1.5 flex gap-1 max-w-[150px] flex-col">
-                {areas?.slice(0, visibleAreasCount).map(area => (
-                  <div key={area.id} className="flex items-center gap-2">
+                {Array.from({ length: INITIAL_VISIBLE_AREAS }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
                     <Checkbox
-                      id={area.id.toString()}
-                      checked={selectedSectors.includes(area.id.toString())}
+                      id={areas?.[i]?.id.toString() ?? ''}
+                      checked={selectedSectors.includes(areas?.[i]?.id.toString() ?? '')}
                       onCheckedChange={checked =>
-                        handleSectorChange(area.id.toString(), checked === true)
+                        handleSectorChange(areas?.[i]?.id.toString() ?? '', checked === true)
                       }
                     />
-                    <p key={area.id} className="text-sm">
-                      {area.name}
+                    <p key={areas?.[i]?.id} className="text-sm">
+                      {areas?.[i]?.name}
                     </p>
                   </div>
                 ))}
@@ -355,7 +355,7 @@ function FilterSidebarSkeleton() {
       <div>
         <Skeleton className="h-5 w-1/3 rounded mb-2" />
         <div className="ml-2 mt-1.5 space-y-2">
-          {[...Array(INITIAL_VISIBLE_AREAS)].map((_, i) => (
+          {Array.from({ length: INITIAL_VISIBLE_AREAS }).map((_, i) => (
             <div key={i} className="flex items-center gap-2">
               <Skeleton className="h-4 w-4 rounded" />
               <Skeleton className="h-4 w-3/4 rounded" />

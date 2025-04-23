@@ -166,20 +166,22 @@ export default function Meetings() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Image
-                          src={meeting.project?.logo ?? ''}
+                          src={meeting.negotiation?.project?.logo ?? ''}
                           alt="Company Logo"
                           width={72}
                           height={72}
                           className="h-12 w-12 cursor-pointer rounded-md object-cover"
-                          onClick={() => router.push(`/projects/${meeting.project?.name}`)}
+                          onClick={() =>
+                            router.push(`/projects/${meeting.negotiation?.project?.name}`)
+                          }
                         />
                         <div className="flex flex-col">
                           <p className="text-sm font-medium text-white">
-                            {meeting.project?.name ?? ''}
+                            {meeting.negotiation?.project?.name ?? ''}
                           </p>
                           <p className="text-sm text-white/50">
-                            {meeting.project?.state?.name ?? ''},{' '}
-                            {meeting.project?.country?.name ?? ''}
+                            {meeting.negotiation?.project?.state?.name ?? ''},{' '}
+                            {meeting.negotiation?.project?.country?.name ?? ''}
                           </p>
                         </div>
                       </div>
