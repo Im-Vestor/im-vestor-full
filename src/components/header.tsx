@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-
+import { FloatingSupportButton } from './FloatingSupportButton';
 const ENTREPRENEUR_MENUS = [
   {
     label: 'Investors',
@@ -142,6 +142,7 @@ export const Header = () => {
         {isSignedIn ? (
           <div className="flex items-center">
             <Notifications />
+            <FloatingSupportButton />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
