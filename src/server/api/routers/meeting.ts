@@ -1,7 +1,9 @@
 import { NotificationType, UserType } from '@prisma/client';
-import { addDays } from 'date-fns';
+import { TRPCError } from '@trpc/server';
+import { addDays, addHours } from 'date-fns';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { createDailyCall } from '~/utils/daily';
 
 export const meetingRouter = createTRPCRouter({
   getMeetingsByDate: protectedProcedure
@@ -121,20 +123,19 @@ export const meetingRouter = createTRPCRouter({
 
       return meeting;
     }),
-  createInstantMeeting: protectedProcedure
-    .mutation(async () => {
-      const now = new Date();
-      const expiryDate = addHours(now, 1);
-      try {
-        const { url } = await createDailyCall(expiryDate);
-        return { url };
-      } catch (error) {
-        console.error('Failed to create Daily.co instant room:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create instant meeting room.',
-          cause: error,
-        });
-      }
-    }),
+  createInstantMeeting: protectedProcedure.mutation(async () => {
+    const now = new Date();
+    const expiryDate = addHours(now, 1);
+    try {
+      const { url } = await createDailyCall(expiryDate);
+      return { url };
+    } catch (error) {
+      console.error('Failed to create Daily.co instant room:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create instant meeting room.',
+        cause: error,
+      });
+    }
+  }),
 });
