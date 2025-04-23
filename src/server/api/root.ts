@@ -12,6 +12,8 @@ import { connectionRouter } from './routers/connection';
 import { notificationsRouter } from './routers/notifications';
 import { meetingRouter } from './routers/meeting';
 import { preferredHoursRouter } from './routers/preferred-hours';
+import { supportRouter } from './routers/support';
+
 import { negotiationRouter } from './routers/negotiation';
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -27,6 +29,7 @@ export const appRouter = createTRPCRouter({
   notifications: notificationsRouter,
   meeting: meetingRouter,
   preferredHours: preferredHoursRouter,
+  support: supportRouter,
   negotiation: negotiationRouter,
 });
 

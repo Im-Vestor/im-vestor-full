@@ -20,6 +20,11 @@ enum ProjectStatus {
     COMPLETED
 }
 
+enum SupportTicketStatus {
+    OPEN
+    CLOSED
+}
+
 model Country {
     id           Int            @id @default(autoincrement())
     name         String
@@ -88,6 +93,7 @@ model User {
     followingConnections Connection[]   @relation("Follower")
     followerConnections  Connection[]   @relation("Following")
     Notification         Notification[]
+    supportTickets       SupportTicket[]
 }
 
 model Partner {
@@ -354,6 +360,20 @@ model Notification {
     createdAt DateTime         @default(now())
     type      NotificationType
     read      Boolean          @default(false)
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+}
+
+model SupportTicket {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    subject String
+    message String
+
+    status SupportTicketStatus @default(OPEN)
 
     user   User   @relation(fields: [userId], references: [id])
     userId String
