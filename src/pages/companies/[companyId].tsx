@@ -265,7 +265,13 @@ export default function CompanyDetails() {
                   <>
                     <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
                       <DialogTrigger asChild>
-                        <Button>
+                        <Button
+                          disabled={
+                            negotiation?.stage === NegotiationStage.CLOSED ||
+                            (negotiation?.entrepreneurActionNeeded &&
+                              negotiation?.investorActionNeeded)
+                          }
+                        >
                           <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule{' '}
                           {capitalize(negotiation?.stage ?? 'Pitch')} Meeting
                         </Button>

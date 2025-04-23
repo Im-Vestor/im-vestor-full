@@ -54,6 +54,8 @@ export const negotiationRouter = createTRPCRouter({
           projectId: input.projectId,
           stage: NegotiationStage.PITCH,
           investorId: input.investorId,
+          entrepreneurActionNeeded: true,
+          investorActionNeeded: true,
         },
       });
 
