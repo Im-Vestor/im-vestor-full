@@ -38,7 +38,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
+  if (isAdmin) {
+    return {
+      redirect: {
+        destination: '/admin/dashboard',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };
+
 };
