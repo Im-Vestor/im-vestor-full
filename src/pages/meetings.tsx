@@ -53,7 +53,9 @@ export default function Meetings() {
 
   const handleConfirmCancel = () => {
     if (meetingToCancelId) {
-      void cancelMeeting({ id: meetingToCancelId });
+      void cancelMeeting({
+        meetingId: meetingToCancelId,
+      });
     }
   };
 

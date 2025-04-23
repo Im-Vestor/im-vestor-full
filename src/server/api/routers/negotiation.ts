@@ -7,14 +7,36 @@ import { createDailyCall } from '~/utils/daily';
 
 export const negotiationRouter = createTRPCRouter({
   getNegotiationByProjectIdAndInvestorId: protectedProcedure
-    .input(z.object({ projectId: z.string(), investorId: z.string() }))
+    .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.negotiation.findUnique({
+      const user = await ctx.db.user.findUnique({
         where: {
-          projectId: input.projectId,
-          investorId: input.investorId,
+          id: ctx.auth.userId,
+        },
+        select: {
+          userType: true,
+          entrepreneur: true,
+          investor: true,
         },
       });
+
+      if (user?.userType === UserType.ENTREPRENEUR) {
+        return await ctx.db.negotiation.findUnique({
+          where: {
+            projectId: input.projectId,
+            project: {
+              entrepreneurId: user.entrepreneur?.id,
+            },
+          },
+        });
+      } else {
+        return await ctx.db.negotiation.findUnique({
+          where: {
+            projectId: input.projectId,
+            investorId: user?.investor?.id,
+          },
+        });
+      }
     }),
   createAndSchedulePitchMeeting: protectedProcedure
     .input(
@@ -61,12 +83,12 @@ export const negotiationRouter = createTRPCRouter({
       if (user?.userType === UserType.ENTREPRENEUR) {
         await ctx.db.negotiation.update({
           where: { id: input.negotiationId },
-          data: { entrepreneurAgreedToGoToNextStage: true },
+          data: { entrepreneurAgreedToGoToNextStage: true, entrepreneurActionNeeded: false },
         });
       } else {
         await ctx.db.negotiation.update({
           where: { id: input.negotiationId },
-          data: { investorAgreedToGoToNextStage: true },
+          data: { investorAgreedToGoToNextStage: true, investorActionNeeded: false },
         });
       }
 

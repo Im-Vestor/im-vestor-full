@@ -37,6 +37,7 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+import { NextStepDialog } from '~/components/next-step/dialog';
 
 const availableHours = [
   '07:00',
@@ -80,6 +81,7 @@ export default function CompanyDetails() {
   const { companyId } = router.query;
 
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
+  const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
 
   const tomorrow = startOfTomorrow();
 
@@ -105,8 +107,8 @@ export default function CompanyDetails() {
   });
 
   const { data: negotiation } = api.negotiation.getNegotiationByProjectIdAndInvestorId.useQuery(
-    { projectId: companyId as string, investorId: investor?.id ?? '' },
-    { enabled: !!companyId && !!investor?.id && isInvestor }
+    { projectId: companyId as string },
+    { enabled: !!companyId }
   );
 
   const addInvestorViewMutation = api.project.addView.useMutation();
@@ -383,6 +385,14 @@ export default function CompanyDetails() {
 
         <hr className="my-6 border-white/10 sm:my-8" />
 
+        {isInvestor && negotiation?.investorActionNeeded && (
+          <NextStepDialog negotiationId={negotiation.id} />
+        )}
+
+        {isEntrepreneur && negotiation?.entrepreneurActionNeeded && (
+          <NextStepDialog negotiationId={negotiation.id} />
+        )}
+
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
           <div>
             <h2 className="text-lg font-semibold sm:text-xl">About</h2>
@@ -390,7 +400,7 @@ export default function CompanyDetails() {
               {project.about ?? 'No detailed description available.'}
             </p>
 
-            {isInvestor && negotiation && (
+            {negotiation && (
               <>
                 <h2 className="text-lg font-semibold sm:text-xl mt-6">Negotiation Stage</h2>
                 <div className="mt-6">

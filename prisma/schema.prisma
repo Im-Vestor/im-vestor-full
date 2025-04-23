@@ -250,6 +250,7 @@ enum NegotiationStage {
     NEGOTIATION
     DETAILS
     CLOSED
+    CANCELLED
 }
 
 model Negotiation {
@@ -259,6 +260,9 @@ model Negotiation {
     updatedAt DateTime @updatedAt
 
     stage NegotiationStage @default(PITCH)
+
+    investorActionNeeded     Boolean @default(false)
+    entrepreneurActionNeeded Boolean @default(false)
 
     investorAgreedToGoToNextStage     Boolean @default(false)
     entrepreneurAgreedToGoToNextStage Boolean @default(false)

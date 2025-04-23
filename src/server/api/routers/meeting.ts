@@ -1,4 +1,4 @@
-import { NotificationType, UserType } from '@prisma/client';
+import { NegotiationStage, NotificationType, UserType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { addDays, addHours } from 'date-fns';
 import { z } from 'zod';
@@ -78,14 +78,43 @@ export const meetingRouter = createTRPCRouter({
 
       return meetings;
     }),
+  enterMeeting: protectedProcedure
+    .input(z.object({ negotiationId: z.string(), meetingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const negotiation = await ctx.db.negotiation.findUnique({
+        where: { id: input.negotiationId },
+      });
+
+      if (!negotiation) {
+        throw new Error('Negotiation not found');
+      }
+
+      await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          entrepreneurActionNeeded: true,
+          investorActionNeeded: true,
+        },
+      });
+
+      return negotiation;
+    }),
   cancelMeeting: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const meeting = await ctx.db.meeting.delete({
-        where: { id: input.id },
+        where: { id: input.meetingId },
         include: {
           investors: true,
           entrepreneur: true,
+          negotiation: true,
+        },
+      });
+
+      await ctx.db.negotiation.update({
+        where: { id: meeting?.negotiation?.id },
+        data: {
+          stage: NegotiationStage.CANCELLED,
         },
       });
 
