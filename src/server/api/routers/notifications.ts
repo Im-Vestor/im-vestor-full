@@ -1,3 +1,4 @@
+import { type NotificationType, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
@@ -31,3 +32,16 @@ export const notificationsRouter = createTRPCRouter({
     });
   }),
 });
+
+export const createNotifications = async (
+  db: PrismaClient,
+  userIds: string[],
+  type: NotificationType
+) => {
+  await db.notification.createMany({
+    data: userIds.map(userId => ({
+      userId: userId ?? '',
+      type: type,
+    })),
+  });
+};

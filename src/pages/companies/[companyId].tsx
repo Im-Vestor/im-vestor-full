@@ -15,6 +15,7 @@ import {
   MessageCircle,
   Presentation,
   User,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
 import { NextStepDialog } from '~/components/next-step/dialog';
+import { NegotiationStage } from '@prisma/client';
 
 const availableHours = [
   '07:00',
@@ -404,14 +406,17 @@ export default function CompanyDetails() {
               <>
                 <h2 className="text-lg font-semibold sm:text-xl mt-6">Negotiation Stage</h2>
                 <div className="mt-6">
-                  <Stepper
-                    steps={NEGOTIATION_STEPS}
-                    currentStep={
-                      STAGE_TO_STEP_MAP[
-                        (negotiation?.stage ?? 'PITCH') as keyof typeof STAGE_TO_STEP_MAP
-                      ]
-                    }
-                  />
+                  {negotiation.stage === NegotiationStage.CANCELLED ? (
+                    <p className="text-red-500 bg-red-500/10 rounded-md p-2 flex items-center gap-2">
+                      <X className="size-4" />
+                      Negotiation cancelled
+                    </p>
+                  ) : (
+                    <Stepper
+                      steps={NEGOTIATION_STEPS}
+                      currentStep={STAGE_TO_STEP_MAP[negotiation?.stage ?? 'PITCH']}
+                    />
+                  )}
                 </div>
               </>
             )}

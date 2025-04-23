@@ -15,16 +15,29 @@ import { toast } from 'sonner';
 export const NextStepDialog = ({ negotiationId }: { negotiationId: string }) => {
   const [open, setOpen] = useState(false);
 
-  const { mutate: goToNextStage, isPending } = api.negotiation.goToNextStage.useMutation({
-    onSuccess: () => {
-      setOpen(false);
-      toast.success('Negotiation stage updated');
-    },
-    onError: error => {
-      console.error(error);
-      toast.error('Failed to update negotiation stage');
-    },
-  });
+  const { mutate: goToNextStage, isPending: isGoingToNextStage } =
+    api.negotiation.goToNextStage.useMutation({
+      onSuccess: () => {
+        setOpen(false);
+        toast.success('Negotiation stage updated');
+      },
+      onError: error => {
+        console.error(error);
+        toast.error('Failed to update negotiation stage');
+      },
+    });
+
+  const { mutate: stopNegotiation, isPending: isStoppingNegotiation } =
+    api.negotiation.stopNegotiation.useMutation({
+      onSuccess: () => {
+        setOpen(false);
+        toast.success('Negotiation stopped');
+      },
+      onError: error => {
+        console.error(error);
+        toast.error('Failed to stop negotiation');
+      },
+    });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -36,7 +49,9 @@ export const NextStepDialog = ({ negotiationId }: { negotiationId: string }) => 
           </p>
         </div>
         <DialogTrigger asChild>
-          <Button disabled={isPending}>Go to Next Stage</Button>
+          <Button disabled={isGoingToNextStage || isStoppingNegotiation}>
+            {isGoingToNextStage || isStoppingNegotiation ? 'Loading...' : 'Go to Next Stage'}
+          </Button>
         </DialogTrigger>
       </div>
       <DialogContent>
@@ -47,11 +62,15 @@ export const NextStepDialog = ({ negotiationId }: { negotiationId: string }) => 
           If you liked the last meeting, you can show interest in moving to the next stage.
         </DialogDescription>
         <DialogFooter>
-          <Button variant="secondary" onClick={() => setOpen(false)}>
-            Close
+          <Button
+            onClick={() => stopNegotiation({ negotiationId })}
+            disabled={isStoppingNegotiation}
+            variant="secondary"
+          >
+            {isStoppingNegotiation ? 'Stopping negotiation...' : 'Stop Negotiation'}
           </Button>
-          <Button onClick={() => goToNextStage({ negotiationId })} disabled={isPending}>
-            {isPending ? 'Moving to next stage...' : 'Go to Next Stage'}
+          <Button onClick={() => goToNextStage({ negotiationId })} disabled={isGoingToNextStage}>
+            {isGoingToNextStage ? 'Moving to next stage...' : 'Go to Next Stage'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -16,6 +16,8 @@ const NotificationTextMap = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
   [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
   [NotificationType.MEETING_CREATED]: 'A meeting has been created',
+  [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
+  [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
 };
 
 export const Notifications = () => {

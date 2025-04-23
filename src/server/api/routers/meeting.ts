@@ -4,6 +4,7 @@ import { addDays, addHours } from 'date-fns';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
+import { createNotifications } from './notifications';
 
 export const meetingRouter = createTRPCRouter({
   getMeetingsByDate: protectedProcedure
@@ -143,12 +144,9 @@ export const meetingRouter = createTRPCRouter({
         throw new Error('User IDs not found');
       }
 
-      await ctx.db.notification.createMany({
-        data: userIds.map(userId => ({
-          userId: userId ?? '',
-          type: NotificationType.MEETING_CANCELLED,
-        })),
-      });
+      const userIdsArray = userIds.filter(userId => userId !== undefined);
+
+      await createNotifications(ctx.db, userIdsArray, NotificationType.MEETING_CANCELLED);
 
       return meeting;
     }),

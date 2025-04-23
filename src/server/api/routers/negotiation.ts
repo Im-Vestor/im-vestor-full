@@ -4,6 +4,7 @@ import { addHours } from 'date-fns';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
+import { createNotifications } from './notifications';
 
 export const negotiationRouter = createTRPCRouter({
   getNegotiationByProjectIdAndInvestorId: protectedProcedure
@@ -66,6 +67,36 @@ export const negotiationRouter = createTRPCRouter({
 
       return negotiation;
     }),
+  stopNegotiation: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const negotiation = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          entrepreneurActionNeeded: false,
+          investorActionNeeded: false,
+          entrepreneurAgreedToGoToNextStage: false,
+          investorAgreedToGoToNextStage: false,
+          stage: NegotiationStage.CANCELLED,
+        },
+        include: {
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+          investor: true,
+        },
+      });
+
+      await createNotifications(
+        ctx.db,
+        [negotiation.investor?.userId ?? '', negotiation.project.Entrepreneur?.userId ?? ''],
+        NotificationType.NEGOTIATION_CANCELLED
+      );
+
+      return negotiation;
+    }),
   goToNextStage: protectedProcedure
     .input(z.object({ negotiationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -96,6 +127,14 @@ export const negotiationRouter = createTRPCRouter({
         where: {
           id: input.negotiationId,
         },
+        include: {
+          investor: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
       });
 
       if (
@@ -116,6 +155,12 @@ export const negotiationRouter = createTRPCRouter({
           },
         });
       }
+
+      await createNotifications(
+        ctx.db,
+        [negotiation?.investor?.userId ?? '', negotiation?.project.Entrepreneur?.userId ?? ''],
+        NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE
+      );
 
       return negotiation;
     }),

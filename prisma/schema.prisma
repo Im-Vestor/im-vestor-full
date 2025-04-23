@@ -90,8 +90,8 @@ model User {
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
 
-    followingConnections Connection[]   @relation("Follower")
-    followerConnections  Connection[]   @relation("Following")
+    followingConnections Connection[]    @relation("Follower")
+    followerConnections  Connection[]    @relation("Following")
     Notification         Notification[]
     supportTickets       SupportTicket[]
 }
@@ -346,6 +346,8 @@ enum NotificationType {
     PROJECT_VIEW
     MEETING_CREATED
     MEETING_CANCELLED
+    NEGOTIATION_CANCELLED
+    NEGOTIATION_GO_TO_NEXT_STAGE
     // POKE
     // MESSAGE
     // INVESTMENT_REQUEST
