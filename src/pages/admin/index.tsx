@@ -3,12 +3,12 @@ import { getAuth } from '@clerk/nextjs/server';
 import { Sidebar } from '~/components/admin/sidebar';
 import { Header } from '~/components/admin/header';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children, title }: { children: React.ReactNode, title: string }) {
   return (
     <div className="flex h-screen bg-dark text-text-primary">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header title={title} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>

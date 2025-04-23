@@ -66,8 +66,7 @@ function SupportTicketsList() {
 
 export default function SupportPage() {
   return (
-    <AdminLayout>
-      <h1 className="text-2xl font-semibold mb-4">Support Tickets</h1>
+    <AdminLayout title="Support Tickets">
       <SupportTicketsList />
     </AdminLayout>
   );
