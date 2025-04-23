@@ -43,7 +43,7 @@ function Meetings() {
     <div className="flex flex-col gap-8">
       <h1 className="text-2xl font-semibold">Meetings</h1>
 
-      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+      <div className="rounded-lg border border-border bg-card p-6 shadow-sm w-full sm:w-1/3">
         <h2 className="text-lg font-medium mb-4">Instant Meeting Room</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Quickly generate a temporary video call room. The room will be available immediately and expire in one hour.
