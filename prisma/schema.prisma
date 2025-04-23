@@ -121,6 +121,7 @@ model Investor {
     investedProjects Project[]     @relation("InvestedInvestors")
     projectViews     ProjectView[]
     areas            Area[]
+    negotiations     Negotiation[]
 
     userId String @unique
     user   User   @relation(fields: [userId], references: [id])
@@ -140,8 +141,8 @@ model Meeting {
     startDate DateTime
     endDate   DateTime
 
-    project   Project? @relation(fields: [projectId], references: [id])
-    projectId String?
+    negotiation   Negotiation? @relation(fields: [negotiationId], references: [id])
+    negotiationId String?
 
     entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
@@ -227,6 +228,7 @@ model Project {
     faqs            ProjectFaq[]
     files           File[]
     views           ProjectView[]
+    negotiation     Negotiation?
 
     Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
@@ -237,11 +239,37 @@ model Project {
     investedInvestors  Investor[] @relation("InvestedInvestors")
     investedInvestorId String?
 
-    sector    Area      @relation(fields: [sectorId], references: [id])
+    sector    Area   @relation(fields: [sectorId], references: [id])
     sectorId  String
     countryId Int?
     stateId   Int?
-    Meeting   Meeting[]
+}
+
+enum NegotiationStage {
+    PITCH
+    NEGOTIATION
+    DETAILS
+    CLOSED
+}
+
+model Negotiation {
+    id String @id @default(uuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    stage NegotiationStage @default(PITCH)
+
+    investorAgreedToGoToNextStage     Boolean @default(false)
+    entrepreneurAgreedToGoToNextStage Boolean @default(false)
+
+    meetings Meeting[]
+
+    investor   Investor? @relation(fields: [investorId], references: [id])
+    investorId String?
+
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String  @unique
 }
 
 model KnowYourNumbers {

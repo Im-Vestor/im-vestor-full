@@ -33,7 +33,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog';
-import { cn } from '~/lib/utils';
+import { Stepper } from '~/components/ui/stepper';
+import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
 
@@ -57,6 +58,20 @@ const availableHours = [
   '23:00',
   '00:00',
 ];
+
+const NEGOTIATION_STEPS = [
+  { label: 'Pitch' },
+  { label: 'Negotiation' },
+  { label: 'Details' },
+  { label: 'Closed' },
+];
+
+const STAGE_TO_STEP_MAP = {
+  PITCH: 0,
+  NEGOTIATION: 1,
+  DETAILS: 2,
+  CLOSED: 3,
+};
 
 export default function CompanyDetails() {
   const { user } = useUser();
@@ -89,8 +104,13 @@ export default function CompanyDetails() {
     enabled: !!isInvestor,
   });
 
+  const { data: negotiation } = api.negotiation.getNegotiationByProjectIdAndInvestorId.useQuery(
+    { projectId: companyId as string, investorId: investor?.id ?? '' },
+    { enabled: !!companyId && !!investor?.id && isInvestor }
+  );
+
   const addInvestorViewMutation = api.project.addView.useMutation();
-  const scheduleMeetingMutation = api.meeting.scheduleMeeting.useMutation({
+  const scheduleMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
     onSuccess: () => {
       toast.success('Meeting scheduled successfully');
       setIsConfirmModalOpen(false);
@@ -134,7 +154,7 @@ export default function CompanyDetails() {
       scheduleMeetingMutation.mutate({
         entrepreneurId: project?.Entrepreneur?.id ?? '',
         date: meetingDateTime,
-        investorIds: [investor?.id ?? ''],
+        investorId: investor?.id ?? '',
         projectId: companyId as string,
       });
     }
@@ -242,7 +262,8 @@ export default function CompanyDetails() {
                     <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
                       <DialogTrigger asChild>
                         <Button>
-                          <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule Meeting
+                          <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule{' '}
+                          {capitalize(negotiation?.stage ?? 'Pitch')} Meeting
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-3xl w-full mx-6">
@@ -368,6 +389,22 @@ export default function CompanyDetails() {
             <p className="mt-3 whitespace-pre-wrap text-sm text-white/80 sm:mt-4 sm:text-base">
               {project.about ?? 'No detailed description available.'}
             </p>
+
+            {isInvestor && negotiation && (
+              <>
+                <h2 className="text-lg font-semibold sm:text-xl mt-6">Negotiation Stage</h2>
+                <div className="mt-6">
+                  <Stepper
+                    steps={NEGOTIATION_STEPS}
+                    currentStep={
+                      STAGE_TO_STEP_MAP[
+                        (negotiation?.stage ?? 'PITCH') as keyof typeof STAGE_TO_STEP_MAP
+                      ]
+                    }
+                  />
+                </div>
+              </>
+            )}
 
             <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Founder</h2>
             <Link href={`/entrepreneur/${project.Entrepreneur?.id}`} className="hover:opacity-75">
