@@ -7,7 +7,7 @@ export const supportRouter = createTRPCRouter({
       z.object({
         subject: z.string().min(1, 'Subject cannot be empty'),
         message: z.string().min(1, 'Message cannot be empty'),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.userId; // Correctly access userId from auth context
@@ -40,9 +40,9 @@ export const supportRouter = createTRPCRouter({
               id: true,
               email: true,
               // You can add more User fields here if needed for the admin view
-            }
-          }
-        }
+            },
+          },
+        },
       });
       return tickets;
     }),

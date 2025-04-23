@@ -1,7 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { type Context } from '../context';
-import { getAuth } from '@clerk/nextjs/server';
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
@@ -15,8 +14,11 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.auth.userId) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
-  // Pass the original context along, ensuring `req` is available for subsequent middleware
-  return next({ ctx });
+  return next({
+    ctx: {
+      auth: ctx.auth,
+    },
+  });
 });
 
 // check if the user is an admin
@@ -24,10 +26,8 @@ const isAdmin = t.middleware(async ({ next, ctx }) => {
   if (!ctx.auth.userId) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
-  // @ts-ignore-next-line
-  const { sessionClaims } = getAuth(ctx.req);
 
-  if (sessionClaims?.publicMetadata?.userIsAdmin !== true) {
+  if (ctx.auth.sessionClaims?.publicMetadata?.userIsAdmin !== true) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'User is not an admin' });
   }
 
