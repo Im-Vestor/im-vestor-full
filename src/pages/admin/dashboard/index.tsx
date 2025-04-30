@@ -3,7 +3,7 @@ import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-r
 import AdminLayout from '../index';
 export default function DashboardPage() {
   return (
-    <AdminLayout>
+    <AdminLayout title="Dashboard">
       <Dashboard />
     </AdminLayout>
   );
@@ -31,9 +31,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold">17</div>
-            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
-              +0.2%
-            </span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+0.2%</span>
           </div>
           <div className="text-xs text-muted-foreground">Utilizadores 24H</div>
         </div>
@@ -46,9 +44,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold">120€</div>
-            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
-              +6.2%
-            </span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+6.2%</span>
           </div>
           <div className="text-xs text-muted-foreground">Inscrições 24H</div>
         </div>
@@ -76,9 +72,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold">264€</div>
-            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">
-              +6.2%
-            </span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-success/20 text-success">+6.2%</span>
           </div>
           <div className="text-xs text-muted-foreground">Add-Ons 24H</div>
         </div>

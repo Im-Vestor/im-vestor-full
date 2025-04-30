@@ -10,16 +10,17 @@ import { api } from '~/utils/api';
 function Meetings() {
   const [instantRoomUrl, setInstantRoomUrl] = useState<string | null>(null);
 
-  const { mutate: createInstant, isPending: isCreatingInstant } = api.meeting.createInstantMeeting.useMutation({
-    onSuccess: (data) => {
-      setInstantRoomUrl(data.url);
-      toast.success('Instant room created!');
-    },
-    onError: (error) => {
-      toast.error(`Failed to create instant room: ${error.message}`);
-      setInstantRoomUrl(null);
-    },
-  });
+  const { mutate: createInstant, isPending: isCreatingInstant } =
+    api.meeting.createInstantMeeting.useMutation({
+      onSuccess: data => {
+        setInstantRoomUrl(data.url);
+        toast.success('Instant room created!');
+      },
+      onError: error => {
+        toast.error(`Failed to create instant room: ${error.message}`);
+        setInstantRoomUrl(null);
+      },
+    });
 
   const handleCreateInstantRoom = () => {
     setInstantRoomUrl(null);
@@ -28,7 +29,8 @@ function Meetings() {
 
   const handleCopyUrl = () => {
     if (instantRoomUrl) {
-      navigator.clipboard.writeText(instantRoomUrl)
+      navigator.clipboard
+        .writeText(instantRoomUrl)
         .then(() => {
           toast.success('URL copied to clipboard!');
         })
@@ -46,14 +48,11 @@ function Meetings() {
       <div className="rounded-lg border border-border bg-card p-6 shadow-sm w-full sm:w-1/3">
         <h2 className="text-lg font-medium mb-4">Instant Meeting Room</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Quickly generate a temporary video call room. The room will be available immediately and expire in one hour.
+          Quickly generate a temporary video call room. The room will be available immediately and
+          expire in one hour.
         </p>
         <div className="flex flex-col gap-4">
-          <Button
-            onClick={handleCreateInstantRoom}
-            disabled={isCreatingInstant}
-            className="w-fit"
-          >
+          <Button onClick={handleCreateInstantRoom} disabled={isCreatingInstant} className="w-fit">
             {isCreatingInstant ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -97,7 +96,7 @@ function Meetings() {
 
 export default function MeetingsPage() {
   return (
-    <AdminLayout>
+    <AdminLayout title="Meetings">
       <Meetings />
     </AdminLayout>
   );
