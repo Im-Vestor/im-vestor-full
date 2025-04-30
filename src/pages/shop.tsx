@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
@@ -33,6 +34,9 @@ const Product = ({ title, description }: ProductProps) => {
 };
 
 export default function Shop() {
+  const { user } = useUser();
+  const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
+
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
@@ -40,10 +44,12 @@ export default function Shop() {
         <h1 className="mb-8 text-2xl font-bold">Shop</h1>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Product
-            title="Boost"
-            description="Places your project at the top of business sector searches, increasing visibility to potential investors."
-          />
+          {!isInvestor && (
+            <Product
+              title="Boost"
+              description="Places your project at the top of business sector searches, increasing visibility to potential investors."
+            />
+          )}
           <Product
             title="Poke"
             description="Sends an introduction note to investors about your entrepreneur profile, helping you make that crucial first connection."
@@ -52,10 +58,12 @@ export default function Shop() {
             title="Hyper Train Ticket"
             description="Makes your project appear in the investors' hyper train feed, exposing your venture to a targeted audience."
           />
-          <Product
-            title="Daily Pitch Ticket"
-            description="Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects."
-          />
+          {!isInvestor && (
+            <Product
+              title="Daily Pitch Ticket"
+              description="Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects."
+            />
+          )}
         </div>
       </div>
     </main>
