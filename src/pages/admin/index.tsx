@@ -1,16 +1,17 @@
 import { type GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { Sidebar } from '~/components/admin/sidebar';
-import { Header } from '~/components/admin/header';
+import { SidebarProvider } from '~/contexts/SidebarContext';
 
-export default function AdminLayout({ children, title }: { children: React.ReactNode, title: string }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-dark text-text-primary">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={title} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
-      </div>
+      <SidebarProvider>
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <main className="flex-1 overflow-auto mx-64 my-20">{children}</main>
+        </div>
+      </SidebarProvider>
     </div>
   );
 }
