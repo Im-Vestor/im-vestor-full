@@ -47,11 +47,10 @@ model State {
 }
 
 model Area {
-    id         String    @id @default(uuid())
-    name       String
-    Investor   Investor? @relation(fields: [investorId], references: [id])
-    investorId String?
-    Project    Project[]
+    id       String     @id @default(uuid())
+    name     String
+    Project  Project[]
+    Investor Investor[]
 }
 
 model Referral {
