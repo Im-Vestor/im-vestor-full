@@ -172,11 +172,11 @@ export default function Home() {
 
   return (
     <>
-      <div className="w-full absolute top-0 left-0 py-2 bg-card border-b border-white/10 z-50">
+      <div className="w-full fixed top-0 left-0 py-2 bg-card border-b border-white/10 z-50 backdrop-blur-sm">
         <div className="flex items-center justify-center text-sm gap-2">
-          <Flag className="w-3 h-3" />
-          <p className="text-white">
-            Inscreva-se agora e aproveite um ano grátis na nossa plataforma, se feito até Outubro. A partir de 1 de Novembro, começaremos a cobrar pela entrada na plataforma.
+          <Flag className="w-3 h-3 text-yellow-500" />
+          <p className="text-white tracking-wider opacity-70">
+            Inscreva-se agora e aproveite um ano grátis na nossa plataforma.
           </p>
         </div>
       </div>
