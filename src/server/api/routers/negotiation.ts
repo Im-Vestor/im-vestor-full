@@ -49,6 +49,21 @@ export const negotiationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Check if the investor has a negotiation with the entrepreneur
+      const existingNegotiation = await ctx.db.negotiation.findFirst({
+        where: {
+          projectId: input.projectId,
+          investorId: input.investorId,
+        },
+      });
+
+      if (existingNegotiation) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Investor already has a negotiation with the entrepreneur',
+        });
+      }
+
       const negotiation = await ctx.db.negotiation.create({
         data: {
           projectId: input.projectId,
