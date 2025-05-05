@@ -15,6 +15,7 @@ import {
   MessageCircle,
   Presentation,
   User,
+  Video,
   X,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -161,6 +162,20 @@ export default function CompanyDetails() {
         investorId: investor?.id ?? '',
         projectId: companyId as string,
       });
+    }
+  };
+
+  const handleScheduleMeetingNow = async () => {
+    if (companyId && project?.Entrepreneur?.id && investor?.id) {
+      const now = new Date();
+      scheduleMeetingMutation.mutate({
+        entrepreneurId: project.Entrepreneur.id,
+        date: now,
+        investorId: investor.id,
+        projectId: companyId as string,
+      });
+    } else {
+      toast.error('Could not schedule meeting. Missing required information.');
     }
   };
 
@@ -372,9 +387,22 @@ export default function CompanyDetails() {
                           </div>
                           <DialogFooter>
                             <Button
-                              onClick={handleOpenConfirmDialog}
-                              disabled={!selectedDate || !time}
+                              variant="secondary"
+                              onClick={handleScheduleMeetingNow}
+                              disabled={scheduleMeetingMutation.isPending}
                             >
+                              {scheduleMeetingMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Video className="mr-2 h-4 w-4" />
+                              )}
+                              Meeting Now
+                            </Button>
+                            <Button
+                              onClick={handleOpenConfirmDialog}
+                              disabled={!selectedDate || !time || scheduleMeetingMutation.isPending}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
                               Review Schedule
                             </Button>
                           </DialogFooter>

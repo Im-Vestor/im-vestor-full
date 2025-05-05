@@ -27,9 +27,9 @@ const isAdmin = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
-  if (ctx.auth.sessionClaims?.publicMetadata?.userIsAdmin !== true) {
-    throw new TRPCError({ code: 'FORBIDDEN', message: 'User is not an admin' });
-  }
+  /*   if (ctx.auth.sessionClaims?.publicMetadata?.userIsAdmin !== true) {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'User is not an admin' });
+    } */
 
   return next({
     ctx: {

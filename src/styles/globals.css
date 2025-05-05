@@ -50,6 +50,10 @@
     @apply to-[#D3B662];
   }
 
+  .border {
+    @apply border-white/10;
+  }
+
   /* Card flip effect */
   .card-container {
     perspective: 1000px;

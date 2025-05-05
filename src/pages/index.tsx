@@ -11,6 +11,10 @@ import {
   Zap,
   Play,
   X,
+  ArrowDownRight,
+  ArrowUpRight,
+  LogIn,
+  Flag,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -24,6 +28,7 @@ import { toast } from 'sonner';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useTranslation } from '~/hooks/use-translation';
 import StarField from '~/components/ui/StarField';
+import { LanguageSwitcher } from '~/components/ui/language-switcher';
 
 const fadeIn = {
   initial: {
@@ -167,13 +172,21 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen bg-background pt-24">
-        <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px]" />
-        {/*         <motion.header
+      <div className="w-full fixed top-0 left-0 py-2 bg-card border-b border-white/10 z-50 backdrop-blur-sm">
+        <div className="flex items-center justify-center text-sm gap-2">
+          <Flag className="w-3 h-3 text-yellow-500" />
+          <p className="text-white tracking-wider opacity-70">
+            Inscreva-se agora e aproveite um ano grátis na nossa plataforma.
+          </p>
+        </div>
+      </div>
+      <main className="min-h-screen bg-background pt-32">
+        <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10]" />
+        <motion.header
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="m-6 flex justify-end gap-2 fixed top-0 right-0 z-50">
+          className="m-6 flex justify-end gap-2 fixed top-10 sm:right-40 right-0 z-50">
           <LanguageSwitcher />
           <Link href="/login">
             <Button variant="outline" className="border-2 border-white/10">
@@ -181,7 +194,7 @@ export default function Home() {
               {t("signIn")}
             </Button>
           </Link>
-        </motion.header> */}
+        </motion.header>
 
         <motion.div
           variants={staggerContainer}
@@ -215,12 +228,12 @@ export default function Home() {
               {t('connectingEntrepreneursAndInvestors')}
             </motion.span>
             <motion.div variants={popUp} transition={{ delay: 1.6 }}>
-              {/*               <Button
+              <Button
                 onClick={async () => await router.push("/sign-up")}
                 className="mt-16 rounded-full hover:opacity-75 hover:scale-x-105 transition-all duration-500"
               >
-                {t("getStarted")} <ArrowDownRight />
-              </Button> */}
+                {t("getStarted")} <ArrowUpRight />
+              </Button>
             </motion.div>
           </div>
 
@@ -722,7 +735,7 @@ export default function Home() {
                       </motion.p>
 
                       <Link
-                        className="mt-8 z-50 opacity-50 pointer-events-none"
+                        className="mt-8 z-50"
                         href="/sign-up/entrepreneur"
                       >
                         <Button>
@@ -775,7 +788,7 @@ export default function Home() {
                       </motion.p>
 
                       <Link
-                        className="mt-8 z-50 opacity-50 pointer-events-none"
+                        className="mt-8 z-50"
                         href="/sign-up/investor"
                       >
                         <Button>
@@ -836,13 +849,13 @@ export default function Home() {
                     </span>
                   </h2>
                   <p className="mt-2 text-sm text-gray-300">
-                    {/* {t("dontHaveAccount")}{" "}  */}You will be able to create an account soon.
-                    {/*                     <Link
+                    {t("dontHaveAccount")}{" "}
+                    <Link
                       href="/sign-up"
                       className="text-primary hover:opacity-70"
                     >
                       {t("createOne")}
-                    </Link> */}
+                    </Link>
                   </p>
                   <Input
                     className="mt-8"
@@ -858,11 +871,11 @@ export default function Home() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                   />
-                  <div className="mt-4 flex w-full items-center justify-between opacity-50 pointer-events-none">
+                  <div className="mt-4 flex w-full items-center justify-between">
                     <Link href="/reset-password" className="text-xs text-primary hover:opacity-70">
                       {t('forgotPassword')}
                     </Link>
-                    <Button onClick={handleLogin} disabled={isPending}>
+                    <Button onClick={handleLogin} disabled={isPending || !email || !password}>
                       {isPending ? t('loggingIn') : t('login')} <ArrowRight />
                     </Button>
                   </div>
