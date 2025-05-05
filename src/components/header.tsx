@@ -78,8 +78,11 @@ export const Header = () => {
   const { user, isSignedIn } = useUser();
 
   const isSignUpRoute = path?.startsWith('/sign-up');
+
   const { data: userDetails } = api.user.getUser.useQuery(undefined, {
     enabled: !isSignUpRoute && !!isSignedIn,
+    staleTime: 600000, // 10 minutes in milliseconds
+    refetchInterval: 600000, // 10 minutes in milliseconds
   });
 
   const { signOut } = useClerk();
