@@ -34,6 +34,8 @@ model Country {
     Investor     Investor[]
     Entrepreneur Entrepreneur[]
     Project      Project[]
+    // Incubator    Incubator[]
+    // VcGroup      VcGroup[]
 }
 
 model State {
@@ -44,6 +46,8 @@ model State {
     Investor     Investor[]
     Entrepreneur Entrepreneur[]
     Project      Project[]
+    // Incubator    Incubator[]
+    // VcGroup      VcGroup[]
 }
 
 model Area {
@@ -51,6 +55,15 @@ model Area {
     name     String
     Project  Project[]
     Investor Investor[]
+    // Incubator Incubator[]
+    // VcGroup   VcGroup[]
+}
+
+model Offer {
+    id          String @id @default(uuid())
+    name        String
+    description String
+    // Incubator   Incubator[]
 }
 
 model Referral {
@@ -94,6 +107,87 @@ model User {
     Notification         Notification[]
     supportTickets       SupportTicket[]
 }
+
+// model VcGroup {
+//     id             String    @id @default(uuid())
+//     name           String
+//     bio            String?
+//     description    String?
+//     website        String?
+//     logo           String?
+//     phone          String?
+//     openingDate    DateTime?
+//     managedCapital Float?
+//     brochureUrl    String?
+
+//     stages   ProjectStage[]
+//     areas   Area[]
+//     members VcGroupMember[]
+
+//     linkedinUrl String?
+//     facebook    String?
+//     instagram   String?
+//     twitter     String?
+
+//     state   State?   @relation(fields: [stateId], references: [id])
+//     country Country? @relation(fields: [countryId], references: [id])
+
+//     userId String @unique
+//     user   User   @relation(fields: [userId], references: [id])
+
+//     stateId   Int?
+//     countryId Int?
+// }
+
+// model VcGroupMember {
+//     id          String  @id @default(uuid())
+//     name        String
+//     role        String
+//     linkedinUrl String?
+//     youtubeUrl  String?
+//     instagram   String?
+//     twitter     String?
+
+//     vcGroup   VcGroup @relation(fields: [vcGroupId], references: [id])
+//     vcGroupId String
+// }
+
+// model Incubator {
+//     id                          String    @id @default(uuid())
+//     name                        String
+//     bio                         String?
+//     description                 String?
+//     website                     String?
+//     logo                        String?
+//     phone                       String?
+//     openingDate                 DateTime?
+//     startupsIncubated           Int?
+//     startupsInIncubator         Int?
+//     acceptStartupsOutsideRegion Boolean   @default(false)
+//     brochureUrl                 String?
+
+//     offers Offer[]
+//     areas  Area[]
+
+//     ownerName  String?
+//     ownerRole  String?
+//     ownerPhone String?
+//     ownerEmail String?
+
+//     linkedinUrl String?
+//     facebook    String?
+//     instagram   String?
+//     twitter     String?
+
+//     state   State?   @relation(fields: [stateId], references: [id])
+//     country Country? @relation(fields: [countryId], references: [id])
+
+//     userId String @unique
+//     user   User   @relation(fields: [userId], references: [id])
+
+//     stateId   Int?
+//     countryId Int?
+// }
 
 model Partner {
     id          String  @id @default(uuid())

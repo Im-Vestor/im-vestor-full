@@ -51,10 +51,10 @@ export const partnerRouter = createTRPCRouter({
 
       const user = await ctx.db.user.create({
         data: {
-          id: clerkUser ? clerkUser.id : '',
+          id: clerkUser.id,
           email: input.email,
           referralCode: generateCode(),
-          userType: UserType.INVESTOR,
+          userType: UserType.PARTNER,
         },
       });
 
