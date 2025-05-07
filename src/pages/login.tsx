@@ -29,10 +29,6 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('handleSubmit');
-    console.log(email, password);
-    console.log(isLoaded);
-
     if (!isLoaded) return;
 
     setIsPending(true);

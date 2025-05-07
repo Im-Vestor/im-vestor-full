@@ -24,9 +24,10 @@ export default function Profile() {
           <EntrepreneurProfile />
         ) : user?.publicMetadata.userType === 'INVESTOR' ? (
           <InvestorProfile />
-        ) : (
+        ) : user?.publicMetadata.userType === 'PARTNER' ? (
           <PartnerProfile />
-        )}
+        ) : user?.publicMetadata.userType === 'INCUBATOR' ? null : user?.publicMetadata.userType ===
+          'VC_GROUP' ? null : null}
       </div>
     </main>
   );
