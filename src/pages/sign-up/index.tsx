@@ -61,23 +61,7 @@ export default function SignUp() {
               />
               <h3 className="mt-2 text-center text-xl font-semibold">Investor</h3>
             </button>
-            <button
-              onClick={() => setAccountType('vc-group')}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
-                accountType === 'vc-group'
-                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
-                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
-              }`}
-            >
-              <Image
-                src="images/vc-group.svg"
-                alt="vc-group"
-                width={80}
-                height={80}
-                className="mt-1"
-              />
-              <h3 className="mt-2 text-center text-xl font-semibold">VC Group</h3>
-            </button>
+
             <button
               onClick={() => setAccountType('incubator')}
               className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
@@ -94,6 +78,24 @@ export default function SignUp() {
                 className="mt-1"
               />
               <h3 className="mt-2 text-center text-xl font-semibold">Incubator</h3>
+            </button>
+
+            <button
+              onClick={() => setAccountType('vc-group')}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
+                accountType === 'vc-group'
+                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
+                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
+              }`}
+            >
+              <Image
+                src="images/vc-group.svg"
+                alt="vc-group"
+                width={80}
+                height={80}
+                className="mt-1"
+              />
+              <h3 className="mt-2 text-center text-xl font-semibold">VC Group</h3>
             </button>
           </div>
 
