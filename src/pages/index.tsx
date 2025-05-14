@@ -176,7 +176,7 @@ export default function Home() {
         <div className="flex items-center justify-center text-sm gap-2">
           <Flag className="w-3 h-3 text-yellow-500" />
           <p className="text-white tracking-wider opacity-70">
-            Inscreva-se agora e aproveite 1 ano grátis na nossa plataforma.
+            Inscreva-se agora e aproveite 1 ano grátis.
           </p>
         </div>
       </div>
