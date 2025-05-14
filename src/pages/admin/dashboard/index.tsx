@@ -3,7 +3,7 @@ import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-r
 import AdminLayout from '../index';
 export default function DashboardPage() {
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout>
       <Dashboard />
     </AdminLayout>
   );

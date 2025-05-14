@@ -96,7 +96,7 @@ function Meetings() {
 
 export default function MeetingsPage() {
   return (
-    <AdminLayout title="Meetings">
+    <AdminLayout>
       <Meetings />
     </AdminLayout>
   );
