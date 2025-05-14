@@ -10,6 +10,8 @@ export default function PartnerDashboard() {
 
   const { data: user, isLoading } = api.user.getUser.useQuery();
 
+  console.log(user);
+
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />

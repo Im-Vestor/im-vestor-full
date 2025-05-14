@@ -276,144 +276,145 @@ export default function CompanyDetails() {
                 </div>
               </div>
               <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
-                {isInvestor && (
-                  <>
-                    <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
-                      <DialogTrigger asChild>
-                        <Button
-                          disabled={
-                            negotiation?.stage === NegotiationStage.CLOSED ||
-                            (negotiation?.entrepreneurActionNeeded &&
-                              negotiation?.investorActionNeeded)
-                          }
-                        >
-                          <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule{' '}
-                          {capitalize(negotiation?.stage ?? 'Pitch')} Meeting
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-3xl w-full mx-6">
-                        <DialogHeader>
-                          <DialogTitle>Schedule Meeting</DialogTitle>
-                          <DialogDescription>
-                            Select a date and time for your meeting.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex flex-col md:flex-row gap-4">
-                          <div className="w-full md:w-1/2 h-full rounded-xl border border-white/10 bg-card p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="rounded-lg bg-[#EFD687] p-3">
-                                <CalendarIcon className="h-6 w-6 text-background" />
-                              </div>
-                              <div className="flex flex-col">
-                                <p className="text-base font-medium">
-                                  {format(selectedDate, 'MMMM d, yyyy')}
-                                </p>
-                                <p className="text-xs text-white/50">
-                                  {format(selectedDate, 'EEEE')}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="mt-4">
-                              <DayPicker
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={date => setSelectedDate(date ?? tomorrow)}
-                                captionLayout="buttons"
-                                showOutsideDays
-                                disabled={{ before: tomorrow }}
-                                defaultMonth={selectedDate}
-                                classNames={{
-                                  root: 'w-full',
-                                  months: 'w-full',
-                                  month: 'w-full',
-                                  caption:
-                                    'flex flex-row justify-center pt-1 relative items-center space-x-2 mb-4',
-                                  caption_between: 'flex flex-row justify-center gap-1',
-                                  nav: 'space-x-1 flex items-center text-white',
-                                  nav_button_previous: 'absolute left-1',
-                                  nav_button_next: 'absolute right-1',
-                                  table: 'w-full border-collapse space-y-1',
-                                  head_row: 'flex w-full justify-between',
-                                  head_cell:
-                                    'text-white/50 rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center',
-                                  row: 'flex w-full mt-2 justify-between',
-                                  cell: 'flex-1 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-primary [&:has([aria-selected])]:text-primary-foreground first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 rounded-md',
-                                  day: 'h-9 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-white/10 rounded-md',
-                                  day_selected:
-                                    'bg-[#EFD687] text-background hover:bg-[#EFD687] hover:text-background focus:bg-[#EFD687] focus:text-background',
-                                  day_today: 'bg-white/5 text-white',
-                                  day_outside: 'text-white/30 opacity-50',
-                                  day_disabled: 'text-white/30',
-                                  day_hidden: 'invisible',
-                                }}
-                                className="p-0"
-                              />
-                            </div>
-                          </div>
-                          <div className="w-full md:w-1/2 rounded-xl border border-white/10 bg-card p-4 flex flex-col">
-                            <p className="font-medium mb-2">Select Time</p>
-                            <div className="flex-grow overflow-y-auto grid grid-cols-3 gap-2 pr-2">
-                              {availableHours.map((hour, i) => (
-                                <Button
-                                  key={i}
-                                  variant="outline"
-                                  className={cn(
-                                    'h-9',
-                                    time === hour &&
-                                    'bg-primary text-primary-foreground opacity-100'
-                                  )}
-                                  onClick={() => setTime(hour)}
-                                >
-                                  {hour}
-                                </Button>
-                              ))}
-                            </div>
-                            <div className="mt-4">
-                              <p className="font-medium mb-2">Entrepreneur Preferred Time</p>
-                              {preferredHours?.length === 0 ? (
-                                <p className="text-white/50">No preferred time set</p>
-                              ) : (
-                                <div className="flex flex-row gap-2">
-                                  {preferredHours?.map((hour, i) => (
-                                    <p key={i} className="text-white/50">
-                                      {hour.time}
-                                    </p>
-                                  ))}
+                {isInvestor &&
+                  negotiation?.stage !== NegotiationStage.CLOSED &&
+                  negotiation?.stage !== NegotiationStage.CANCELLED && (
+                    <>
+                      <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
+                        <DialogTrigger asChild>
+                          <Button
+                            disabled={
+                              negotiation?.entrepreneurActionNeeded &&
+                              negotiation?.investorActionNeeded
+                            }
+                          >
+                            <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule{' '}
+                            {capitalize(negotiation?.stage ?? 'Pitch')} Meeting
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-3xl w-full mx-6">
+                          <DialogHeader>
+                            <DialogTitle>Schedule Meeting</DialogTitle>
+                            <DialogDescription>
+                              Select a date and time for your meeting.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex flex-col md:flex-row gap-4">
+                            <div className="w-full md:w-1/2 h-full rounded-xl border border-white/10 bg-card p-4">
+                              <div className="flex items-center gap-4">
+                                <div className="rounded-lg bg-[#EFD687] p-3">
+                                  <CalendarIcon className="h-6 w-6 text-background" />
                                 </div>
-                              )}
+                                <div className="flex flex-col">
+                                  <p className="text-base font-medium">
+                                    {format(selectedDate, 'MMMM d, yyyy')}
+                                  </p>
+                                  <p className="text-xs text-white/50">
+                                    {format(selectedDate, 'EEEE')}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-4">
+                                <DayPicker
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={date => setSelectedDate(date ?? tomorrow)}
+                                  captionLayout="buttons"
+                                  showOutsideDays
+                                  disabled={{ before: tomorrow }}
+                                  defaultMonth={selectedDate}
+                                  classNames={{
+                                    root: 'w-full',
+                                    months: 'w-full',
+                                    month: 'w-full',
+                                    caption:
+                                      'flex flex-row justify-center pt-1 relative items-center space-x-2 mb-4',
+                                    caption_between: 'flex flex-row justify-center gap-1',
+                                    nav: 'space-x-1 flex items-center text-white',
+                                    nav_button_previous: 'absolute left-1',
+                                    nav_button_next: 'absolute right-1',
+                                    table: 'w-full border-collapse space-y-1',
+                                    head_row: 'flex w-full justify-between',
+                                    head_cell:
+                                      'text-white/50 rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center',
+                                    row: 'flex w-full mt-2 justify-between',
+                                    cell: 'flex-1 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-primary [&:has([aria-selected])]:text-primary-foreground first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 rounded-md',
+                                    day: 'h-9 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-white/10 rounded-md',
+                                    day_selected:
+                                      'bg-[#EFD687] text-background hover:bg-[#EFD687] hover:text-background focus:bg-[#EFD687] focus:text-background',
+                                    day_today: 'bg-white/5 text-white',
+                                    day_outside: 'text-white/30 opacity-50',
+                                    day_disabled: 'text-white/30',
+                                    day_hidden: 'invisible',
+                                  }}
+                                  className="p-0"
+                                />
+                              </div>
+                            </div>
+                            <div className="w-full md:w-1/2 rounded-xl border border-white/10 bg-card p-4 flex flex-col">
+                              <p className="font-medium mb-2">Select Time</p>
+                              <div className="flex-grow overflow-y-auto grid grid-cols-3 gap-2 pr-2">
+                                {availableHours.map((hour, i) => (
+                                  <Button
+                                    key={i}
+                                    variant="outline"
+                                    className={cn(
+                                      'h-9',
+                                      time === hour &&
+                                        'bg-primary text-primary-foreground opacity-100'
+                                    )}
+                                    onClick={() => setTime(hour)}
+                                  >
+                                    {hour}
+                                  </Button>
+                                ))}
+                              </div>
+                              <div className="mt-4">
+                                <p className="font-medium mb-2">Entrepreneur Preferred Time</p>
+                                {preferredHours?.length === 0 ? (
+                                  <p className="text-white/50">No preferred time set</p>
+                                ) : (
+                                  <div className="flex flex-row gap-2">
+                                    {preferredHours?.map((hour, i) => (
+                                      <p key={i} className="text-white/50">
+                                        {hour.time}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            variant="secondary"
-                            onClick={handleScheduleMeetingNow}
-                            disabled={scheduleMeetingMutation.isPending}
-                          >
-                            {scheduleMeetingMutation.isPending ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <Video className="mr-2 h-4 w-4" />
-                            )}
-                            Meeting Now
-                          </Button>
-                          <Button
-                            onClick={handleOpenConfirmDialog}
-                            disabled={!selectedDate || !time || scheduleMeetingMutation.isPending}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            Review Schedule
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                          <DialogFooter>
+                            <Button
+                              variant="secondary"
+                              onClick={handleScheduleMeetingNow}
+                              disabled={scheduleMeetingMutation.isPending}
+                            >
+                              {scheduleMeetingMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Video className="mr-2 h-4 w-4" />
+                              )}
+                              Meeting Now
+                            </Button>
+                            <Button
+                              onClick={handleOpenConfirmDialog}
+                              disabled={!selectedDate || !time || scheduleMeetingMutation.isPending}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              Review Schedule
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
 
-                    <Button variant="secondary" disabled>
-                      <Presentation className="mr-2 h-4 w-4" /> Request Pitch{' '}
-                      <span className="text-xs text-white/50">Coming soon</span>
-                    </Button>
-                  </>
-                )}
+                      <Button variant="secondary" disabled>
+                        <Presentation className="mr-2 h-4 w-4" /> Request Pitch{' '}
+                        <span className="text-xs text-white/50">Coming soon</span>
+                      </Button>
+                    </>
+                  )}
               </div>
             </div>
           </div>
@@ -630,7 +631,7 @@ export default function CompanyDetails() {
       </ConfirmationDialog>
 
       {isProjectOwner && <ProjectViews projectId={companyId as string} />}
-    </main >
+    </main>
   );
 }
 

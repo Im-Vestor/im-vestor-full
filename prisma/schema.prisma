@@ -34,6 +34,8 @@ model Country {
     Investor     Investor[]
     Entrepreneur Entrepreneur[]
     Project      Project[]
+    Incubator    Incubator[]
+    VcGroup      VcGroup[]
 }
 
 model State {
@@ -44,13 +46,24 @@ model State {
     Investor     Investor[]
     Entrepreneur Entrepreneur[]
     Project      Project[]
+    Incubator    Incubator[]
+    VcGroup      VcGroup[]
 }
 
 model Area {
-    id       String     @id @default(uuid())
-    name     String
-    Project  Project[]
-    Investor Investor[]
+    id        String      @id @default(uuid())
+    name      String
+    Project   Project[]
+    Investor  Investor[]
+    Incubator Incubator[]
+    VcGroup   VcGroup[]
+}
+
+model Offer {
+    id          String      @id @default(uuid())
+    name        String
+    description String
+    Incubator   Incubator[]
 }
 
 model Referral {
@@ -83,8 +96,8 @@ model User {
     investor     Investor?
     entrepreneur Entrepreneur?
     partner      Partner?
-    // vcGroup      VcGroup?
-    // incubator    Incubator?
+    vcGroup      VcGroup?
+    incubator    Incubator?
 
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
@@ -93,6 +106,99 @@ model User {
     followerConnections  Connection[]    @relation("Following")
     Notification         Notification[]
     supportTickets       SupportTicket[]
+}
+
+model VcGroup {
+    id                    String    @id @default(uuid())
+    name                  String
+    bio                   String?
+    description           String?
+    website               String?
+    email                 String
+    logo                  String?
+    phone                 String?
+    openingDate           DateTime?
+    managedCapital        Float?
+    averageInvestmentSize Float?
+
+    brochureUrl      String?
+    investmentPolicy String?
+
+    interestedAreas Area[]
+    stages          ProjectStage[]
+    members         VcGroupMember[]
+
+    linkedinUrl String?
+    youtubeUrl  String?
+    instagram   String?
+    twitter     String?
+
+    principalStartups String?
+    principalExits    String?
+
+    state   State?   @relation(fields: [stateId], references: [id])
+    country Country? @relation(fields: [countryId], references: [id])
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
+
+    stateId   Int?
+    countryId Int?
+}
+
+model VcGroupMember {
+    id    String  @id @default(uuid())
+    name  String
+    photo String?
+    role  String
+    email String
+    phone String?
+    owner Boolean @default(false)
+
+    vcGroup   VcGroup @relation(fields: [vcGroupId], references: [id])
+    vcGroupId String
+}
+
+model Incubator {
+    id                          String    @id @default(uuid())
+    name                        String
+    bio                         String?
+    description                 String?
+    website                     String?
+    logo                        String?
+    phone                       String?
+    email                       String
+    openingDate                 DateTime?
+    startupsIncubated           Int?
+    startupsInIncubator         Int?
+    acceptStartupsOutsideRegion Boolean   @default(false)
+    brochureUrl                 String?
+
+    offers Offer[]
+    areas  Area[]
+
+    ownerName  String?
+    ownerRole  String?
+    ownerPhone String?
+    ownerEmail String?
+
+    linkedinUrl String?
+    facebook    String?
+    instagram   String?
+    twitter     String?
+
+    associatedIncubators   String?
+    associatedUniversities String?
+    activePrograms         String?
+
+    state   State?   @relation(fields: [stateId], references: [id])
+    country Country? @relation(fields: [countryId], references: [id])
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
+
+    stateId   Int?
+    countryId Int?
 }
 
 model Partner {

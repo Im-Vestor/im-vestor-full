@@ -13,8 +13,10 @@ import { notificationsRouter } from './routers/notifications';
 import { meetingRouter } from './routers/meeting';
 import { preferredHoursRouter } from './routers/preferred-hours';
 import { supportRouter } from './routers/support';
-
 import { negotiationRouter } from './routers/negotiation';
+import { vcGroupRouter } from './routers/vc-group';
+import { incubatorRouter } from './routers/incubator';
+
 export const appRouter = createTRPCRouter({
   area: areaRouter,
   country: countryRouter,
@@ -31,6 +33,8 @@ export const appRouter = createTRPCRouter({
   preferredHours: preferredHoursRouter,
   support: supportRouter,
   negotiation: negotiationRouter,
+  vcGroup: vcGroupRouter,
+  incubator: incubatorRouter,
 });
 
 export type AppRouter = typeof appRouter;

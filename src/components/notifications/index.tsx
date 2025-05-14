@@ -11,7 +11,7 @@ import {
 
 import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useState } from 'react';
-
+import { useUser } from '@clerk/nextjs';
 const NotificationTextMap = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
   [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
@@ -21,10 +21,15 @@ const NotificationTextMap = {
 };
 
 export const Notifications = () => {
+  const { isSignedIn } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const { data: notificationsFromQuery, isFetching: isFetchingNotifications } =
-    api.notifications.getUnreadNotifications.useQuery();
+    api.notifications.getUnreadNotifications.useQuery(undefined, {
+      staleTime: 600000, // 10 minutes in milliseconds
+      refetchInterval: 600000, // 10 minutes in milliseconds
+      enabled: !!isSignedIn,
+    });
 
   const { mutateAsync: readNotification } = api.notifications.readNotification.useMutation({
     onMutate: data => {
