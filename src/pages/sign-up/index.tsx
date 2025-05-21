@@ -11,16 +11,25 @@ export default function SignUp() {
   >(null);
 
   const router = useRouter();
+  const { referralToken } = router.query;
 
   const handleNext = async () => {
     if (accountType === 'entrepreneur') {
-      await router.push(`/sign-up/entrepreneur`);
+      await router.push(
+        `/sign-up/entrepreneur${referralToken ? `?referralToken=${referralToken as string}` : ''}`
+      );
     } else if (accountType === 'investor') {
-      await router.push(`/sign-up/investor`);
+      await router.push(
+        `/sign-up/investor${referralToken ? `?referralToken=${referralToken as string}` : ''}`
+      );
     } else if (accountType === 'vc-group') {
-      await router.push(`/sign-up/vc-group`);
+      await router.push(
+        `/sign-up/vc-group${referralToken ? `?referralToken=${referralToken as string}` : ''}`
+      );
     } else if (accountType === 'incubator') {
-      await router.push(`/sign-up/incubator`);
+      await router.push(
+        `/sign-up/incubator${referralToken ? `?referralToken=${referralToken as string}` : ''}`
+      );
     }
   };
 
