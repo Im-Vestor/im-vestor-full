@@ -3,15 +3,11 @@ import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
-    console.log(ctx.auth.userId);
-
     const user = await ctx.db.user.findUnique({
       where: {
         id: ctx.auth.userId,
       },
     });
-
-    console.log(user);
 
     return user;
   }),

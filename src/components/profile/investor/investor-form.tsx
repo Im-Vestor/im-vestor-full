@@ -18,7 +18,7 @@ import {
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
 import { api } from '~/utils/api';
-import { renderBannerUpload, renderPhotoUpload } from './entrepreneur-form';
+import { renderBannerUpload, renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
 
 const investorFormSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),

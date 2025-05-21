@@ -12,6 +12,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+
 const NotificationTextMap = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
   [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
@@ -19,6 +20,8 @@ const NotificationTextMap = {
   [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
 };
+
+
 
 export const Notifications = () => {
   const { isSignedIn } = useUser();

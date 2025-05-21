@@ -16,10 +16,12 @@ import { supportRouter } from './routers/support';
 import { negotiationRouter } from './routers/negotiation';
 import { vcGroupRouter } from './routers/vc-group';
 import { incubatorRouter } from './routers/incubator';
+import { offerRouter } from './routers/offers';
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
   country: countryRouter,
+  offer: offerRouter,
   investor: investorRouter,
   partner: partnerRouter,
   project: projectRouter,

@@ -1,75 +1,43 @@
-import { type Country, type State, type Entrepreneur, type Project } from '@prisma/client';
-import {
-  ArrowRight,
-  Building2,
-  CircleUserRound,
-  DollarSign,
-  MapPin,
-  Pencil,
-  User,
-} from 'lucide-react';
+import { type Country, type Incubator, type Project, type State } from '@prisma/client';
+import { Building2, CircleUserRound, MapPin, Pencil } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
-import { EntrepreneurForm } from './entrepreneur-form';
-import Link from 'next/link';
-import { SkeletonProfile } from './skeleton-profile';
+import { SkeletonProfile } from '../skeleton-profile';
+import { IncubatorForm } from './incubator-form';
 
-export const EntrepreneurProfile = () => {
-  const router = useRouter();
+export const IncubatorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
+  const { data: incubator, isPending: isLoading } = api.incubator.getByUserId.useQuery();
 
   if (isLoading) {
     return <SkeletonProfile />;
   }
-
-  if (isEditing || !entrepreneur?.country) {
-    return <EntrepreneurForm entrepreneur={entrepreneur} onCancel={() => setIsEditing(false)} />;
+  if (isEditing || !incubator?.countryId) {
+    return <IncubatorForm incubator={incubator} onCancel={() => setIsEditing(false)} />;
   }
 
   return (
     <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
-      <div className="relative">
-        {entrepreneur?.banner ? (
-          <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-            <Image
-              src={entrepreneur.banner}
-              alt="Banner"
-              layout="fill"
-              objectFit="cover"
-              className="rounded-t-md"
-            />
-            <div className="via-90%[#23242F]/70 absolute inset-0 bg-gradient-to-b from-transparent to-[#23242F]/100" />
-          </div>
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A] ml-12 mt-12">
+        {incubator?.logo ? (
+          <Image
+            src={incubator.logo}
+            alt="Profile"
+            width={96}
+            height={96}
+            className="h-24 w-24 rounded-full object-cover"
+          />
         ) : (
-          <div className="h-24 w-full rounded-t-lg bg-transparent" />
+          <Building2 className="h-8 w-8 text-black" />
         )}
-
-        <div className="absolute bottom-0 left-12 translate-y-1/2">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A]">
-            {entrepreneur?.photo ? (
-              <Image
-                src={entrepreneur.photo}
-                alt="Profile"
-                width={96}
-                height={96}
-                className="h-24 w-24 rounded-full object-cover"
-              />
-            ) : (
-              <User className="h-8 w-8 text-black" />
-            )}
-          </div>
-        </div>
       </div>
 
-      <div className="md:px-12 px-6 pt-16">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-semibold">
-            {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
-          </h2>
+      <div className="px-12 pt-12">
+        <div className="mt-4 flex items-center justify-between">
+          <h2 className="text-3xl font-semibold">{incubator?.name}</h2>
           <Button
             variant="outline"
             className="flex items-center gap-2"
@@ -79,29 +47,25 @@ export const EntrepreneurProfile = () => {
             {isEditing ? 'Cancel' : 'Edit'}
           </Button>
         </div>
-        <p className="mt-3 text-lg text-gray-400">
-          {entrepreneur?.companyRole ?? 'Entrepreneur'}
-          {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ''}
-        </p>
+        <hr className="my-4 sm:my-6 border-white/10" />
         <p className="mt-1 flex items-center gap-1 text-gray-400">
           <MapPin className="mr-0.5 h-4 w-4" />
-          {entrepreneur?.state && entrepreneur?.country
-            ? `${entrepreneur.state.name}, ${entrepreneur.country.name}`
+          {incubator?.state && incubator?.country
+            ? `${incubator.state.name}, ${incubator.country.name}`
             : 'Not specified'}
         </p>
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
-        <p className="mt-3 text-gray-400">{entrepreneur?.about ?? 'No description'}</p>
-        <hr className="my-4 sm:my-6 border-white/10" />
+        <p className="mt-3 text-gray-400">{incubator?.bio ?? 'No description'}</p>
         <h3 className="mt-12 font-semibold">Projects</h3>
-        {entrepreneur?.projects && entrepreneur?.projects.length > 0 && (
+        {incubator?.projects && incubator?.projects.length > 0 && (
           <div className="mt-4 flex flex-col gap-4">
-            {entrepreneur?.projects.map(project => (
+            {incubator?.projects.map(project => (
               <ProjectCard
                 key={project.id}
                 project={project as Project & { state: State; country: Country }}
                 profileData={
-                  entrepreneur as Entrepreneur & {
+                  incubator as Incubator & {
                     state: State;
                     country: Country;
                   }
@@ -110,10 +74,6 @@ export const EntrepreneurProfile = () => {
             ))}
           </div>
         )}
-        <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
-          Add your Company
-          <ArrowRight className="ml-2" />
-        </Button>
       </div>
     </div>
   );
@@ -124,7 +84,7 @@ function ProjectCard({
   profileData,
 }: {
   project: Project & { state: State; country: Country };
-  profileData: Entrepreneur & { state: State; country: Country };
+  profileData: Incubator & { state: State; country: Country };
 }) {
   return (
     <Link
@@ -174,35 +134,26 @@ function ProjectCard({
             <Pencil className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="sm:inline">Edit</span>
           </Link>
-          <Link
-            href={`/companies/know-your-numbers/${project.id}`}
-            className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10"
-            onClick={e => e.stopPropagation()}
-          >
-            <DollarSign className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span className="hidden sm:inline">Know your Numbers</span>
-            <span className="sm:hidden">Numbers</span>
-          </Link>
         </div>
       </div>
       <hr className="my-4 sm:my-6 border-white/10" />
       <div className="flex flex-wrap items-center gap-2">
-        {profileData.photo ? (
+        {profileData.logo ? (
           <Image
-            src={profileData.photo}
-            alt="Founder"
+            src={profileData.logo}
+            alt="Incubator"
             width={24}
             height={24}
             className="h-4 w-4 rounded-full object-cover text-white/50"
           />
         ) : (
           <div className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10">
-            <User className="size-4 text-neutral-200" />
+            <Building2 className="size-4 text-neutral-200" />
           </div>
         )}
         <p className="text-xs sm:text-sm font-light">
-          Founded by
-          <span className="text-[#EFD687]"> {profileData.firstName}</span>
+          Incubated by
+          <span className="text-[#EFD687]"> {profileData.ownerName}</span>
         </p>
         <div className="ml-auto flex space-x-1 sm:space-x-2">
           {Array.from({

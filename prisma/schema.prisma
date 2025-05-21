@@ -124,6 +124,13 @@ model VcGroup {
     brochureUrl      String?
     investmentPolicy String?
 
+    favoriteProjects Project[]     @relation("FavoriteVcGroups")
+    investedProjects Project[]     @relation("InvestedVcGroups")
+    projectViews     ProjectView[]
+    negotiations     Negotiation[]
+
+    meetings Meeting[] @relation("MeetingVcGroups")
+
     interestedAreas Area[]
     stages          ProjectStage[]
     members         VcGroupMember[]
@@ -176,6 +183,10 @@ model Incubator {
 
     offers Offer[]
     areas  Area[]
+
+    projects Project[]
+
+    meetings Meeting[] @relation("MeetingIncubators")
 
     ownerName  String?
     ownerRole  String?
@@ -258,7 +269,9 @@ model Meeting {
     entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
 
-    investors Investor[] @relation("MeetingInvestors")
+    investors  Investor[]  @relation("MeetingInvestors")
+    vcGroups   VcGroup[]   @relation("MeetingVcGroups")
+    incubators Incubator[] @relation("MeetingIncubators")
 }
 
 model Entrepreneur {
@@ -347,13 +360,21 @@ model Project {
     favoriteInvestors  Investor[] @relation("FavoriteInvestors")
     favoriteInvestorId String?
 
+    favoriteVcGroups  VcGroup[] @relation("FavoriteVcGroups")
+    favoriteVcGroupId String?
+
     investedInvestors  Investor[] @relation("InvestedInvestors")
     investedInvestorId String?
 
-    sector    Area   @relation(fields: [sectorId], references: [id])
-    sectorId  String
-    countryId Int?
-    stateId   Int?
+    investedVcGroups  VcGroup[] @relation("InvestedVcGroups")
+    investedVcGroupId String?
+
+    sector      Area       @relation(fields: [sectorId], references: [id])
+    sectorId    String
+    countryId   Int?
+    stateId     Int?
+    Incubator   Incubator? @relation(fields: [incubatorId], references: [id])
+    incubatorId String?
 }
 
 enum NegotiationStage {
@@ -383,8 +404,10 @@ model Negotiation {
     investor   Investor? @relation(fields: [investorId], references: [id])
     investorId String?
 
-    project   Project @relation(fields: [projectId], references: [id])
-    projectId String  @unique
+    project   Project  @relation(fields: [projectId], references: [id])
+    projectId String   @unique
+    VcGroup   VcGroup? @relation(fields: [vcGroupId], references: [id])
+    vcGroupId String?
 }
 
 model KnowYourNumbers {
@@ -419,8 +442,10 @@ model ProjectView {
     investor   Investor? @relation(fields: [investorId], references: [id])
     investorId String?
 
-    project   Project @relation(fields: [projectId], references: [id])
+    project   Project  @relation(fields: [projectId], references: [id])
     projectId String
+    VcGroup   VcGroup? @relation(fields: [vcGroupId], references: [id])
+    vcGroupId String?
 }
 
 model File {

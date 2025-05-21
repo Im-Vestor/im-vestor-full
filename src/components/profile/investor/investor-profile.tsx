@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { InvestorForm } from './investor-form';
-import { SkeletonProfile } from './skeleton-profile';
+import { SkeletonProfile } from '../skeleton-profile';
 
 export const InvestorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);

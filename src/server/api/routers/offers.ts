@@ -1,8 +1,8 @@
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 
-export const areaRouter = createTRPCRouter({
+export const offerRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.area.findMany({
+    return ctx.db.offer.findMany({
       orderBy: {
         name: 'asc',
       },
