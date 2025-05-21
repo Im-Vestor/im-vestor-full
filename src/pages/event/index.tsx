@@ -10,6 +10,7 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { PhoneInput } from '~/components/ui/phone-input';
 import { api } from '~/utils/api';
+import QRCode from 'react-qr-code';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -59,6 +60,16 @@ export default function EventosPage() {
       </div>
 
       <div className="mt-8 w-full max-w-md rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-8 backdrop-blur-md">
+        <div className="mb-8 flex flex-col items-center">
+          <QRCode
+            value={typeof window !== 'undefined' ? window.location.href : ''}
+            size={200}
+            bgColor="transparent"
+            fgColor="#E5CD82"
+            level="L"
+          />
+        </div>
+
         <h1 className="mb-8 text-center text-4xl font-semibold text-[#E5CD82]">
           Join Our Network
         </h1>
