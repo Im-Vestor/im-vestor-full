@@ -17,6 +17,7 @@ import { negotiationRouter } from './routers/negotiation';
 import { vcGroupRouter } from './routers/vc-group';
 import { incubatorRouter } from './routers/incubator';
 import { offerRouter } from './routers/offers';
+import { potentialUserRouter } from "./routers/potentialUser";
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -37,6 +38,7 @@ export const appRouter = createTRPCRouter({
   negotiation: negotiationRouter,
   vcGroup: vcGroupRouter,
   incubator: incubatorRouter,
+  potentialUser: potentialUserRouter,
 });
 
 export type AppRouter = typeof appRouter;

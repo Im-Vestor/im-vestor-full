@@ -510,3 +510,12 @@ model SupportTicket {
     user   User   @relation(fields: [userId], references: [id])
     userId String
 }
+
+model PotentialUser {
+    id        String   @id @default(uuid())
+    name      String
+    email     String
+    phone     String?
+    createdAt DateTime @default(now())
+    event     String?
+}
