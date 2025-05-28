@@ -51,6 +51,11 @@ const companyFormSchema = z.object({
   currency: z.nativeEnum(Currency, {
     required_error: 'Currency is required',
   }),
+  photo1: z.string().optional(),
+  photo2: z.string().optional(),
+  photo3: z.string().optional(),
+  photo4: z.string().optional(),
+  videoUrl: z.string().optional(),
   faqs: z
     .array(
       z.object({
@@ -72,6 +77,8 @@ export default function EditCompany() {
   const [country, setCountry] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({});
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const { data: countries, isLoading: isLoadingCountries } = api.country.getAll.useQuery();
@@ -124,6 +131,11 @@ export default function EditCompany() {
       investmentGoal: 0,
       equity: 0,
       currency: Currency.USD,
+      photo1: '',
+      photo2: '',
+      photo3: '',
+      photo4: '',
+      videoUrl: '',
       faqs: [{ question: '', answer: '' }],
     },
   });
@@ -148,6 +160,11 @@ export default function EditCompany() {
         investmentGoal: project.investmentGoal ?? 0,
         equity: project.equity ?? 0,
         currency: project.currency ?? Currency.USD,
+        photo1: project.photo1 ?? '',
+        photo2: project.photo2 ?? '',
+        photo3: project.photo3 ?? '',
+        photo4: project.photo4 ?? '',
+        videoUrl: project.videoUrl ?? '',
         faqs: project.faqs.map(faq => ({
           question: faq.question,
           answer: faq.answer,
@@ -168,6 +185,56 @@ export default function EditCompany() {
       setIsUploading(false);
 
       form.setValue('logo', imageUrl ?? '');
+    }
+  };
+
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    photoField: 'photo1' | 'photo2' | 'photo3' | 'photo4'
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+
+      setUploadingPhotos(prev => ({ ...prev, [photoField]: true }));
+
+      const imageUrl = await sendImageToBackend(file, user?.id ?? '');
+
+      setUploadingPhotos(prev => ({ ...prev, [photoField]: false }));
+
+      if (imageUrl) {
+        form.setValue(photoField, imageUrl);
+      }
+    }
+  };
+
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        toast.error('Please select a video file');
+        return;
+      }
+
+      if (file.size > 1024 * 1024 * 10) {
+        toast.error('Video file must be under 10MB');
+        return;
+      }
+
+      setUploadingVideo(true);
+
+      const videoUrl = await sendImageToBackend(file, user?.id ?? '');
+
+      setUploadingVideo(false);
+
+      if (videoUrl) {
+        form.setValue('videoUrl', videoUrl);
+      }
     }
   };
 
@@ -625,6 +692,70 @@ export default function EditCompany() {
                   )}
                 />
               </div>
+              <h3 className="mt-2 text-lg">Company Photos</h3>
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="photo1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="Photo 1 URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photo2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="Photo 2 URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photo3"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="Photo 3 URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photo4"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="Photo 4 URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <h3 className="mt-2 text-lg">Company Video</h3>
+              <FormField
+                control={form.control}
+                name="videoUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="Video URL" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <h3 className="mt-2 text-lg">Company FAQ</h3>
               <div className="space-y-4">
                 {form.watch('faqs')?.map((_, index) => (

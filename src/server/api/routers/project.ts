@@ -1,4 +1,5 @@
 import { Currency, NotificationType, type Prisma, ProjectStage } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
@@ -183,6 +184,11 @@ export const projectRouter = createTRPCRouter({
         logo: z.string().optional(),
         sectorId: z.string(),
         currency: z.nativeEnum(Currency),
+        photo1: z.string().optional(),
+        photo2: z.string().optional(),
+        photo3: z.string().optional(),
+        photo4: z.string().optional(),
+        videoUrl: z.string().optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -217,6 +223,11 @@ export const projectRouter = createTRPCRouter({
           equity: input.equity,
           investmentGoal: input.investmentGoal,
           logo: input.logo,
+          photo1: input.photo1,
+          photo2: input.photo2,
+          photo3: input.photo3,
+          photo4: input.photo4,
+          videoUrl: input.videoUrl,
           currency: input.currency,
           faqs: {
             create: input.faqs,
@@ -255,6 +266,11 @@ export const projectRouter = createTRPCRouter({
         investmentGoal: z.number().optional(),
         logo: z.string().optional(),
         currency: z.nativeEnum(Currency).optional(),
+        photo1: z.string().optional(),
+        photo2: z.string().optional(),
+        photo3: z.string().optional(),
+        photo4: z.string().optional(),
+        videoUrl: z.string().optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -293,6 +309,11 @@ export const projectRouter = createTRPCRouter({
           equity: input.equity,
           investmentGoal: input.investmentGoal,
           logo: input.logo,
+          photo1: input.photo1,
+          photo2: input.photo2,
+          photo3: input.photo3,
+          photo4: input.photo4,
+          videoUrl: input.videoUrl,
           currency: input.currency,
           faqs: {
             create: input.faqs,
@@ -355,6 +376,7 @@ export const projectRouter = createTRPCRouter({
           name: input.name,
           type: input.type,
           size: input.size,
+          projectId: input.projectId,
         },
       });
 
@@ -407,5 +429,49 @@ export const projectRouter = createTRPCRouter({
       });
 
       return projectView;
+    }),
+  requestVideoAccess: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUnique({
+        where: {
+          id: input.projectId,
+        },
+        include: {
+          Entrepreneur: true,
+        },
+      });
+
+      if (!project?.Entrepreneur?.userId) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project or entrepreneur not found',
+        });
+      }
+
+      // Create connection between the requesting user and the entrepreneur
+      const existingConnection = await ctx.db.connection.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: ctx.auth.userId,
+            followingId: project.Entrepreneur.userId,
+          },
+        },
+      });
+
+      if (!existingConnection) {
+        await ctx.db.connection.create({
+          data: {
+            followerId: ctx.auth.userId,
+            followingId: project.Entrepreneur.userId,
+          },
+        });
+      }
+
+      return { success: true, videoUrl: project.videoUrl };
     }),
 });
