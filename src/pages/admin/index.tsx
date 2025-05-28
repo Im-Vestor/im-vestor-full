@@ -3,9 +3,10 @@ import { getAuth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { Sidebar } from '~/components/admin/sidebar';
 import { SidebarProvider } from '~/contexts/SidebarContext';
-import { UserType } from '@prisma/client';
+import type { UserType } from '@prisma/client';
+import type { ReactNode } from 'react';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-dark text-text-primary">
       <SidebarProvider>

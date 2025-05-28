@@ -11,7 +11,6 @@ import {
   Zap,
   Play,
   X,
-  ArrowDownRight,
   ArrowUpRight,
   LogIn,
   Flag,

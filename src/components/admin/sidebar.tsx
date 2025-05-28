@@ -22,7 +22,7 @@ import {
 } from '~/components/ui/dropdown-menu';
 import { useUser, useClerk } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSidebarContext } from '~/contexts/SidebarContext';
+import { useSidebar } from '~/contexts/SidebarContext';
 import Image from 'next/image';
 const routes = [
   {
@@ -127,7 +127,7 @@ function MobileDock() {
 
 // Desktop Sidebar Component
 function DesktopSidebar() {
-  const { isOpen, setIsOpen } = useSidebarContext();
+  const { isOpen, toggle } = useSidebar();
   const pathname = usePathname();
 
   return (
@@ -172,7 +172,7 @@ function DesktopSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={toggle}
               className={cn(
                 "transition-all bg-background-secondary  rounded-full",
                 !isOpen && ""

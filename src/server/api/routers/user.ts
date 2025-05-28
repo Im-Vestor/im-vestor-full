@@ -170,7 +170,7 @@ export const userRouter = createTRPCRouter({
         const allUsers = [
           ...investors.map(investor => ({
             id: investor.id,
-            email: investor.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            email: investor.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
             userType: 'INVESTOR' as const,
             referralCode: 'N/A', // Not available in individual tables
             firstName: investor.firstName,
@@ -179,7 +179,7 @@ export const userRouter = createTRPCRouter({
           })),
           ...entrepreneurs.map(entrepreneur => ({
             id: entrepreneur.id,
-            email: entrepreneur.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            email: entrepreneur.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
             userType: 'ENTREPRENEUR' as const,
             referralCode: 'N/A', // Not available in individual tables
             firstName: entrepreneur.firstName,
@@ -188,7 +188,7 @@ export const userRouter = createTRPCRouter({
           })),
           ...partners.map(partner => ({
             id: partner.id,
-            email: partner.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            email: partner.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
             userType: 'PARTNER' as const,
             referralCode: 'N/A', // Not available in individual tables
             firstName: partner.firstName,
@@ -217,7 +217,7 @@ export const userRouter = createTRPCRouter({
 
         // Apply search filter if provided
         let filteredUsers = allUsers;
-        if (search && search.trim()) {
+        if (search?.trim()) {
           const searchTerm = search.trim().toLowerCase();
           filteredUsers = allUsers.filter(user => {
             const fullName = user.name || `${user.firstName} ${user.lastName}`.trim();
@@ -234,8 +234,8 @@ export const userRouter = createTRPCRouter({
         // Apply sorting if specified
         if (sortBy && sortDirection) {
           filteredUsers.sort((a, b) => {
-            const aValue = a[sortBy as keyof typeof a] || "";
-            const bValue = b[sortBy as keyof typeof b] || "";
+            const aValue = a[sortBy as keyof typeof a] ?? "";
+            const bValue = b[sortBy as keyof typeof b] ?? "";
 
             if (sortDirection === "asc") {
               return aValue.toString().localeCompare(bValue.toString());
