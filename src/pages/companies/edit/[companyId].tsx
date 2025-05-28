@@ -693,64 +693,115 @@ export default function EditCompany() {
                 />
               </div>
               <h3 className="mt-2 text-lg">Company Photos</h3>
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="photo1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Photo 1 URL" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="photo2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Photo 2 URL" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="photo3"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Photo 3 URL" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="photo4"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Photo 4 URL" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <p className="text-sm text-white/60">
+                Upload up to 4 photos of your company (max 2MB each)
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => (
+                  <FormField
+                    key={photoField}
+                    control={form.control}
+                    name={photoField}
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="space-y-2">
+                            <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => handlePhotoUpload(e, photoField)}
+                                className="absolute inset-0 cursor-pointer opacity-0"
+                                {...field}
+                              />
+                              <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                                {value ? (
+                                  <Image
+                                    src={value}
+                                    alt={`Photo ${index + 1} preview`}
+                                    className="h-full w-full rounded-lg object-cover"
+                                    width={200}
+                                    height={128}
+                                  />
+                                ) : uploadingPhotos[photoField] ? (
+                                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                                ) : (
+                                  <div className="text-center">
+                                    <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
+                                    <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {value && (
+                              <button
+                                type="button"
+                                onClick={() => onChange('')}
+                                className="text-red-500 hover:text-red-600 text-sm"
+                              >
+                                Remove photo
+                              </button>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
               </div>
               <h3 className="mt-2 text-lg">Company Video</h3>
+              <p className="text-sm text-white/60">
+                Upload a video of your company (max 10MB, recommended 1 minute duration)
+              </p>
               <FormField
                 control={form.control}
                 name="videoUrl"
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...field } }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder="Video URL" {...field} />
+                      <div className="space-y-2">
+                        <div className="relative h-40 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                          <input
+                            type="file"
+                            accept="video/*"
+                            onChange={handleVideoUpload}
+                            className="absolute inset-0 cursor-pointer opacity-0"
+                            {...field}
+                          />
+                          <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                            {value ? (
+                              <div className="text-center">
+                                <video
+                                  src={value}
+                                  className="h-32 w-auto rounded-lg mx-auto mb-2"
+                                  controls
+                                />
+                                <p className="text-xs text-white/70">Video uploaded</p>
+                              </div>
+                            ) : uploadingVideo ? (
+                              <Loader2 className="h-6 w-6 animate-spin text-white" />
+                            ) : (
+                              <div className="text-center">
+                                <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
+                                <p className="text-sm text-white/50">Upload Company Video</p>
+                                <p className="text-xs text-white/30">
+                                  Max 10MB, 1 minute recommended
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {value && (
+                          <button
+                            type="button"
+                            onClick={() => onChange('')}
+                            className="text-red-500 hover:text-red-600 text-sm"
+                          >
+                            Remove video
+                          </button>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
