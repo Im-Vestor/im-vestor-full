@@ -117,7 +117,7 @@ export const investorRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string().min(8),
         currency: z.nativeEnum(Currency),
-        areas: z.array(z.number()),
+        areas: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -171,7 +171,7 @@ export const investorRouter = createTRPCRouter({
           userId: user.id,
           areas: {
             connect: input.areas.map(area => ({
-              id: area.toString(),
+              id: area,
             })),
           },
         },

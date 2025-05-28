@@ -18,7 +18,6 @@ import { Checkbox } from '~/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { MultiSelect } from '~/components/ui/multi-select';
 import { PhoneInput } from '~/components/ui/phone-input';
 import { PopoverContent } from '~/components/ui/popover';
 import {
@@ -29,6 +28,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Slider } from '~/components/ui/slider';
+import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 
 const formSchema = z
@@ -49,7 +49,7 @@ const formSchema = z
     birthDate: z.date({
       required_error: 'Birth date is required',
     }),
-    areas: z.array(z.number()).min(1, 'At least one area is required'),
+    areas: z.array(z.string()).min(1, 'At least one area is required'),
     referralToken: z.string().optional(),
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
@@ -292,16 +292,40 @@ export default function SignupInvestor() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <MultiSelect
-                            options={
-                              areas?.map(area => ({
-                                label: area.name,
-                                value: area.id.toString(),
-                              })) ?? []
-                            }
-                            selected={field.value.map(String)}
-                            onChange={values => field.onChange(values.map(v => Number(v)))}
-                          />
+                          <div className="w-full space-y-2">
+                            <div className="min-h-[2.5rem]">
+                              <div className="flex flex-wrap items-start gap-2">
+                                {areas?.map(area => {
+                                  const isSelected = field.value.includes(area.id);
+                                  return (
+                                    <Button
+                                      key={area.id}
+                                      type="button"
+                                      variant="outline"
+                                      size="lg"
+                                      className={cn(
+                                        'transition-colors duration-200',
+                                        isSelected
+                                          ? 'bg-[#F0D687] text-black hover:bg-[#F0D687]/90'
+                                          : 'hover:bg-white/10'
+                                      )}
+                                      onClick={e => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        field.onChange(
+                                          isSelected
+                                            ? field.value.filter(v => v !== area.id)
+                                            : [...field.value, area.id]
+                                        );
+                                      }}
+                                    >
+                                      {area.name}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

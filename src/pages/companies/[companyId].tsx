@@ -2,6 +2,7 @@ import { useUser } from '@clerk/nextjs';
 import { format, formatDistanceToNow, startOfTomorrow } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 
+import { NegotiationStage } from '@prisma/client';
 import {
   ArrowLeft,
   Building2,
@@ -12,7 +13,6 @@ import {
   Heart,
   Loader2,
   MapPin,
-  MessageCircle,
   Presentation,
   User,
   Video,
@@ -25,6 +25,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
+import { NextStepDialog } from '~/components/next-step/dialog';
 import { Button } from '~/components/ui/button';
 import {
   Dialog,
@@ -39,8 +40,6 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
-import { NextStepDialog } from '~/components/next-step/dialog';
-import { NegotiationStage } from '@prisma/client';
 
 const availableHours = [
   '07:00',
@@ -437,6 +436,51 @@ export default function CompanyDetails() {
               {project.about ?? 'No detailed description available.'}
             </p>
 
+            {/* Company Photos Section */}
+            {(project.photo1 ?? project.photo2 ?? project.photo3 ?? project.photo4) && (
+              <>
+                <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Company Photos</h2>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
+                  {[project.photo1, project.photo2, project.photo3, project.photo4]
+                    .filter((photo): photo is string => Boolean(photo))
+                    .map((photo, index) => (
+                      <div key={index} className="aspect-video overflow-hidden rounded-lg">
+                        <Image
+                          src={photo}
+                          alt={`${project.name} photo ${index + 1}`}
+                          width={300}
+                          height={200}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {/* Company Video Section */}
+            {project.videoUrl &&
+              (isProjectOwner ||
+                user?.publicMetadata.userType === 'INVESTOR' ||
+                user?.publicMetadata.userType === 'VC_GROUP') && (
+                <>
+                  <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Company Video</h2>
+                  <div className="mt-3 sm:mt-4">
+                    {isProjectOwner ? (
+                      <video
+                        src={project.videoUrl ?? undefined}
+                        controls
+                        className="w-full max-w-md rounded-lg"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <VideoRequestButton projectId={companyId as string} />
+                    )}
+                  </div>
+                </>
+              )}
+
             {negotiation && (
               <>
                 <h2 className="text-lg font-semibold sm:text-xl mt-6">Negotiation Stage</h2>
@@ -638,37 +682,79 @@ export default function CompanyDetails() {
 export function ProjectViews({ projectId }: { projectId: string }) {
   const { data: views } = api.project.getLast10ViewsInProject.useQuery({ id: projectId });
 
+  if (!views || views.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8 mt-8">
-      <h2 className="text-lg font-semibold sm:text-xl">Project Views</h2>
-      <div className="space-y-4 sm:mt-6 sm:space-y-6">
-        {views &&
-          views.length > 0 &&
-          views?.map(view => (
-            <div key={view.id} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-                  <User className="size-3 text-neutral-200 sm:size-4" />
-                </div>
-
-                <p className="font-medium">Investor</p>
-
-                <p className=" text-white/50">({view.investor?.userId}) viewed your project</p>
-
-                <p className="font-medium">
-                  {formatDistanceToNow(view.createdAt, { addSuffix: true })}
-                </p>
-              </div>
-
-              <Button variant="secondary" size="sm">
-                <MessageCircle className="size-4" />
-                Send a Poke
-              </Button>
-            </div>
-          ))}
-
-        {views && views.length === 0 && <p className="text-sm text-white/50">No views yet</p>}
+    <div className="mt-8 sm:mt-12">
+      <h2 className="text-lg font-semibold sm:text-xl">Recent Views</h2>
+      <div className="mt-3 space-y-2 sm:mt-4">
+        {views.map(view => (
+          <div key={view.id} className="flex items-center gap-3 text-sm text-white/70">
+            <Clock className="h-4 w-4" />
+            <span>Viewed {formatDistanceToNow(new Date(view.createdAt))} ago</span>
+          </div>
+        ))}
       </div>
+    </div>
+  );
+}
+
+function VideoRequestButton({ projectId }: { projectId: string }) {
+  const [hasRequested, setHasRequested] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  const requestVideoMutation = api.project.requestVideoAccess.useMutation({
+    onSuccess: data => {
+      setHasRequested(true);
+      setVideoUrl(data.videoUrl ?? null);
+      toast.success('Video access granted! You are now connected with the entrepreneur.');
+    },
+    onError: error => {
+      toast.error('Failed to request video access: ' + error.message);
+    },
+  });
+
+  const handleRequestVideo = () => {
+    requestVideoMutation.mutate({ projectId });
+  };
+
+  if (hasRequested && videoUrl) {
+    return (
+      <video src={videoUrl} controls className="w-full max-w-md rounded-lg">
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-card p-4 sm:p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Video className="h-6 w-6 text-[#EFD687]" />
+        <h3 className="text-lg font-medium">Company Video Available</h3>
+      </div>
+      <p className="text-sm text-white/70 mb-4">
+        This company has uploaded a video presentation. Request access to view it and connect with
+        the entrepreneur.
+      </p>
+      <Button
+        onClick={handleRequestVideo}
+        disabled={requestVideoMutation.isPending}
+        className="w-full sm:w-auto"
+      >
+        {requestVideoMutation.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Requesting Access...
+          </>
+        ) : (
+          <>
+            <Video className="mr-2 h-4 w-4" />
+            Request Video Access
+          </>
+        )}
+      </Button>
     </div>
   );
 }

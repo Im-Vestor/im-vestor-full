@@ -10,9 +10,13 @@ export async function POST(req: Request) {
       return new Response('File not found', { status: 400 });
     }
 
-    if (file.size > 1024 * 1024 * 2) {
-      // 2MB
-      return new Response('We only accept files up to 2MB', {
+    // Check file size based on type
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 1024 * 1024 * 10 : 1024 * 1024 * 2; // 10MB for videos, 2MB for images
+    const sizeLabel = isVideo ? '10MB' : '2MB';
+
+    if (file.size > maxSize) {
+      return new Response(`We only accept ${isVideo ? 'videos' : 'files'} up to ${sizeLabel}`, {
         status: 400,
       });
     }

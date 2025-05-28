@@ -348,6 +348,13 @@ model Project {
     logo            String?
     currency        Currency      @default(USD)
 
+    // New fields for photos and video
+    photo1   String?
+    photo2   String?
+    photo3   String?
+    photo4   String?
+    videoUrl String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 

@@ -51,6 +51,11 @@ const companyFormSchema = z.object({
   currency: z.nativeEnum(Currency, {
     required_error: 'Currency is required',
   }),
+  photo1: z.string().optional(),
+  photo2: z.string().optional(),
+  photo3: z.string().optional(),
+  photo4: z.string().optional(),
+  videoUrl: z.string().optional(),
   faqs: z
     .array(
       z.object({
@@ -72,6 +77,8 @@ export default function EditCompany() {
   const [country, setCountry] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingPhotos, setUploadingPhotos] = useState<Record<string, boolean>>({});
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const { data: countries, isLoading: isLoadingCountries } = api.country.getAll.useQuery();
@@ -124,6 +131,11 @@ export default function EditCompany() {
       investmentGoal: 0,
       equity: 0,
       currency: Currency.USD,
+      photo1: '',
+      photo2: '',
+      photo3: '',
+      photo4: '',
+      videoUrl: '',
       faqs: [{ question: '', answer: '' }],
     },
   });
@@ -148,6 +160,11 @@ export default function EditCompany() {
         investmentGoal: project.investmentGoal ?? 0,
         equity: project.equity ?? 0,
         currency: project.currency ?? Currency.USD,
+        photo1: project.photo1 ?? '',
+        photo2: project.photo2 ?? '',
+        photo3: project.photo3 ?? '',
+        photo4: project.photo4 ?? '',
+        videoUrl: project.videoUrl ?? '',
         faqs: project.faqs.map(faq => ({
           question: faq.question,
           answer: faq.answer,
@@ -168,6 +185,56 @@ export default function EditCompany() {
       setIsUploading(false);
 
       form.setValue('logo', imageUrl ?? '');
+    }
+  };
+
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    photoField: 'photo1' | 'photo2' | 'photo3' | 'photo4'
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+
+      setUploadingPhotos(prev => ({ ...prev, [photoField]: true }));
+
+      const imageUrl = await sendImageToBackend(file, user?.id ?? '');
+
+      setUploadingPhotos(prev => ({ ...prev, [photoField]: false }));
+
+      if (imageUrl) {
+        form.setValue(photoField, imageUrl);
+      }
+    }
+  };
+
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        toast.error('Please select a video file');
+        return;
+      }
+
+      if (file.size > 1024 * 1024 * 10) {
+        toast.error('Video file must be under 10MB');
+        return;
+      }
+
+      setUploadingVideo(true);
+
+      const videoUrl = await sendImageToBackend(file, user?.id ?? '');
+
+      setUploadingVideo(false);
+
+      if (videoUrl) {
+        form.setValue('videoUrl', videoUrl);
+      }
     }
   };
 
@@ -625,6 +692,121 @@ export default function EditCompany() {
                   )}
                 />
               </div>
+              <h3 className="mt-2 text-lg">Company Photos</h3>
+              <p className="text-sm text-white/60">
+                Upload up to 4 photos of your company (max 2MB each)
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => (
+                  <FormField
+                    key={photoField}
+                    control={form.control}
+                    name={photoField}
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="space-y-2">
+                            <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => handlePhotoUpload(e, photoField)}
+                                className="absolute inset-0 cursor-pointer opacity-0"
+                                {...field}
+                              />
+                              <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                                {value ? (
+                                  <Image
+                                    src={value}
+                                    alt={`Photo ${index + 1} preview`}
+                                    className="h-full w-full rounded-lg object-cover"
+                                    width={200}
+                                    height={128}
+                                  />
+                                ) : uploadingPhotos[photoField] ? (
+                                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                                ) : (
+                                  <div className="text-center">
+                                    <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
+                                    <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {value && (
+                              <button
+                                type="button"
+                                onClick={() => onChange('')}
+                                className="text-red-500 hover:text-red-600 text-sm"
+                              >
+                                Remove photo
+                              </button>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+              <h3 className="mt-2 text-lg">Company Video</h3>
+              <p className="text-sm text-white/60">
+                Upload a video of your company (max 10MB, recommended 1 minute duration)
+              </p>
+              <FormField
+                control={form.control}
+                name="videoUrl"
+                render={({ field: { onChange, value, ...field } }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <div className="relative h-40 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                          <input
+                            type="file"
+                            accept="video/*"
+                            onChange={handleVideoUpload}
+                            className="absolute inset-0 cursor-pointer opacity-0"
+                            {...field}
+                          />
+                          <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                            {value ? (
+                              <div className="text-center">
+                                <video
+                                  src={value}
+                                  className="h-32 w-auto rounded-lg mx-auto mb-2"
+                                  controls
+                                />
+                                <p className="text-xs text-white/70">Video uploaded</p>
+                              </div>
+                            ) : uploadingVideo ? (
+                              <Loader2 className="h-6 w-6 animate-spin text-white" />
+                            ) : (
+                              <div className="text-center">
+                                <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
+                                <p className="text-sm text-white/50">Upload Company Video</p>
+                                <p className="text-xs text-white/30">
+                                  Max 10MB, 1 minute recommended
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {value && (
+                          <button
+                            type="button"
+                            onClick={() => onChange('')}
+                            className="text-red-500 hover:text-red-600 text-sm"
+                          >
+                            Remove video
+                          </button>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <h3 className="mt-2 text-lg">Company FAQ</h3>
               <div className="space-y-4">
                 {form.watch('faqs')?.map((_, index) => (
