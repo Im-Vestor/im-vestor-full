@@ -54,9 +54,6 @@ const formSchema = z
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
     }),
-    acceptConfidentiality: z.boolean().refine(val => val === true, {
-      message: 'You must accept the confidentiality agreement',
-    }),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -85,7 +82,6 @@ export default function SignupInvestor() {
       areas: [],
       referralToken: (router.query.referralToken as string) ?? '',
       acceptTerms: false,
-      acceptConfidentiality: false,
     },
     mode: 'onBlur',
   });
@@ -459,25 +455,6 @@ export default function SignupInvestor() {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="acceptConfidentiality"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <Label>I accept the confidentiality agreement</Label>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
             )}
@@ -504,8 +481,7 @@ export default function SignupInvestor() {
                 className="mt-12 w-full"
                 disabled={
                   isRegistering ||
-                  (step === 5 &&
-                    (!form.getValues('acceptTerms') || !form.getValues('acceptConfidentiality')))
+                  (step === 5 && !form.getValues('acceptTerms'))
                 }
                 onClick={async () => {
                   let isValid = false;

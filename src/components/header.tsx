@@ -76,6 +76,10 @@ export const Header = () => {
   const router = useRouter();
   const path = usePathname();
   const { user, isSignedIn } = useUser();
+  const userMetadata = user?.publicMetadata as {
+    userType: UserType;
+    userIsAdmin?: boolean;
+  };
 
   const isSignUpRoute = path?.startsWith('/sign-up');
 
@@ -193,13 +197,15 @@ export const Header = () => {
                   <Book className="h-4 w-4 mr-2" />
                   Terms
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => void handleNavigation('/admin/dashboard')}
-                  className="hover:cursor-pointer"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
-                </DropdownMenuItem>
+                {userMetadata?.userIsAdmin && (
+                  <DropdownMenuItem
+                    onClick={() => void handleNavigation('/admin/dashboard')}
+                    className="hover:cursor-pointer"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Admin
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => signOut({ redirectUrl: '/login' })}
                   className="hover:cursor-pointer"

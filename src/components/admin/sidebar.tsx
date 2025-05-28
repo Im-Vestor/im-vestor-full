@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Home,
   LogOut,
-  HandCoins,
   HelpCircle,
   Calendar
 } from 'lucide-react';
@@ -19,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { useUser, useClerk } from '@clerk/nextjs';
@@ -32,7 +30,7 @@ const routes = [
     icon: Home,
     href: '/admin/dashboard',
     color: 'text-sky-500',
-    disabled: true,
+    disabled: false,
   },
   {
     label: 'Suport',
@@ -59,7 +57,7 @@ function MobileDock() {
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, type: "spring", bounce: 0.2 }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden border-white/10"
     >
       <nav className="flex justify-around items-center h-16 px-6">
         {routes.slice(0, 5).map((route) => {
@@ -135,7 +133,7 @@ function DesktopSidebar() {
   return (
     <div className="h-screen hidden md:block relative">
       <motion.div
-        className="flex flex-col h-full py-4 bg-background border-r fixed z-50"
+        className="flex flex-col h-full py-4 bg-background border-r fixed z-50 border-white/10"
         animate={{
           width: isOpen ? 240 : 70
         }}
@@ -241,7 +239,7 @@ function DesktopSidebar() {
           </div>
         </div>
 
-        <div className="mt-auto border-t pt-3 px-1">
+        <div className="mt-auto border-t pt-3 px-1 border-white/10">
           <SidebarFooter isOpen={isOpen} />
         </div>
       </motion.div>

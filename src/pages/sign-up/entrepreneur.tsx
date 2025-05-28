@@ -36,9 +36,6 @@ const formSchema = z
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
     }),
-    acceptConfidentiality: z.boolean().refine(val => val === true, {
-      message: 'You must accept the confidentiality agreement',
-    }),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -61,7 +58,6 @@ export default function SignupEntrepreneur() {
       birthDate: new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
       referralToken: (router.query.referralToken as string) ?? '',
       acceptTerms: true,
-      acceptConfidentiality: true,
     },
     mode: 'onBlur',
   });
@@ -307,25 +303,6 @@ export default function SignupEntrepreneur() {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="acceptConfidentiality"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-primary bg-background data-[state=checked]:text-background data-[state=checked]:bg-primary"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <Label>I accept the confidentiality agreement</Label>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
             )}
@@ -357,8 +334,7 @@ export default function SignupEntrepreneur() {
                 disabled={
                   isRegistering ||
                   (step === 1 && !form.formState.isValid) ||
-                  (step === 3 &&
-                    (!form.getValues('acceptTerms') || !form.getValues('acceptConfidentiality')))
+                  (step === 3 && !form.getValues('acceptTerms'))
                 }
                 onClick={async () => {
                   let isValid = false;
@@ -379,7 +355,7 @@ export default function SignupEntrepreneur() {
                       isValid = true; // Referral token is optional
                       break;
                     case 3:
-                      isValid = await form.trigger(['acceptTerms', 'acceptConfidentiality']);
+                      isValid = await form.trigger(['acceptTerms']);
                       break;
                     case 4:
                       isValid = true;

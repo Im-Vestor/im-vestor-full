@@ -45,6 +45,8 @@ export default function Referral() {
               </span>
             </p>
             <BusinessCardDialog
+              userName={user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : ''}
+              referralCode={referral?.referralCode ?? ''}
               trigger={
                 <Button className="mt-8 w-full rounded-full hover:opacity-75 md:w-auto">
                   Get your Business Card <ArrowRight />

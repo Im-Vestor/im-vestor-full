@@ -1,6 +1,25 @@
 import Image from 'next/image';
-import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-react';
+// import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-react';
 import AdminLayout from '../index';
+import { api } from '~/utils/api';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Button } from "~/components/ui/button";
+import { useState } from 'react';
+import { Skeleton } from "~/components/ui/skeleton";
+import { BusinessCardDialog } from "~/components/business-card";
+import { Input } from "~/components/ui/input";
+import { Search, ArrowUpDown } from "lucide-react";
+import { useDebounce } from "~/hooks/use-debounce";
+
+type SortDirection = "asc" | "desc";
+
 export default function DashboardPage() {
   return (
     <AdminLayout>
@@ -9,10 +28,60 @@ export default function DashboardPage() {
   );
 }
 
-export function Dashboard() {
+function TableSkeleton({ columns }: { columns: number }) {
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-6">
+      {[1, 2, 3, 4, 5].map((row) => (
+        <TableRow key={row}>
+          {Array(columns).fill(0).map((_, i) => (
+            <TableCell key={i}>
+              <Skeleton className="h-6 w-full" />
+            </TableCell>
+          ))}
+        </TableRow>
+      ))}
+    </>
+  );
+}
+
+export function Dashboard() {
+  const [potentialUserPage, setPotentialUserPage] = useState(1);
+  const [registeredUserPage, setRegisteredUserPage] = useState(1);
+  const pageSize = 10;
+  const [sortField, setSortField] = useState<string>("email");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 500);
+
+  const { data: potentialUsers, isLoading: loadingPotential } = api.potentialUser.getAll.useQuery({
+    page: potentialUserPage,
+    limit: pageSize,
+  });
+
+  const toggleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const { data: registeredUsers, isLoading: loadingRegistered } = api.user.getAll.useQuery({
+    page: registeredUserPage,
+    limit: pageSize,
+    sortBy: sortField,
+    sortDirection,
+    search: debouncedSearch,
+  });
+
+  const generateReferralUrl = (referralCode: string) => {
+    return `https://www.im-vestor.com/sign-up?referralToken=${referralCode}`;
+  };
+
+  return (
+    <>
+      {/*       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-6">
         <div className="bg-card rounded-lg p-4 flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -98,7 +167,6 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Time Filters */}
       <div className="flex border-b border-white/10 mb-6">
         <button className="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">
           Ultimas 24 Horas
@@ -114,9 +182,7 @@ export function Dashboard() {
         </button>
       </div>
 
-      {/* Charts and Data */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Revenue Chart */}
         <div className="lg:col-span-2 bg-card rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">
@@ -142,29 +208,26 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Access by Country */}
-        <div className="bg-card rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">
-              Acessos <span className="text-sm text-muted-foreground">(1586)</span>
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <CountryAccessItem country="United States" flag="🇺🇸" percentage={27} />
-            <CountryAccessItem country="Portugal" flag="🇵🇹" percentage={20} />
-            <CountryAccessItem country="United Kingdom" flag="🇬🇧" percentage={16} />
-            <CountryAccessItem country="France" flag="🇫🇷" percentage={8} />
-            <CountryAccessItem country="Argentina" flag="🇦🇷" percentage={7} />
-            <button className="w-full mt-4 py-2 text-sm text-center text-muted-foreground hover:text-foreground border border-white/10 rounded-md">
-              Ver mais
-            </button>
-          </div>
+      <div className="bg-card rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">
+            Acessos <span className="text-sm text-muted-foreground">(1586)</span>
+          </h3>
+        </div>
+        <div className="space-y-4">
+          <CountryAccessItem country="United States" flag="🇺🇸" percentage={27} />
+          <CountryAccessItem country="Portugal" flag="🇵🇹" percentage={20} />
+          <CountryAccessItem country="United Kingdom" flag="🇬🇧" percentage={16} />
+          <CountryAccessItem country="France" flag="🇫🇷" percentage={8} />
+          <CountryAccessItem country="Argentina" flag="🇦🇷" percentage={7} />
+          <button className="w-full mt-4 py-2 text-sm text-center text-muted-foreground hover:text-foreground border border-white/10 rounded-md">
+            Ver mais
+          </button>
         </div>
       </div>
+    </div >
 
-      {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Investment Areas */}
         <div className="bg-card rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">
@@ -193,7 +256,6 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Meetings */}
         <div className="bg-card rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Reuniões Realizadas</h3>
@@ -220,20 +282,142 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Support */}
-        <div className="bg-card rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">
-              Suporte <span className="text-sm text-muted-foreground">(Tickets)</span>
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <SupportItem label="Abertos" value={16} color="bg-yellow-400" />
-            <SupportItem label="Respondidos" value={12} color="bg-green-500" />
-            <SupportItem label="P/ Responder" value={4} color="bg-red-500" />
-          </div>
+      <div className="bg-card rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">
+            Suporte <span className="text-sm text-muted-foreground">(Tickets)</span>
+          </h3>
+        </div>
+        <div className="space-y-4">
+          <SupportItem label="Abertos" value={16} color="bg-yellow-400" />
+          <SupportItem label="Respondidos" value={12} color="bg-green-500" />
+          <SupportItem label="P/ Responder" value={4} color="bg-red-500" />
         </div>
       </div>
+    </div >
+      */}
+      <div className="grid gap-6 mt-6">
+        {/* Potential Users Table */}
+        <div className="bg-card rounded-lg p-4">
+          <h3 className="text-lg font-medium mb-4">Waiting from events</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Event</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loadingPotential ? (
+                <TableSkeleton columns={5} />
+              ) : potentialUsers?.items.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.phone || '-'}</TableCell>
+                  <TableCell>{user.event || '-'}</TableCell>
+                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-muted-foreground">
+              Total: {potentialUsers?.total || 0}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                disabled={potentialUserPage === 1}
+                onClick={() => setPotentialUserPage(p => p - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!potentialUsers?.hasMore}
+                onClick={() => setPotentialUserPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Registered Users Table */}
+        <div className="bg-card rounded-lg p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">Registered Users</h3>
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Referral Code</TableHead>
+                <TableHead>Business Card</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loadingRegistered ? (
+                <TableSkeleton columns={5} />
+              ) : registeredUsers?.items.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.firstName} {user.lastName}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.userType}</TableCell>
+                  <TableCell>{user.referralCode}</TableCell>
+                  <TableCell>
+                    <BusinessCardDialog
+                      trigger={
+                        <Button variant="outline" size="sm">
+                          View Card
+                        </Button>
+                      }
+                      userName={`${user.firstName} ${user.lastName}`}
+                      referralCode={user.referralCode}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-muted-foreground">
+              Total: {registeredUsers?.total || 0}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                disabled={registeredUserPage === 1}
+                onClick={() => setRegisteredUserPage(p => p - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!registeredUsers?.hasMore}
+                onClick={() => setRegisteredUserPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div >
     </>
   );
 }

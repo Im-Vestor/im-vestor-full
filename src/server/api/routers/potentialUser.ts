@@ -16,4 +16,25 @@ export const potentialUserRouter = createTRPCRouter({
         data: input,
       });
     }),
+  getAll: publicProcedure
+    .input(z.object({
+      page: z.number().min(1),
+      limit: z.number().min(1),
+    }))
+    .query(async ({ ctx, input }) => {
+      const [items, total] = await Promise.all([
+        ctx.db.potentialUser.findMany({
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        ctx.db.potentialUser.count(),
+      ]);
+
+      return {
+        items,
+        total,
+        hasMore: (input.page * input.limit) < total,
+      };
+    }),
 });

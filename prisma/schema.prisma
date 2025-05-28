@@ -98,6 +98,7 @@ model User {
     partner      Partner?
     vcGroup      VcGroup?
     incubator    Incubator?
+    createdAt    DateTime @default(now())
 
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
@@ -106,6 +107,8 @@ model User {
     followerConnections  Connection[]    @relation("Following")
     Notification         Notification[]
     supportTickets       SupportTicket[]
+
+    @@map("users")
 }
 
 model VcGroup {
