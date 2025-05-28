@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '~/server/api/trpc';
 import { type Prisma } from "@prisma/client";
 
 export const userRouter = createTRPCRouter({
@@ -92,7 +92,7 @@ export const userRouter = createTRPCRouter({
         total,
       };
     }),
-  getAll: publicProcedure
+  getAll: adminProcedure
     .input(
       z.object({
         page: z.number().min(1),
@@ -105,103 +105,156 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page, limit, sortBy, sortDirection, search } = input;
 
-      const where: Prisma.UserWhereInput = search ? {
-        OR: [
-          {
-            investor: {
-              firstName: { contains: search, mode: 'insensitive' as Prisma.QueryMode },
-            },
-          },
-          {
-            investor: {
-              lastName: { contains: search, mode: 'insensitive' as Prisma.QueryMode },
-            },
-          },
-          {
-            entrepreneur: {
-              firstName: { contains: search, mode: 'insensitive' as Prisma.QueryMode },
-            },
-          },
-          {
-            entrepreneur: {
-              lastName: { contains: search, mode: 'insensitive' as Prisma.QueryMode },
-            },
-          },
-          {
-            email: { contains: search, mode: 'insensitive' as Prisma.QueryMode },
-          },
-        ],
-      } : {};
+      console.log('getAll input:', input);
 
       try {
-        const [items, total] = await Promise.all([
-          ctx.db.user.findMany({
-            where,
+        // Get all users from different tables
+        const [investors, entrepreneurs, partners, incubators, vcGroups] = await Promise.all([
+          // Investors
+          ctx.db.investor.findMany({
             select: {
               id: true,
-              email: true,
-              userType: true,
-              referralCode: true,
-              investor: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                }
-              },
-              entrepreneur: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                }
-              },
-              partner: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                }
-              },
-              incubator: {
-                select: {
-                  name: true,
-                }
-              },
-              vcGroup: {
-                select: {
-                  name: true,
-                }
-              },
-            },
-            orderBy: sortBy ? {
-              [sortBy]: sortDirection ?? 'asc'
-            } : undefined,
-            skip: (page - 1) * limit,
-            take: limit,
+              firstName: true,
+              lastName: true,
+              mobileFone: true,
+            }
           }),
-          ctx.db.user.count({ where }),
+          // Entrepreneurs
+          ctx.db.entrepreneur.findMany({
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              mobileFone: true,
+            }
+          }),
+          // Partners
+          ctx.db.partner.findMany({
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              mobileFone: true,
+            }
+          }),
+          // Incubators
+          ctx.db.incubator.findMany({
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            }
+          }),
+          // VC Groups
+          ctx.db.vcGroup.findMany({
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            }
+          }),
         ]);
 
-        const formattedItems = items.map((user) => ({
-          ...user,
-          firstName:
-            user.investor?.firstName ??
-            user.entrepreneur?.firstName ??
-            user.partner?.firstName ??
-            "",
-          lastName:
-            user.investor?.lastName ??
-            user.entrepreneur?.lastName ??
-            user.partner?.lastName ??
-            "",
-          name:
-            user.incubator?.name ??
-            user.vcGroup?.name ??
-            "",
-        }));
+        console.log('Raw data from database:');
+        console.log('Investors:', investors.length, 'records');
+        console.log('Investors sample:', investors.slice(0, 2));
+        console.log('Entrepreneurs:', entrepreneurs.length, 'records');
+        console.log('Entrepreneurs sample:', entrepreneurs.slice(0, 2));
+        console.log('Partners:', partners.length, 'records');
+        console.log('Incubators:', incubators.length, 'records');
+        console.log('VcGroups:', vcGroups.length, 'records');
+
+        // Combine all users into a single array
+        const allUsers = [
+          ...investors.map(investor => ({
+            id: investor.id,
+            email: investor.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            userType: 'INVESTOR' as const,
+            referralCode: 'N/A', // Not available in individual tables
+            firstName: investor.firstName,
+            lastName: investor.lastName,
+            name: "",
+          })),
+          ...entrepreneurs.map(entrepreneur => ({
+            id: entrepreneur.id,
+            email: entrepreneur.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            userType: 'ENTREPRENEUR' as const,
+            referralCode: 'N/A', // Not available in individual tables
+            firstName: entrepreneur.firstName,
+            lastName: entrepreneur.lastName,
+            name: "",
+          })),
+          ...partners.map(partner => ({
+            id: partner.id,
+            email: partner.mobileFone || 'N/A', // Using mobile phone as contact since email isn't available
+            userType: 'PARTNER' as const,
+            referralCode: 'N/A', // Not available in individual tables
+            firstName: partner.firstName,
+            lastName: partner.lastName,
+            name: "",
+          })),
+          ...incubators.map(incubator => ({
+            id: incubator.id,
+            email: incubator.email,
+            userType: 'INCUBATOR' as const,
+            referralCode: 'N/A', // Not available in individual tables
+            firstName: "",
+            lastName: "",
+            name: incubator.name,
+          })),
+          ...vcGroups.map(vcGroup => ({
+            id: vcGroup.id,
+            email: vcGroup.email,
+            userType: 'VC_GROUP' as const,
+            referralCode: 'N/A', // Not available in individual tables
+            firstName: "",
+            lastName: "",
+            name: vcGroup.name,
+          })),
+        ];
+
+        // Apply search filter if provided
+        let filteredUsers = allUsers;
+        if (search && search.trim()) {
+          const searchTerm = search.trim().toLowerCase();
+          filteredUsers = allUsers.filter(user => {
+            const fullName = user.name || `${user.firstName} ${user.lastName}`.trim();
+            return (
+              fullName.toLowerCase().includes(searchTerm) ||
+              user.email.toLowerCase().includes(searchTerm)
+            );
+          });
+        }
+
+        console.log('Total users found:', filteredUsers.length);
+        console.log('Sample users:', filteredUsers.slice(0, 3));
+
+        // Apply sorting if specified
+        if (sortBy && sortDirection) {
+          filteredUsers.sort((a, b) => {
+            const aValue = a[sortBy as keyof typeof a] || "";
+            const bValue = b[sortBy as keyof typeof b] || "";
+
+            if (sortDirection === "asc") {
+              return aValue.toString().localeCompare(bValue.toString());
+            } else {
+              return bValue.toString().localeCompare(aValue.toString());
+            }
+          });
+        }
+
+        // Apply pagination
+        const total = filteredUsers.length;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
         return {
-          items: formattedItems,
+          items: paginatedUsers,
           total,
-          hasMore: (page * limit) < total,
+          hasMore: endIndex < total,
         };
       } catch (error) {
         console.error('Error in getAll query:', error);
