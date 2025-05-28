@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure, publicProcedure, adminProcedure } from '~/server/api/trpc';
-import { type Prisma } from "@prisma/client";
+import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
