@@ -17,10 +17,9 @@ const NotificationTextMap = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
   [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
   [NotificationType.MEETING_CREATED]: 'A meeting has been created',
-  [NotificationType.NEGOTIATION_CREATED]: 'You have a new negotiation',
   [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
-};
+} as const;
 
 export const Notifications = () => {
   const { isSignedIn } = useUser();
@@ -53,17 +52,9 @@ export const Notifications = () => {
     negotiationNotifications.length === 0;
 
   useEffect(() => {
-    const negotiationNotifications = notificationsFromQuery?.filter(
-      notification => notification.type === NotificationType.NEGOTIATION_CREATED
-    );
-
-    setNegotiationNotifications(negotiationNotifications ?? []);
-
-    const otherNotifications = notificationsFromQuery?.filter(
-      notification => notification.type !== NotificationType.NEGOTIATION_CREATED
-    );
-
-    setNotifications(otherNotifications ?? []);
+    // For now, don't separate negotiation notifications since NEGOTIATION_CREATED doesn't exist
+    setNegotiationNotifications([]);
+    setNotifications(notificationsFromQuery ?? []);
   }, [notificationsFromQuery]);
 
   return (
@@ -88,27 +79,12 @@ export const Notifications = () => {
               <p className="text-sm text-muted-foreground">Mark all as read</p>
             </Button>
           </DropdownMenuItem>
-          {negotiationNotifications &&
-            negotiationNotifications.length > 0 &&
-            negotiationNotifications?.map(notification => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex items-center gap-1 focus:bg-transparent focus:text-foreground border border-white/30 rounded-lg px-4 py-2"
-              >
-                <p className="text-sm text-muted-foreground">
-                  {NotificationTextMap[notification.type as keyof typeof NotificationTextMap]}
-                </p>
-                <Button variant="ghost" size="icon">
-                  <Trash2 className="size-4" />
-                </Button>
-              </DropdownMenuItem>
-            ))}
           {notifications?.map(notification => (
             <DropdownMenuItem
               key={notification.id}
               className="flex items-center gap-1 focus:bg-transparent focus:text-foreground pl-4"
             >
-              {NotificationTextMap[notification.type as keyof typeof NotificationTextMap]}
+              {NotificationTextMap[notification.type] || 'You have a new notification'}
               <span className="text-sm text-muted-foreground">
                 {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
               </span>

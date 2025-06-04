@@ -128,11 +128,11 @@ export function Dashboard() {
             </div>
           </div>
 
-          {registeredUsersError && (
+          {/*           {registeredUsersError && (
             <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-red-400">Error loading users: {registeredUsersError.message}</p>
             </div>
-          )}
+          )} */}
 
           <Table>
             <TableHeader>
@@ -141,12 +141,13 @@ export function Dashboard() {
                 <TableHead>Email</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Referral Code</TableHead>
+                <TableHead>Projetos</TableHead>
                 <TableHead>Business Card</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loadingRegistered ? (
-                <TableSkeleton columns={5} />
+                <TableSkeleton columns={6} />
               ) : registeredUsers?.items.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
@@ -155,6 +156,7 @@ export function Dashboard() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.userType}</TableCell>
                   <TableCell>{user.referralCode}</TableCell>
+                  <TableCell>{user.projectsCount ?? 0}</TableCell>
                   <TableCell>
                     <BusinessCardDialog
                       trigger={

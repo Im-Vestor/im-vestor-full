@@ -107,7 +107,7 @@ export const userRouter = createTRPCRouter({
       console.log('getAll input:', input);
 
       try {
-        // Get all users from different tables
+        // Get all users from different tables using existing structure
         const [investors, entrepreneurs, partners, incubators, vcGroups] = await Promise.all([
           // Investors
           ctx.db.investor.findMany({
@@ -118,13 +118,18 @@ export const userRouter = createTRPCRouter({
               mobileFone: true,
             }
           }),
-          // Entrepreneurs
+          // Entrepreneurs - include projects to count them
           ctx.db.entrepreneur.findMany({
             select: {
               id: true,
               firstName: true,
               lastName: true,
               mobileFone: true,
+              projects: {
+                select: {
+                  id: true,
+                },
+              },
             }
           }),
           // Partners
@@ -136,13 +141,18 @@ export const userRouter = createTRPCRouter({
               mobileFone: true,
             }
           }),
-          // Incubators
+          // Incubators - include projects to count them
           ctx.db.incubator.findMany({
             select: {
               id: true,
               name: true,
               email: true,
               phone: true,
+              projects: {
+                select: {
+                  id: true,
+                },
+              },
             }
           }),
           // VC Groups
@@ -158,9 +168,7 @@ export const userRouter = createTRPCRouter({
 
         console.log('Raw data from database:');
         console.log('Investors:', investors.length, 'records');
-        console.log('Investors sample:', investors.slice(0, 2));
         console.log('Entrepreneurs:', entrepreneurs.length, 'records');
-        console.log('Entrepreneurs sample:', entrepreneurs.slice(0, 2));
         console.log('Partners:', partners.length, 'records');
         console.log('Incubators:', incubators.length, 'records');
         console.log('VcGroups:', vcGroups.length, 'records');
@@ -169,48 +177,53 @@ export const userRouter = createTRPCRouter({
         const allUsers = [
           ...investors.map(investor => ({
             id: investor.id,
-            email: investor.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
+            email: investor.mobileFone ?? 'N/A',
             userType: 'INVESTOR' as const,
-            referralCode: 'N/A', // Not available in individual tables
+            referralCode: 'N/A',
             firstName: investor.firstName,
             lastName: investor.lastName,
             name: "",
+            projectsCount: 0, // Investors don't publish projects
           })),
           ...entrepreneurs.map(entrepreneur => ({
             id: entrepreneur.id,
-            email: entrepreneur.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
+            email: entrepreneur.mobileFone ?? 'N/A',
             userType: 'ENTREPRENEUR' as const,
-            referralCode: 'N/A', // Not available in individual tables
+            referralCode: 'N/A',
             firstName: entrepreneur.firstName,
             lastName: entrepreneur.lastName,
             name: "",
+            projectsCount: entrepreneur.projects.length, // Count projects using existing relation
           })),
           ...partners.map(partner => ({
             id: partner.id,
-            email: partner.mobileFone ?? 'N/A', // Using mobile phone as contact since email isn't available
+            email: partner.mobileFone ?? 'N/A',
             userType: 'PARTNER' as const,
-            referralCode: 'N/A', // Not available in individual tables
+            referralCode: 'N/A',
             firstName: partner.firstName,
             lastName: partner.lastName,
             name: "",
+            projectsCount: 0, // Partners don't publish projects
           })),
           ...incubators.map(incubator => ({
             id: incubator.id,
             email: incubator.email,
             userType: 'INCUBATOR' as const,
-            referralCode: 'N/A', // Not available in individual tables
+            referralCode: 'N/A',
             firstName: "",
             lastName: "",
             name: incubator.name,
+            projectsCount: incubator.projects.length, // Count projects using existing relation
           })),
           ...vcGroups.map(vcGroup => ({
             id: vcGroup.id,
             email: vcGroup.email,
             userType: 'VC_GROUP' as const,
-            referralCode: 'N/A', // Not available in individual tables
+            referralCode: 'N/A',
             firstName: "",
             lastName: "",
             name: vcGroup.name,
+            projectsCount: 0, // VC Groups don't publish projects directly
           })),
         ];
 
@@ -228,7 +241,6 @@ export const userRouter = createTRPCRouter({
         }
 
         console.log('Total users found:', filteredUsers.length);
-        console.log('Sample users:', filteredUsers.slice(0, 3));
 
         // Apply sorting if specified
         if (sortBy && sortDirection) {
