@@ -3,6 +3,7 @@ import { UserType } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { sendEmail } from '~/utils/email';
 import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const partnerRouter = createTRPCRouter({
@@ -65,6 +66,14 @@ export const partnerRouter = createTRPCRouter({
           console.error('Failed to create referral link', error);
         }
       }
+
+      await sendEmail(
+        input.firstName,
+        'Welcome to Im-Vestor!',
+        'Thank you for signing up to Im-Vestor. We are excited to have you on board.',
+        input.email,
+        'Welcome to Im-Vestor!'
+      );
 
       return ctx.db.partner.create({
         data: {

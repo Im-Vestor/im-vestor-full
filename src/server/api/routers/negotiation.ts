@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
 import { createNotifications } from './notifications';
+import { sendEmail } from '~/utils/email';
 
 export const negotiationRouter = createTRPCRouter({
   getNegotiationByProjectIdAndInvestorId: protectedProcedure
@@ -74,7 +75,7 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      await scheduleFirstMeeting(
+      await scheduleMeeting(
         ctx.db,
         input.date,
         input.entrepreneurId,
@@ -82,7 +83,103 @@ export const negotiationRouter = createTRPCRouter({
         negotiation.id
       );
 
+      const investor = await ctx.db.investor.findUnique({
+        where: { id: input.investorId },
+        select: { userId: true },
+      });
+
+      const entrepreneur = await ctx.db.entrepreneur.findUnique({
+        where: { id: input.entrepreneurId },
+        select: {
+          userId: true,
+          firstName: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      });
+
+      await sendEmail(
+        entrepreneur?.firstName ?? '',
+        'New pitch meeting request',
+        'An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.',
+        entrepreneur?.user.email ?? '',
+        'New pitch meeting request'
+      );
+
+      await createNotifications(
+        ctx.db,
+        [investor?.userId ?? '', entrepreneur?.userId ?? ''],
+        NotificationType.NEGOTIATION_CREATED
+      );
+
       return negotiation;
+    }),
+  createAndScheduleOtherStageMeeting: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        date: z.date(),
+        investorId: z.string(),
+        entrepreneurId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if the investor has a negotiation with the entrepreneur
+      const existingNegotiation = await ctx.db.negotiation.findFirst({
+        where: {
+          projectId: input.projectId,
+          investorId: input.investorId,
+        },
+      });
+
+      if (!existingNegotiation || existingNegotiation.stage === NegotiationStage.PITCH) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Investor does not have a negotiation with the entrepreneur',
+        });
+      }
+
+      await ctx.db.negotiation.update({
+        where: { id: existingNegotiation.id },
+        data: {
+          entrepreneurActionNeeded: true,
+          investorActionNeeded: true,
+        },
+      });
+
+      await scheduleMeeting(
+        ctx.db,
+        input.date,
+        input.entrepreneurId,
+        [input.investorId],
+        existingNegotiation.id
+      );
+
+      const entrepreneur = await ctx.db.entrepreneur.findUnique({
+        where: { id: input.entrepreneurId },
+        select: {
+          userId: true,
+          firstName: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      });
+
+      await sendEmail(
+        entrepreneur?.firstName ?? '',
+        'New meeting request',
+        'An investor has requested a new meeting. Please check your dashboard to accept or reject the request.',
+        entrepreneur?.user.email ?? '',
+        'New meeting request'
+      );
+
+      return existingNegotiation;
     }),
   stopNegotiation: protectedProcedure
     .input(z.object({ negotiationId: z.string() }))
@@ -99,7 +196,17 @@ export const negotiationRouter = createTRPCRouter({
         include: {
           project: {
             include: {
-              Entrepreneur: true,
+              Entrepreneur: {
+                select: {
+                  userId: true,
+                  firstName: true,
+                  user: {
+                    select: {
+                      email: true,
+                    },
+                  },
+                },
+              },
             },
           },
           investor: true,
@@ -110,6 +217,14 @@ export const negotiationRouter = createTRPCRouter({
         ctx.db,
         [negotiation.investor?.userId ?? '', negotiation.project.Entrepreneur?.userId ?? ''],
         NotificationType.NEGOTIATION_CANCELLED
+      );
+
+      await sendEmail(
+        negotiation.project.Entrepreneur?.firstName ?? '',
+        'Negotiation cancelled',
+        'The negotiation has been cancelled. Please check your dashboard to see the details.',
+        negotiation.project.Entrepreneur?.user.email ?? '',
+        'Negotiation cancelled'
       );
 
       return negotiation;
@@ -148,7 +263,17 @@ export const negotiationRouter = createTRPCRouter({
           investor: true,
           project: {
             include: {
-              Entrepreneur: true,
+              Entrepreneur: {
+                select: {
+                  userId: true,
+                  firstName: true,
+                  user: {
+                    select: {
+                      email: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -173,6 +298,14 @@ export const negotiationRouter = createTRPCRouter({
         });
       }
 
+      await sendEmail(
+        negotiation?.project.Entrepreneur?.firstName ?? '',
+        'Negotiation went to next stage',
+        'The negotiation has gone to the next stage. Please check your dashboard to see the details.',
+        negotiation?.project.Entrepreneur?.user.email ?? '',
+        'Negotiation went to next stage'
+      );
+
       await createNotifications(
         ctx.db,
         [negotiation?.investor?.userId ?? '', negotiation?.project.Entrepreneur?.userId ?? ''],
@@ -183,7 +316,7 @@ export const negotiationRouter = createTRPCRouter({
     }),
 });
 
-async function scheduleFirstMeeting(
+async function scheduleMeeting(
   db: PrismaClient,
   date: Date,
   entrepreneurId: string,

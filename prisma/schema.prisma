@@ -411,8 +411,9 @@ model Negotiation {
     investor   Investor? @relation(fields: [investorId], references: [id])
     investorId String?
 
-    project   Project  @relation(fields: [projectId], references: [id])
-    projectId String   @unique
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String  @unique
+
     VcGroup   VcGroup? @relation(fields: [vcGroupId], references: [id])
     vcGroupId String?
 }
@@ -483,6 +484,7 @@ enum NotificationType {
     PROJECT_VIEW
     MEETING_CREATED
     MEETING_CANCELLED
+    NEGOTIATION_CREATED
     NEGOTIATION_CANCELLED
     NEGOTIATION_GO_TO_NEXT_STAGE
     // POKE

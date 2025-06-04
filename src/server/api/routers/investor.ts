@@ -3,6 +3,7 @@ import { UserType, Currency } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { sendEmail } from '~/utils/email';
 import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const investorRouter = createTRPCRouter({
@@ -158,6 +159,14 @@ export const investorRouter = createTRPCRouter({
       if (input.referralToken) {
         await createReferralLink(input.referralToken, user.id, input.firstName, input.lastName);
       }
+
+      await sendEmail(
+        input.firstName,
+        'Welcome to Im-Vestor!',
+        'Thank you for signing up to Im-Vestor. We are excited to have you on board.',
+        input.email,
+        'Welcome to Im-Vestor!'
+      );
 
       return ctx.db.investor.create({
         data: {

@@ -114,7 +114,7 @@ export default function CompanyDetails() {
   );
 
   const addInvestorViewMutation = api.project.addView.useMutation();
-  const scheduleMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
+  const schedulePitchMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
     onSuccess: () => {
       toast.success('Meeting scheduled successfully');
       setIsConfirmModalOpen(false);
@@ -128,6 +128,22 @@ export default function CompanyDetails() {
       setIsConfirmModalOpen(false);
     },
   });
+
+  const scheduleOtherStageMeetingMutation =
+    api.negotiation.createAndScheduleOtherStageMeeting.useMutation({
+      onSuccess: () => {
+        toast.success('Meeting scheduled successfully');
+        setIsConfirmModalOpen(false);
+        setOpenScheduleMeeting(false);
+        setTime(null);
+        setSelectedDate(tomorrow);
+        router.push('/meetings');
+      },
+      onError: error => {
+        toast.error(error.message);
+        setIsConfirmModalOpen(false);
+      },
+    });
 
   const isFavorite = useMemo(() => {
     if (!investor?.favoriteProjects || !companyId) return false;
@@ -155,24 +171,42 @@ export default function CompanyDetails() {
       const meetingDateTime = new Date(selectedDate);
       meetingDateTime.setHours(parseInt(time.split(':')[0] ?? '0'));
 
-      scheduleMeetingMutation.mutate({
-        entrepreneurId: project?.Entrepreneur?.id ?? '',
-        date: meetingDateTime,
-        investorId: investor?.id ?? '',
-        projectId: companyId as string,
-      });
+      if (negotiation?.stage === NegotiationStage.PITCH) {
+        schedulePitchMeetingMutation.mutate({
+          entrepreneurId: project?.Entrepreneur?.id ?? '',
+          date: meetingDateTime,
+          investorId: investor?.id ?? '',
+          projectId: companyId as string,
+        });
+      } else {
+        scheduleOtherStageMeetingMutation.mutate({
+          entrepreneurId: project?.Entrepreneur?.id ?? '',
+          date: meetingDateTime,
+          investorId: investor?.id ?? '',
+          projectId: companyId as string,
+        });
+      }
     }
   };
 
   const handleScheduleMeetingNow = async () => {
     if (companyId && project?.Entrepreneur?.id && investor?.id) {
       const now = new Date();
-      scheduleMeetingMutation.mutate({
-        entrepreneurId: project.Entrepreneur.id,
-        date: now,
-        investorId: investor.id,
-        projectId: companyId as string,
-      });
+      if (negotiation?.stage === NegotiationStage.PITCH) {
+        schedulePitchMeetingMutation.mutate({
+          entrepreneurId: project?.Entrepreneur?.id ?? '',
+          date: now,
+          investorId: investor?.id ?? '',
+          projectId: companyId as string,
+        });
+      } else {
+        scheduleOtherStageMeetingMutation.mutate({
+          entrepreneurId: project?.Entrepreneur?.id ?? '',
+          date: now,
+          investorId: investor?.id ?? '',
+          projectId: companyId as string,
+        });
+      }
     } else {
       toast.error('Could not schedule meeting. Missing required information.');
     }
@@ -388,9 +422,13 @@ export default function CompanyDetails() {
                             <Button
                               variant="secondary"
                               onClick={handleScheduleMeetingNow}
-                              disabled={scheduleMeetingMutation.isPending}
+                              disabled={
+                                schedulePitchMeetingMutation.isPending ||
+                                scheduleOtherStageMeetingMutation.isPending
+                              }
                             >
-                              {scheduleMeetingMutation.isPending ? (
+                              {schedulePitchMeetingMutation.isPending ||
+                              scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -399,7 +437,12 @@ export default function CompanyDetails() {
                             </Button>
                             <Button
                               onClick={handleOpenConfirmDialog}
-                              disabled={!selectedDate || !time || scheduleMeetingMutation.isPending}
+                              disabled={
+                                !selectedDate ||
+                                !time ||
+                                schedulePitchMeetingMutation.isPending ||
+                                scheduleOtherStageMeetingMutation.isPending
+                              }
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               Review Schedule
@@ -437,7 +480,8 @@ export default function CompanyDetails() {
             </p>
 
             {/* Company Photos Section */}
-            {(project.photo1 ?? project.photo2 ?? project.photo3 ?? project.photo4) && (
+            {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
+            {(project.photo1 || project.photo2 || project.photo3 || project.photo4) && (
               <>
                 <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Company Photos</h2>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
@@ -594,19 +638,24 @@ export default function CompanyDetails() {
           </div>
         </div>
 
-        {project.faqs && project.faqs.length > 0 && (
-          <div className="mt-8 sm:mt-12">
-            <h2 className="text-lg font-semibold sm:text-xl">FAQ</h2>
-            <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
-              {project.faqs.map(faq => (
-                <div key={faq.id} className="rounded-lg border border-white/10 bg-card p-4 sm:p-6">
-                  <h3 className="text-base font-medium sm:text-lg">{faq.question}</h3>
-                  <p className="mt-2 text-sm text-white/80 sm:text-base">{faq.answer}</p>
-                </div>
-              ))}
+        {project.faqs &&
+          project.faqs.length > 0 &&
+          project.faqs.some(faq => faq.question && faq.answer) && (
+            <div className="mt-8 sm:mt-12">
+              <h2 className="text-lg font-semibold sm:text-xl">FAQ</h2>
+              <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
+                {project.faqs.map(faq => (
+                  <div
+                    key={faq.id}
+                    className="rounded-lg border border-white/10 bg-card p-4 sm:p-6"
+                  >
+                    <h3 className="text-base font-medium sm:text-lg">{faq.question}</h3>
+                    <p className="mt-2 text-sm text-white/80 sm:text-base">{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {project.files && project.files.length > 0 && (
           <div className="mt-8 sm:mt-12">
@@ -631,7 +680,9 @@ export default function CompanyDetails() {
         title="Confirm Meeting Schedule"
         onConfirm={handleScheduleMeeting}
         confirmText="Confirm Schedule"
-        isConfirming={scheduleMeetingMutation.isPending}
+        isConfirming={
+          schedulePitchMeetingMutation.isPending || scheduleOtherStageMeetingMutation.isPending
+        }
       >
         <div className="py-6 space-y-4">
           <div className="flex items-center gap-6 rounded-lg border border-white/10 p-4 bg-card">
