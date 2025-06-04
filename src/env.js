@@ -16,6 +16,12 @@ export const env = createEnv({
     CLERK_SECRET_KEY: z.string(),
     DAILY_API_KEY: z.string(),
     DAILY_REST_DOMAIN: z.string(),
+    NOTION_API_KEY: z.string(),
+    NOTION_PAGE_ID: z.string(),
+    NOTION_PAGE_ID_ENTREPRENEUR: z.string().optional(),
+    NOTION_PAGE_ID_INVESTOR: z.string().optional(),
+    NOTION_PAGE_ID_PARTNER: z.string().optional(),
+    NOTION_NEWS_PAGE_ID: z.string().optional(),
   },
 
   /**
@@ -45,6 +51,12 @@ export const env = createEnv({
     NEXT_PUBLIC_DAILY_DOMAIN: process.env.NEXT_PUBLIC_DAILY_DOMAIN,
     DAILY_API_KEY: process.env.DAILY_API_KEY,
     DAILY_REST_DOMAIN: process.env.DAILY_REST_DOMAIN,
+    NOTION_API_KEY: process.env.NOTION_API_KEY,
+    NOTION_PAGE_ID: process.env.NOTION_PAGE_ID,
+    NOTION_PAGE_ID_ENTREPRENEUR: process.env.NOTION_PAGE_ID_ENTREPRENEUR,
+    NOTION_PAGE_ID_INVESTOR: process.env.NOTION_PAGE_ID_INVESTOR,
+    NOTION_PAGE_ID_PARTNER: process.env.NOTION_PAGE_ID_PARTNER,
+    NOTION_NEWS_PAGE_ID: process.env.NOTION_NEWS_PAGE_ID,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
