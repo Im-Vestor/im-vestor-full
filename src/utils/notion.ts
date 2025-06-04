@@ -19,17 +19,6 @@ interface NotionPage {
   };
 }
 
-export interface BlogPost {
-  title: string;
-  icon?: string;
-  iconUrl?: string;
-  createdTime?: string;
-  readingTime?: number;
-  wordCount?: number;
-  content?: BlockObjectResponse[];
-  publicUrl?: string;
-}
-
 export function extractPageTitle(page: NotionPage): string {
   if (!page) return 'Untitled';
 
