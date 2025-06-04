@@ -97,7 +97,7 @@ export const NewsGrid: React.FC<NewsGridProps> = ({ blocks, title, description }
   return (
     <div className="space-y-8">
       {/* Header */}
-      {(title || description) && (
+      {(title ?? description) && (
         <div className="text-center mb-12">
           {title && (
             <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>

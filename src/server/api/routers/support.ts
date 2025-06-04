@@ -47,5 +47,39 @@ export const supportRouter = createTRPCRouter({
       return tickets;
     }),
 
+  getUserTickets: protectedProcedure
+    .query(async ({ ctx }) => {
+      const userId = ctx.auth.userId;
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const tickets = await ctx.db.supportTicket.findMany({
+        where: { userId },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      return tickets;
+    }),
+
+  updateStatus: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        status: z.enum(['OPEN', 'CLOSED']),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const ticket = await ctx.db.supportTicket.update({
+        where: { id: input.id },
+        data: { status: input.status },
+      });
+
+      return ticket;
+    }),
+
   // Optional: Add procedures to update status (e.g., mark as closed) or delete tickets later
 });

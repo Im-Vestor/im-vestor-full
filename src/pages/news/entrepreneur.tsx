@@ -1,130 +1,113 @@
-import { useUser } from '@clerk/nextjs';
-import { type UserType } from '@prisma/client';
-import { Loader2, RefreshCw, TrendingUp } from 'lucide-react';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { NotionBlockRenderer } from '~/components/notion/NotionBlockRenderer';
-import { NewsGrid } from '~/components/news/NewsCard';
-import { Button } from '~/components/ui/button';
+import React from 'react';
+import { Loader2 } from 'lucide-react';
 import { api } from '~/utils/api';
-import { Header } from '~/components/header';
+import { NewsGrid } from '~/components/news/NewsCard';
 
-export default function EntrepreneurNewsPage() {
-  const { user, isSignedIn } = useUser();
-  const router = useRouter();
-
-  const userMetadata = user?.publicMetadata as {
-    userType: UserType;
-    userIsAdmin?: boolean;
-  };
-
-  // Redirect if not an entrepreneur
-  useEffect(() => {
-    if (isSignedIn && userMetadata?.userType && userMetadata.userType !== 'ENTREPRENEUR') {
-      void router.push('/news');
-    }
-  }, [isSignedIn, userMetadata, router]);
-
+export default function EntrepreneurNews() {
   const {
     data: newsData,
     isLoading,
     error,
-    refetch,
-    isRefetching,
   } = api.news.getUserTypeNews.useQuery(
     {},
     {
-      enabled: isSignedIn && userMetadata?.userType === 'ENTREPRENEUR',
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchInterval: 1000 * 60 * 10, // 10 minutes
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
 
-  if (userMetadata?.userType !== 'ENTREPRENEUR') {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <main className="mx-auto max-w-7xl p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="rounded-3xl bg-card border border-white/10 p-8 text-center">
-              <p className="text-gray-400">Access denied: This page is for entrepreneurs only</p>
-            </div>
+      <main className="mx-auto min-h-screen max-w-7xl p-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
+            <p className="text-gray-400">Loading entrepreneur news...</p>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-7xl p-8">
-        <Header />
-
-        {/* Content */}
-        {isLoading ? (
-          <div className="rounded-3xl bg-card border border-white/10 p-12">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-gray-400 text-lg">Loading entrepreneur news...</p>
-              </div>
-            </div>
+  if (error) {
+    return (
+      <main className="mx-auto min-h-screen max-w-7xl p-8">
+        <div className="rounded-3xl bg-gradient-to-br from-red-800/20 to-red-700/10 border border-red-500/20 p-12 text-center">
+          <div className="mx-auto max-w-md">
+            <div className="mb-6 text-6xl opacity-60">⚠️</div>
+            <h3 className="mb-4 text-2xl font-semibold text-white">
+              Failed to Load News
+            </h3>
+            <p className="text-gray-400 text-lg mb-6">
+              {error.message || 'An error occurred while loading the news.'}
+            </p>
           </div>
-        ) : error ? (
-          <div className="rounded-3xl bg-gradient-to-br from-red-900/20 to-red-800/20 border border-red-500/20 p-8">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="h-12 w-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
-                  <span className="text-red-400 text-xl">!</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-red-300 mb-3">
-                  Error Loading News
-                </h3>
-                <p className="text-red-200/80 mb-4">
-                  {error.message || 'Failed to load entrepreneur news. Please try again later.'}
-                </p>
-                <Button
-                  onClick={() => void refetch()}
-                  variant="outline"
-                  size="sm"
-                  className="border-red-400/30 text-red-300 hover:bg-red-500/10"
-                >
-                  Try Again
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : newsData && newsData.blocks.length > 0 ? (
-          <div className="space-y-8">
-            {/* Check if we have child_page blocks for blog-style layout */}
-            {newsData.blocks.some((block): block is any => 'type' in block && block.type === 'child_page') ? (
-              <NewsGrid blocks={newsData.blocks} />
-            ) : (
-              /* Fallback to regular content renderer */
-              <div className="rounded-3xl bg-card border border-white/10 p-8 lg:p-12">
-                <NotionBlockRenderer blocks={newsData.blocks} />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-3xl bg-gradient-to-br from-gray-800/50 to-gray-700/30 border border-white/10 p-12 text-center">
-            <div className="mx-auto max-w-md">
-              <div className="mb-8">
-                <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary-from to-primary-to flex items-center justify-center mb-4">
-                  <TrendingUp className="h-10 w-10 text-gray-900" />
-                </div>
-              </div>
-              <h3 className="mb-4 text-2xl font-semibold text-white">
-                No News Available
-              </h3>
-              <p className="text-gray-400 text-lg">
-                There's no entrepreneur news available at the moment. Check back later for the latest updates and insights!
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
       </main>
-    </div>
+    );
+  }
+
+  const blocks = newsData?.blocks ?? [];
+
+  return (
+    <main className="mx-auto min-h-screen max-w-7xl p-8">
+      {/* Header */}
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          🚀 Entrepreneur News
+        </h1>
+        <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          Stay updated with the latest insights, trends, and opportunities in the entrepreneurial world.
+          From startup funding to market analysis, get the intelligence you need to grow your business.
+        </p>
+      </div>
+
+      {/* Featured Articles */}
+      <section className="mb-16">
+        <NewsGrid
+          blocks={blocks}
+          title="Latest for Entrepreneurs"
+          description="Curated content specifically for entrepreneurs and startup founders"
+        />
+      </section>
+
+      {/* Categories */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="rounded-3xl bg-gradient-to-br from-green-800/20 to-emerald-700/10 border border-green-500/20 p-8 text-center">
+          <div className="text-4xl mb-4">💡</div>
+          <h3 className="text-xl font-semibold text-white mb-3">Innovation</h3>
+          <p className="text-gray-400">Breakthrough technologies and disruptive business models</p>
+        </div>
+
+        <div className="rounded-3xl bg-gradient-to-br from-blue-800/20 to-cyan-700/10 border border-blue-500/20 p-8 text-center">
+          <div className="text-4xl mb-4">💰</div>
+          <h3 className="text-xl font-semibold text-white mb-3">Funding</h3>
+          <p className="text-gray-400">Investment rounds, funding strategies, and capital markets</p>
+        </div>
+
+        <div className="rounded-3xl bg-gradient-to-br from-purple-800/20 to-pink-700/10 border border-purple-500/20 p-8 text-center">
+          <div className="text-4xl mb-4">📈</div>
+          <h3 className="text-xl font-semibold text-white mb-3">Growth</h3>
+          <p className="text-gray-400">Scaling strategies and market expansion insights</p>
+        </div>
+      </section>
+
+      {/* Tips Section */}
+      <section className="rounded-3xl bg-gradient-to-br from-indigo-800/20 to-purple-700/10 border border-indigo-500/20 p-12 text-center">
+        <h2 className="text-3xl font-bold text-white mb-6">💼 Entrepreneur&apos;s Toolkit</h2>
+        <p className="text-gray-400 text-lg mb-8 max-w-3xl mx-auto">
+          Access our curated collection of resources, templates, and tools designed to help you
+          build and scale your startup more effectively.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {['Business Plans', 'Pitch Decks', 'Financial Models', 'Legal Templates'].map((tool: string, index: number) => (
+            <div key={tool} className="bg-white/5 rounded-2xl p-6 hover:bg-white/10 transition-colors cursor-pointer">
+              <div className="text-2xl mb-3">{['📋', '🎯', '📊', '⚖️'][index]}</div>
+              <h4 className="font-semibold text-white">{tool}</h4>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }

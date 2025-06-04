@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { Client } from '@notionhq/client';
+import { type UserType } from '@prisma/client';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
 import { env } from '~/env';
 
@@ -121,7 +122,7 @@ export const newsRouter = createTRPCRouter({
           blocks: response.results,
           hasMore: response.has_more,
           nextCursor: response.next_cursor,
-          userType: userType as any, // Return the user type for reference
+          userType: userType as UserType, // Return the user type for reference
         };
       } catch (error) {
         console.error('Detailed error in getUserTypeNews:', error);

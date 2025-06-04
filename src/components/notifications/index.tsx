@@ -13,13 +13,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 
-const NotificationTextMap = {
+const NotificationTextMap: Record<string, string> = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
   [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
   [NotificationType.MEETING_CREATED]: 'A meeting has been created',
   [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
-} as const;
+  'NEGOTIATION_CREATED': 'You have a new negotiation',
+  'SUPPORT_REPLY': 'You have a new reply to your support ticket',
+};
 
 export const Notifications = () => {
   const { isSignedIn } = useUser();
@@ -84,7 +86,7 @@ export const Notifications = () => {
               key={notification.id}
               className="flex items-center gap-1 focus:bg-transparent focus:text-foreground pl-4"
             >
-              {NotificationTextMap[notification.type] || 'You have a new notification'}
+              {NotificationTextMap[notification.type] ?? 'You have a new notification'}
               <span className="text-sm text-muted-foreground">
                 {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
               </span>

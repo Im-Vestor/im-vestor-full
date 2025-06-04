@@ -1,4 +1,3 @@
-import Image from 'next/image';
 // import { DollarSign, Users, Settings, Globe, CircleUser, Signal } from 'lucide-react';
 import AdminLayout from '../index';
 import { api } from '~/utils/api';
@@ -54,7 +53,7 @@ export function Dashboard() {
     limit: pageSize,
   });
 
-  const { data: registeredUsers, isLoading: loadingRegistered, error: registeredUsersError } = api.user.getAll.useQuery({
+  const { data: registeredUsers, isLoading: loadingRegistered } = api.user.getAll.useQuery({
     page: registeredUserPage,
     limit: pageSize,
     search: debouncedSearch,
@@ -127,12 +126,6 @@ export function Dashboard() {
               />
             </div>
           </div>
-
-          {/*           {registeredUsersError && (
-            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-400">Error loading users: {registeredUsersError.message}</p>
-            </div>
-          )} */}
 
           <Table>
             <TableHeader>

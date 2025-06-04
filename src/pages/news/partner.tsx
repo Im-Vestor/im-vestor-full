@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Loader2, RefreshCw, Users } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { NotionBlockRenderer } from '~/components/notion/NotionBlockRenderer';
@@ -8,6 +8,7 @@ import { NewsGrid } from '~/components/news/NewsCard';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { Header } from '~/components/header';
+
 export default function PartnerNewsPage() {
   const { user, isSignedIn } = useUser();
   const router = useRouter();
@@ -29,7 +30,6 @@ export default function PartnerNewsPage() {
     isLoading,
     error,
     refetch,
-    isRefetching,
   } = api.news.getUserTypeNews.useQuery(
     {},
     {
@@ -97,7 +97,7 @@ export default function PartnerNewsPage() {
         ) : newsData && newsData.blocks.length > 0 ? (
           <div className="space-y-8">
             {/* Check if we have child_page blocks for blog-style layout */}
-            {newsData.blocks.some((block): block is any => 'type' in block && block.type === 'child_page') ? (
+            {newsData.blocks.some((block): block is typeof block & { type: 'child_page' } => 'type' in block && block.type === 'child_page') ? (
               <NewsGrid blocks={newsData.blocks} />
             ) : (
               /* Fallback to regular content renderer */
@@ -111,14 +111,14 @@ export default function PartnerNewsPage() {
             <div className="mx-auto max-w-md">
               <div className="mb-8">
                 <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary-from to-primary-to flex items-center justify-center mb-4">
-                  <Users className="h-10 w-10 text-gray-900" />
+                  <span className="text-gray-900 text-xl">!</span>
                 </div>
               </div>
               <h3 className="mb-4 text-2xl font-semibold text-white">
                 No News Available
               </h3>
               <p className="text-gray-400 text-lg">
-                There's no partner news available at the moment. Check back later for partnership updates!
+                There&apos;s no partner news available at the moment. Check back later for the latest partnership opportunities!
               </p>
             </div>
           </div>

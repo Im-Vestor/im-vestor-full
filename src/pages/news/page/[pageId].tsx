@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { NotionBlockRenderer } from '~/components/notion/NotionBlockRenderer';
 import { Button } from '~/components/ui/button';
@@ -16,7 +16,6 @@ export default function NotionPageView() {
     isLoading,
     error,
     refetch,
-    isRefetching,
   } = api.news.getPageContent.useQuery(
     { pageId: pageId as string },
     {
@@ -80,9 +79,9 @@ export default function NotionPageView() {
     );
   }
 
-  const pageTitle = extractPageTitle(pageData?.page);
-  const pageIcon = getPageIcon(pageData?.page);
-  const pageDescription = getPageDescription(pageData?.page);
+  const pageTitle = pageData?.page ? extractPageTitle(pageData.page as Parameters<typeof extractPageTitle>[0]) : 'Untitled Page';
+  const pageIcon = pageData?.page ? getPageIcon(pageData.page as Parameters<typeof getPageIcon>[0]) : '📄';
+  const pageDescription = pageData?.page ? getPageDescription(pageData.page as Parameters<typeof getPageDescription>[0]) : '';
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-6">
@@ -128,14 +127,14 @@ export default function NotionPageView() {
           </div>
         </article>
       ) : (
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-12 text-center dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-800 dark:bg-gray-900">
           <div className="mx-auto max-w-sm">
-            <div className="mb-6 text-6xl opacity-60">{pageIcon}</div>
-            <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
-              Empty Page
+            <div className="mb-4 text-4xl">📄</div>
+            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+              No Content Available
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              This page doesn't have any content yet.
+              This page doesn&apos;t have any content yet. Check back later for updates!
             </p>
           </div>
         </div>

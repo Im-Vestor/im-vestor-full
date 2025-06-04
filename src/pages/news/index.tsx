@@ -141,7 +141,7 @@ export default function NewsPage() {
               No News Available
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              There's no news content available at the moment. Check back later for updates!
+              There&apos;s no news content available at the moment. Check back later for updates!
             </p>
           </div>
         </div>

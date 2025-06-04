@@ -1,13 +1,13 @@
 import { useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Loader2, RefreshCw, BarChart3 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { NotionBlockRenderer } from '~/components/notion/NotionBlockRenderer';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
-import { Header } from '~/components/header';
+
 export default function InvestorNewsPage() {
   const { user, isSignedIn } = useUser();
   const router = useRouter();
@@ -29,7 +29,6 @@ export default function InvestorNewsPage() {
     isLoading,
     error,
     refetch,
-    isRefetching,
   } = api.news.getUserTypeNews.useQuery(
     {},
     {
@@ -39,7 +38,7 @@ export default function InvestorNewsPage() {
     }
   );
 
-  if (userMetadata?.userType && !['INVESTOR', 'VC_GROUP'].includes(userMetadata.userType)) {
+  if (!['INVESTOR', 'VC_GROUP'].includes(userMetadata?.userType || '')) {
     return (
       <div className="min-h-screen bg-background">
         <main className="mx-auto max-w-7xl p-8">
@@ -56,28 +55,6 @@ export default function InvestorNewsPage() {
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto max-w-7xl p-8">
-        <Header />
-        {/* Header */}
-        <div className="mb-12">
-          <div className="rounded-3xl bg-card border border-white/10 p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-from to-primary-to flex items-center justify-center">
-                  <BarChart3 className="h-8 w-8 text-gray-900" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold text-white mb-2">
-                    Investor News
-                  </h1>
-                  <p className="text-gray-400 text-lg">
-                    Market insights and investment opportunities
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Content */}
         {isLoading ? (
           <div className="rounded-3xl bg-card border border-white/10 p-12">
@@ -117,7 +94,7 @@ export default function InvestorNewsPage() {
         ) : newsData && newsData.blocks.length > 0 ? (
           <div className="space-y-8">
             {/* Check if we have child_page blocks for blog-style layout */}
-            {newsData.blocks.some((block): block is any => 'type' in block && block.type === 'child_page') ? (
+            {newsData.blocks.some((block): block is typeof block & { type: 'child_page' } => 'type' in block && block.type === 'child_page') ? (
               <NewsGrid blocks={newsData.blocks} />
             ) : (
               /* Fallback to regular content renderer */
@@ -131,14 +108,14 @@ export default function InvestorNewsPage() {
             <div className="mx-auto max-w-md">
               <div className="mb-8">
                 <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary-from to-primary-to flex items-center justify-center mb-4">
-                  <BarChart3 className="h-10 w-10 text-gray-900" />
+                  <span className="text-4xl">📊</span>
                 </div>
               </div>
               <h3 className="mb-4 text-2xl font-semibold text-white">
                 No News Available
               </h3>
               <p className="text-gray-400 text-lg">
-                There's no investor news available at the moment. Check back later for the latest market insights!
+                There&apos;s no investor news available at the moment. Check back later for the latest market insights and investment opportunities!
               </p>
             </div>
           </div>

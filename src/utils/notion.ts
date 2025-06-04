@@ -1,13 +1,43 @@
 // Utility functions for working with Notion data
+import { type BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
-export function extractPageTitle(page: any): string {
+// Type definitions for Notion page properties
+interface NotionProperty {
+  type: string;
+  title?: Array<{ plain_text: string }>;
+  rich_text?: Array<{ plain_text: string }>;
+}
+
+interface NotionPage {
+  properties?: Record<string, NotionProperty>;
+  child_page?: { title: string };
+  icon?: {
+    type: 'emoji' | 'external' | 'file';
+    emoji?: string;
+    external?: { url: string };
+    file?: { url: string };
+  };
+}
+
+export interface BlogPost {
+  title: string;
+  icon?: string;
+  iconUrl?: string;
+  createdTime?: string;
+  readingTime?: number;
+  wordCount?: number;
+  content?: BlockObjectResponse[];
+  publicUrl?: string;
+}
+
+export function extractPageTitle(page: NotionPage): string {
   if (!page) return 'Untitled';
 
   // Try to get title from properties
   if (page.properties) {
-    const titleProperty = Object.values(page.properties).find((prop: any) =>
+    const titleProperty = Object.values(page.properties).find((prop: NotionProperty) =>
       prop.type === 'title'
-    ) as any;
+    );
 
     if (titleProperty?.title?.[0]?.plain_text) {
       return titleProperty.title[0].plain_text;
@@ -31,11 +61,11 @@ export function extractPageTitle(page: any): string {
   return 'Untitled Page';
 }
 
-export function getPageIcon(page: any): string {
+export function getPageIcon(page: NotionPage): string {
   if (!page) return '📄';
 
   if (page.icon) {
-    if (page.icon.type === 'emoji') {
+    if (page.icon.type === 'emoji' && page.icon.emoji) {
       return page.icon.emoji;
     }
     if (page.icon.type === 'external' || page.icon.type === 'file') {
@@ -46,7 +76,7 @@ export function getPageIcon(page: any): string {
   return '📄';
 }
 
-export function getPageDescription(page: any): string {
+export function getPageDescription(page: NotionPage): string {
   // Try to get description from properties
   if (page?.properties) {
     const descProps = ['Description', 'Summary', 'Excerpt'];
