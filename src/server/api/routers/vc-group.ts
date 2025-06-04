@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/
 import { ProjectStage, UserType } from '@prisma/client';
 import { clerkClient } from '@clerk/nextjs/server';
 import { createReferralLink, generateCode } from '~/utils/referral';
+import { sendEmail } from '~/utils/email';
 
 export const vcGroupRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -66,6 +67,14 @@ export const vcGroupRouter = createTRPCRouter({
       if (input.referralToken) {
         await createReferralLink(input.referralToken, user.id, input.name, '');
       }
+
+      await sendEmail(
+        input.name,
+        'Welcome to Im-Vestor!',
+        'Thank you for signing up to Im-Vestor. We are excited to have you on board.',
+        input.email,
+        'Welcome to Im-Vestor!'
+      );
 
       return ctx.db.vcGroup.create({
         data: {

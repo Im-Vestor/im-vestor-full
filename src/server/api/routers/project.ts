@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { sendEmail } from '~/utils/email';
 
 export const projectRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -442,7 +443,17 @@ export const projectRouter = createTRPCRouter({
           id: input.projectId,
         },
         include: {
-          Entrepreneur: true,
+          Entrepreneur: {
+            select: {
+              firstName: true,
+              userId: true,
+              user: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -471,6 +482,14 @@ export const projectRouter = createTRPCRouter({
           },
         });
       }
+
+      await sendEmail(
+        project.Entrepreneur.firstName,
+        'Video access requested',
+        'A user has requested access to your video presentation.',
+        project.Entrepreneur.user.email,
+        'Video access requested'
+      );
 
       return { success: true, videoUrl: project.videoUrl };
     }),
