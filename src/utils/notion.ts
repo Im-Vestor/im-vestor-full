@@ -19,6 +19,19 @@ interface NotionPage {
   };
 }
 
+// Type for Notion blocks with the properties we need
+interface NotionBlock {
+  type: string;
+  paragraph?: { rich_text?: Array<{ plain_text: string }> };
+  heading_1?: { rich_text?: Array<{ plain_text: string }> };
+  heading_2?: { rich_text?: Array<{ plain_text: string }> };
+  heading_3?: { rich_text?: Array<{ plain_text: string }> };
+  bulleted_list_item?: { rich_text?: Array<{ plain_text: string }> };
+  numbered_list_item?: { rich_text?: Array<{ plain_text: string }> };
+  quote?: { rich_text?: Array<{ plain_text: string }> };
+  callout?: { rich_text?: Array<{ plain_text: string }> };
+}
+
 export function extractPageTitle(page: NotionPage): string {
   if (!page) return 'Untitled';
 
@@ -79,13 +92,10 @@ export function getPageDescription(page: NotionPage) {
 }
 
 // Extract the first line of text from notion blocks to use as description
-export function extractFirstLineFromBlocks(blocks: any[]): string {
+export function extractFirstLineFromBlocks(blocks: NotionBlock[]): string {
   if (!blocks || blocks.length === 0) return 'No content available';
 
   for (const block of blocks) {
-    // Check if block has type property
-    if (!('type' in block)) continue;
-
     // Handle different block types that contain text
     switch (block.type) {
       case 'paragraph':

@@ -10,7 +10,7 @@ import {
 } from '~/types/news';
 
 export default function NewsPage() {
-  const { user, isSignedIn } = useUser();
+  const { user } = useUser();
 
   const userMetadata = user?.publicMetadata as {
     userType: UserType;

@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { Client } from '@notionhq/client';
 import { type UserType } from '@prisma/client';
-import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { env } from '~/env';
 import { type NewsUserType, getNewsSectionTitle } from '~/types/news';
 

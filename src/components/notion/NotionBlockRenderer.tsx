@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { type BlockObjectResponse, type PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 
 // Type definitions for Notion block content
@@ -125,10 +126,13 @@ export const NotionBlockRenderer: React.FC<NotionBlockRendererProps> = ({ blocks
         return (
           <div key={id} className="mb-6">
             {imageUrl && (
-              <img
+              <Image
                 src={imageUrl}
                 alt={caption ?? 'Image'}
+                width={800}
+                height={600}
                 className="w-full h-auto rounded-lg shadow-lg"
+                priority={false}
               />
             )}
             {caption && (
