@@ -42,13 +42,6 @@ export default function NotionPageView() {
     return (
       <main className="mx-auto min-h-screen max-w-6xl p-8">
         <Header />
-        {/* Back Button */}
-        <div className="mb-8">
-          <Link href="/news" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back to News</span>
-          </Link>
-        </div>
 
         <div className="rounded-2xl border border-red-200 bg-red-50 p-8 dark:border-red-800 dark:bg-red-900/20">
           <div className="flex items-start gap-4">
