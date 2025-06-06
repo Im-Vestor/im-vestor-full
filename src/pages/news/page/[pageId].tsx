@@ -27,7 +27,7 @@ export default function NotionPageView() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto min-h-screen max-w-4xl p-6">
+      <main className="mx-auto min-h-screen max-w-4xl p-8">
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center gap-3">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -40,7 +40,7 @@ export default function NotionPageView() {
 
   if (error) {
     return (
-      <main className="mx-auto min-h-screen max-w-7xl p-6">
+      <main className="mx-auto min-h-screen max-w-6xl p-8">
         <Header />
         {/* Back Button */}
         <div className="mb-8">
@@ -84,7 +84,7 @@ export default function NotionPageView() {
   const pageDescription = pageData?.page ? getPageDescription(pageData.page as Parameters<typeof getPageDescription>[0]) : '';
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-6">
+    <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
 
       {/* Navigation */}
@@ -97,7 +97,7 @@ export default function NotionPageView() {
 
       {/* Page Header */}
       <header className="mb-12">
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex items-start justify-between gap-8">
           <div className="flex-1 min-w-0">
             {/* Page Icon & Title */}
             <div className="flex items-start gap-4 mb-4">

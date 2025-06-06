@@ -65,7 +65,7 @@ export function getPageIcon(page: NotionPage): string {
   return '📄';
 }
 
-export function getPageDescription(page: NotionPage): string {
+export function getPageDescription(page: NotionPage) {
   // Try to get description from properties
   if (page?.properties) {
     const descProps = ['Description', 'Summary', 'Excerpt'];
@@ -76,6 +76,62 @@ export function getPageDescription(page: NotionPage): string {
       }
     }
   }
+}
 
-  return 'Notion Page';
+// Extract the first line of text from notion blocks to use as description
+export function extractFirstLineFromBlocks(blocks: any[]): string {
+  if (!blocks || blocks.length === 0) return 'No content available';
+
+  for (const block of blocks) {
+    // Check if block has type property
+    if (!('type' in block)) continue;
+
+    // Handle different block types that contain text
+    switch (block.type) {
+      case 'paragraph':
+        if (block.paragraph?.rich_text?.[0]?.plain_text) {
+          return block.paragraph.rich_text[0].plain_text;
+        }
+        break;
+      case 'heading_1':
+        if (block.heading_1?.rich_text?.[0]?.plain_text) {
+          return block.heading_1.rich_text[0].plain_text;
+        }
+        break;
+      case 'heading_2':
+        if (block.heading_2?.rich_text?.[0]?.plain_text) {
+          return block.heading_2.rich_text[0].plain_text;
+        }
+        break;
+      case 'heading_3':
+        if (block.heading_3?.rich_text?.[0]?.plain_text) {
+          return block.heading_3.rich_text[0].plain_text;
+        }
+        break;
+      case 'bulleted_list_item':
+        if (block.bulleted_list_item?.rich_text?.[0]?.plain_text) {
+          return block.bulleted_list_item.rich_text[0].plain_text;
+        }
+        break;
+      case 'numbered_list_item':
+        if (block.numbered_list_item?.rich_text?.[0]?.plain_text) {
+          return block.numbered_list_item.rich_text[0].plain_text;
+        }
+        break;
+      case 'quote':
+        if (block.quote?.rich_text?.[0]?.plain_text) {
+          return block.quote.rich_text[0].plain_text;
+        }
+        break;
+      case 'callout':
+        if (block.callout?.rich_text?.[0]?.plain_text) {
+          return block.callout.rich_text[0].plain_text;
+        }
+        break;
+      default:
+        continue;
+    }
+  }
+
+  return 'No text content found';
 }

@@ -4,6 +4,7 @@ import { Client } from '@notionhq/client';
 import { type UserType } from '@prisma/client';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
 import { env } from '~/env';
+import { type NewsUserType, getNewsSectionTitle } from '~/types/news';
 
 const notion = new Client({
   auth: env.NOTION_API_KEY,
@@ -39,8 +40,8 @@ export const newsRouter = createTRPCRouter({
     }
   }),
 
-  // Get news specific to user type (gets user type from Clerk session)
-  getUserTypeNews: protectedProcedure
+  // Get news specific to user type (gets user type from Clerk session or defaults to entrepreneur)
+  getUserTypeNews: publicProcedure
     .input(
       z.object({
         cursor: z.string().optional(),
@@ -48,19 +49,13 @@ export const newsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       try {
-        // Get user type from Clerk's session metadata
-        const userType = ctx.auth.sessionClaims?.publicMetadata?.userType as string;
+        // Get user type from Clerk's session metadata, fallback to entrepreneur for public access
+        const userType = (ctx.auth?.sessionClaims?.publicMetadata?.userType as NewsUserType) || 'ENTREPRENEUR';
 
-        if (!userType) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'User type not found in session metadata',
-          });
-        }
-
-        console.log('User type from Clerk:', userType);
+        console.log('User type being used:', userType);
 
         let pageId: string | undefined;
+        const sectionTitle = getNewsSectionTitle(userType);
 
         switch (userType) {
           case 'ENTREPRENEUR':
@@ -83,6 +78,10 @@ export const newsRouter = createTRPCRouter({
           case 'ADMIN':
             // Admins get general news
             pageId = env.NOTION_NEWS_PAGE_ID;
+            break;
+          default:
+            // Fallback to entrepreneur content
+            pageId = env.NOTION_PAGE_ID_ENTREPRENEUR;
             break;
         }
 
@@ -123,6 +122,7 @@ export const newsRouter = createTRPCRouter({
           hasMore: response.has_more,
           nextCursor: response.next_cursor,
           userType: userType as UserType, // Return the user type for reference
+          sectionTitle, // Return the appropriate section title
         };
       } catch (error) {
         console.error('Detailed error in getUserTypeNews:', error);

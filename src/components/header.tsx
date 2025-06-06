@@ -26,7 +26,7 @@ const ENTREPRENEUR_MENUS = [
   },
   {
     label: 'News',
-    href: '/news/entrepreneur',
+    href: '/news?type=entrepreneur',
   },
   {
     label: 'Shop',
@@ -49,7 +49,7 @@ const INVESTOR_MENUS = [
   },
   {
     label: 'News',
-    href: '/news/investor',
+    href: '/news?type=investor',
   },
   {
     label: 'Shop',
@@ -68,7 +68,7 @@ const PARTNER_MENUS = [
   },
   {
     label: 'News',
-    href: '/news/partner',
+    href: '/news?type=partner',
   },
 ];
 

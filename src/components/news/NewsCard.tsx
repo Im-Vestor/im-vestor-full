@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { type BlockObjectResponse, type PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import { extractPageTitle, getPageIcon, getPageDescription } from '~/utils/notion';
+import { extractPageTitle, getPageIcon, extractFirstLineFromBlocks } from '~/utils/notion';
+import { api } from '~/utils/api';
 
 interface NewsCardProps {
   block: BlockObjectResponse | PartialBlockObjectResponse;
@@ -15,7 +16,17 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
 
   const title = extractPageTitle(block);
   const icon = getPageIcon(block);
-  const description = getPageDescription(block);
+
+  // Fetch page content to get the first line as description
+  const { data: pageData } = api.news.getPageContent.useQuery(
+    { pageId: block.id },
+    {
+      staleTime: 1000 * 60 * 10, // 10 minutes
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const description = pageData ? extractFirstLineFromBlocks(pageData.blocks) : 'Loading...';
 
   // Extract date from block if available (you might need to adjust based on your Notion structure)
   const createdDate = block.created_time ? new Date(block.created_time).toLocaleDateString('en-US', {
