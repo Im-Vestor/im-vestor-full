@@ -16,6 +16,7 @@ import { BusinessCardDialog } from "~/components/business-card";
 import { Input } from "~/components/ui/input";
 import { Search } from "lucide-react";
 import { useDebounce } from "~/hooks/use-debounce";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
@@ -144,7 +145,14 @@ export function Dashboard() {
               ) : registeredUsers?.items.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    {user.name || `${user.firstName} ${user.lastName}`.trim()}
+                    <Link
+                      href={`/profile/${user.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      {user.name || `${user.firstName} ${user.lastName}`.trim()}
+                    </Link>
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.userType}</TableCell>
