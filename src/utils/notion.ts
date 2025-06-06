@@ -1,5 +1,5 @@
 // Utility functions for working with Notion data
-import { type BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { type BlockObjectResponse, type PartialBlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 // Type definitions for Notion page properties
 interface NotionProperty {
@@ -17,19 +17,6 @@ interface NotionPage {
     external?: { url: string };
     file?: { url: string };
   };
-}
-
-// Type for Notion blocks with the properties we need
-interface NotionBlock {
-  type: string;
-  paragraph?: { rich_text?: Array<{ plain_text: string }> };
-  heading_1?: { rich_text?: Array<{ plain_text: string }> };
-  heading_2?: { rich_text?: Array<{ plain_text: string }> };
-  heading_3?: { rich_text?: Array<{ plain_text: string }> };
-  bulleted_list_item?: { rich_text?: Array<{ plain_text: string }> };
-  numbered_list_item?: { rich_text?: Array<{ plain_text: string }> };
-  quote?: { rich_text?: Array<{ plain_text: string }> };
-  callout?: { rich_text?: Array<{ plain_text: string }> };
 }
 
 export function extractPageTitle(page: NotionPage): string {
@@ -92,49 +79,52 @@ export function getPageDescription(page: NotionPage) {
 }
 
 // Extract the first line of text from notion blocks to use as description
-export function extractFirstLineFromBlocks(blocks: NotionBlock[]): string {
+export function extractFirstLineFromBlocks(blocks: (BlockObjectResponse | PartialBlockObjectResponse)[]): string {
   if (!blocks || blocks.length === 0) return 'No content available';
 
   for (const block of blocks) {
+    // Check if block has type property
+    if (!('type' in block)) continue;
+
     // Handle different block types that contain text
     switch (block.type) {
       case 'paragraph':
-        if (block.paragraph?.rich_text?.[0]?.plain_text) {
+        if ('paragraph' in block && block.paragraph?.rich_text?.[0]?.plain_text) {
           return block.paragraph.rich_text[0].plain_text;
         }
         break;
       case 'heading_1':
-        if (block.heading_1?.rich_text?.[0]?.plain_text) {
+        if ('heading_1' in block && block.heading_1?.rich_text?.[0]?.plain_text) {
           return block.heading_1.rich_text[0].plain_text;
         }
         break;
       case 'heading_2':
-        if (block.heading_2?.rich_text?.[0]?.plain_text) {
+        if ('heading_2' in block && block.heading_2?.rich_text?.[0]?.plain_text) {
           return block.heading_2.rich_text[0].plain_text;
         }
         break;
       case 'heading_3':
-        if (block.heading_3?.rich_text?.[0]?.plain_text) {
+        if ('heading_3' in block && block.heading_3?.rich_text?.[0]?.plain_text) {
           return block.heading_3.rich_text[0].plain_text;
         }
         break;
       case 'bulleted_list_item':
-        if (block.bulleted_list_item?.rich_text?.[0]?.plain_text) {
+        if ('bulleted_list_item' in block && block.bulleted_list_item?.rich_text?.[0]?.plain_text) {
           return block.bulleted_list_item.rich_text[0].plain_text;
         }
         break;
       case 'numbered_list_item':
-        if (block.numbered_list_item?.rich_text?.[0]?.plain_text) {
+        if ('numbered_list_item' in block && block.numbered_list_item?.rich_text?.[0]?.plain_text) {
           return block.numbered_list_item.rich_text[0].plain_text;
         }
         break;
       case 'quote':
-        if (block.quote?.rich_text?.[0]?.plain_text) {
+        if ('quote' in block && block.quote?.rich_text?.[0]?.plain_text) {
           return block.quote.rich_text[0].plain_text;
         }
         break;
       case 'callout':
-        if (block.callout?.rich_text?.[0]?.plain_text) {
+        if ('callout' in block && block.callout?.rich_text?.[0]?.plain_text) {
           return block.callout.rich_text[0].plain_text;
         }
         break;
