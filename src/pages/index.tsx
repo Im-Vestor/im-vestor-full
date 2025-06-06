@@ -895,20 +895,20 @@ export default function Home() {
               <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
               <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">
                 <p>{t('followUs')}</p>
-                <Link href={'#'} className="hover:opacity-70">
+                <Link href="https://www.linkedin.com/in/guilherme-beauvalet-3227b3291" className="hover:opacity-70">
                   <Linkedin className="ml-2 h-6 w-6" />
                 </Link>
-                <Link href={'#'} className="hover:opacity-70">
+                <Link href="https://www.instagram.com/im_vestor/" className="hover:opacity-70">
                   <Instagram className="h-6 w-6" />
                 </Link>
                 <p>@Im-Vestor</p>
-                <Link href={'mailto:media@Im-Vestor.com'} className="hover:opacity-70">
-                  <p>media@Im-Vestor.com</p>
+                <Link href={'mailto:help@im-vestor.com'} className="hover:opacity-70">
+                  <p>help@im-vestor.com</p>
                 </Link>
               </div>
               <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
               <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">
-                <Link href={'#'} className="hover:opacity-70">
+                <Link href="/terms" className="hover:opacity-70">
                   <p>{t('termsAndConditions')}</p>
                 </Link>
                 <p>{t('copyright')}</p>
