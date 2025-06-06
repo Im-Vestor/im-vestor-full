@@ -223,7 +223,7 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
         )}
 
         <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
-          <div className="flex flex-col">
+          <div className="flex flex-col flex-1">
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-semibold">
@@ -235,25 +235,42 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
                   {investor.state.name}, {investor.country.name}
                 </span>
               )}
-              <p className="mt-1 line-clamp-2">{investor.about}</p>
+
+              <p className="mt-2 line-clamp-2">{investor.about}</p>
             </div>
-            {investor.areas && investor.areas.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {investor.areas.slice(0, 2).map(area => (
-                  <span
-                    key={area.id}
-                    className="rounded-full bg-[#323645] px-6 py-1 text-sm font-light"
-                  >
-                    {area.name}
-                  </span>
-                ))}
-                {investor.areas.length > 2 && (
-                  <span className="rounded-full bg-[#323645] px-3 py-1 text-sm font-light">
-                    +{investor.areas.length - 2}
-                  </span>
-                )}
+
+            {/* Investment Information */}
+            <div className="mt-4 space-y-2">
+              <div>
+                <span className="text-sm text-white/70">Investimento: </span>
+                <span className="text-sm font-medium">
+                  {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
+                  {investor.investmentMinValue.toLocaleString()} - {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
+                  {investor.investmentMaxValue.toLocaleString()}
+                </span>
               </div>
-            )}
+
+              {investor.areas && investor.areas.length > 0 && (
+                <div>
+                  <span className="text-sm text-white/70">Setores: </span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {investor.areas.slice(0, 3).map(area => (
+                      <span
+                        key={area.id}
+                        className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light"
+                      >
+                        {area.name}
+                      </span>
+                    ))}
+                    {investor.areas.length > 3 && (
+                      <span className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light">
+                        +{investor.areas.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col">

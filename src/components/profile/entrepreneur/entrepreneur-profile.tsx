@@ -111,7 +111,7 @@ export const EntrepreneurProfile = () => {
           </div>
         )}
         <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
-          Add your Company
+          Add a Company
           <ArrowRight className="ml-2" />
         </Button>
       </div>
@@ -180,7 +180,7 @@ function ProjectCard({
             onClick={e => e.stopPropagation()}
           >
             <DollarSign className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span className="hidden sm:inline">Know your Numbers</span>
+            <span className="hidden sm:inline">Numbers</span>
             <span className="sm:hidden">Numbers</span>
           </Link>
         </div>

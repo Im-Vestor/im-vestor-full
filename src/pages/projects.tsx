@@ -1,4 +1,4 @@
-import { type Country, type Project, type State, type ProjectStage } from '@prisma/client';
+import { type Area, type Country, type Project, type State, type ProjectStage } from '@prisma/client';
 import { Building2, Heart, SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -292,7 +292,7 @@ export default function Companies() {
 function CompanyCard({
   project,
 }: {
-  project: Project & { state: State | null; country: Country | null } & { isFavorite: boolean };
+  project: Project & { state: State | null; country: Country | null; sector: Area } & { isFavorite: boolean };
 }) {
   return (
     <Link
@@ -316,17 +316,53 @@ function CompanyCard({
           </div>
         )}
 
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold">{project.name}</h3>
-            {project.isFavorite && <Heart className="size-4 text-yellow-500 fill-yellow-500" />}
+        <div className="flex flex-col flex-1">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold">{project.name}</h3>
+              {project.isFavorite && <Heart className="size-4 text-yellow-500 fill-yellow-500" />}
+            </div>
+            {project.state?.name && project.country?.name && (
+              <span className="text-white/70">
+                {project.state.name}, {project.country.name}
+              </span>
+            )}
+
+            <p className="mt-2 line-clamp-2">{project.quickSolution ?? 'No description available'}</p>
           </div>
-          {project.state?.name && project.country?.name && (
-            <span className="text-white/70">
-              {project.state.name}, {project.country.name}
-            </span>
-          )}
-          <p className="mt-1 line-clamp-3">{project.quickSolution ?? 'No description available'}</p>
+
+          {/* Project Information */}
+          <div className="mt-4">
+            <div className="flex flex-wrap gap-4 items-center">
+              {project.stage && (
+                <div>
+                  <span className="text-sm text-white/70">Stage: </span>
+                  <span className="text-sm font-medium">
+                    {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
+                  </span>
+                </div>
+              )}
+
+              {project.investmentGoal && (
+                <div>
+                  <span className="text-sm text-white/70">Investimento: </span>
+                  <span className="text-sm font-medium">
+                    {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}
+                    {project.investmentGoal.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {project.sector && (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-white/70">Setor: </span>
+                  <span className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light">
+                    {project.sector.name}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </Link>

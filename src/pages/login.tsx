@@ -69,7 +69,7 @@ export default function Login() {
         {/* Left side - Image */}
         <div className="hidden lg:block lg:w-1/2">
           <Image
-            src="/images/login-image.png" // Add your image here
+            src="/images/login-image.png"
             alt="Login"
             className="h-screen w-full object-cover"
             width={1920}
