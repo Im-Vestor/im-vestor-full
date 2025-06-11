@@ -1,5 +1,10 @@
-import { type Notification, NotificationType } from '@prisma/client';
-import { Bell, Trash2 } from 'lucide-react';
+import {
+  type Negotiation,
+  type Notification,
+  NotificationType,
+  type Project,
+} from '@prisma/client';
+import { ArrowUpRight, Bell, Trash2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Button } from '../ui/button';
 import {
@@ -9,9 +14,10 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-import { formatDistanceToNow } from 'date-fns';
-import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { formatDistanceToNow } from 'date-fns';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 const NotificationTextMap: Record<string, string> = {
   [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
@@ -19,15 +25,19 @@ const NotificationTextMap: Record<string, string> = {
   [NotificationType.MEETING_CREATED]: 'A meeting has been created',
   [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
-  'NEGOTIATION_CREATED': 'You have a new negotiation',
-  'SUPPORT_REPLY': 'You have a new reply to your support ticket',
+  [NotificationType.NEGOTIATION_CREATED]: 'You have a new negotiation',
+  SUPPORT_REPLY: 'You have a new reply to your support ticket',
 };
 
-export const Notifications = () => {
+type UserDetails = {
+  openNegotiations: (Negotiation & { project: Project })[];
+};
+
+export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => {
   const { isSignedIn } = useUser();
   const [negotiationNotifications, setNegotiationNotifications] = useState<Notification[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
+  const router = useRouter();
   const { data: notificationsFromQuery, isFetching: isFetchingNotifications } =
     api.notifications.getUnreadNotifications.useQuery(undefined, {
       staleTime: 600000, // 10 minutes in milliseconds
@@ -81,6 +91,24 @@ export const Notifications = () => {
               <p className="text-sm text-muted-foreground">Mark all as read</p>
             </Button>
           </DropdownMenuItem>
+          {userDetails.openNegotiations.map(negotiation => (
+            <DropdownMenuItem
+              key={negotiation.id}
+              onClick={() => void router.push(`/companies/${negotiation.project.id}`)}
+              className="p-0 hover:bg-transparent focus:bg-transparent hover:text-foreground flex items-center gap-1 justify-between border-b border-white/10"
+            >
+              <Button
+                variant="secondary"
+                onClick={() => void readAllNotifications()}
+                className="w-full justify-start text-left"
+              >
+                <ArrowUpRight className="size-4" />
+                <p className="text-sm text-muted-foreground">
+                  {negotiation.project.name} | want to move forward?
+                </p>
+              </Button>
+            </DropdownMenuItem>
+          ))}
           {notifications?.map(notification => (
             <DropdownMenuItem
               key={notification.id}

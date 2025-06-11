@@ -199,6 +199,7 @@ export const investorRouter = createTRPCRouter({
         state: z.string().min(1),
         country: z.string().min(1),
         currency: z.nativeEnum(Currency).optional(),
+        personalPitchUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -222,6 +223,7 @@ export const investorRouter = createTRPCRouter({
           banner: input.banner,
           about: input.about,
           currency: input.currency,
+          personalPitchUrl: input.personalPitchUrl,
           state: {
             connect: {
               id: parseInt(input.state),

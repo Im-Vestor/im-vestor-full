@@ -19,6 +19,8 @@ import {
 import { Textarea } from '~/components/ui/textarea';
 import { api } from '~/utils/api';
 import { renderBannerUpload, renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
+import { PlusIcon, Loader2 } from 'lucide-react';
+import { sendImageToBackend } from '~/utils/file';
 
 const investorFormSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -30,6 +32,7 @@ const investorFormSchema = z.object({
   about: z.string().optional(),
   photo: z.string().optional(),
   banner: z.string().optional(),
+  personalPitchUrl: z.string().optional(),
 });
 
 interface InvestorFormProps {
@@ -43,6 +46,7 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
   const [country, setCountry] = useState<string>(investor?.countryId?.toString() ?? '');
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   const { data: countries, isLoading: isLoadingCountries } = api.country.getAll.useQuery();
   const { data: states, isLoading: isLoadingStates } = api.country.getStates.useQuery(
@@ -80,8 +84,35 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
       about: investor?.about ?? '',
       photo: investor?.photo ?? '',
       banner: investor?.banner ?? '',
+      personalPitchUrl: investor?.personalPitchUrl ?? '',
     },
   });
+
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        toast.error('Please select a video file');
+        return;
+      }
+
+      if (file.size > 1024 * 1024 * 10) {
+        toast.error('Video file must be under 10MB');
+        return;
+      }
+
+      setIsUploadingVideo(true);
+
+      const videoUrl = await sendImageToBackend(file, investor?.id ?? '');
+
+      setIsUploadingVideo(false);
+
+      if (videoUrl) {
+        form.setValue('personalPitchUrl', videoUrl);
+      }
+    }
+  };
 
   return (
     <Form {...form}>
@@ -256,6 +287,66 @@ export const InvestorForm = ({ investor, onCancel }: InvestorFormProps) => {
                     {...field}
                     disabled={isUpdatingInvestor}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mx-6">
+          <FormField
+            control={form.control}
+            name="personalPitchUrl"
+            render={({ field: { onChange, value, ...field } }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">Personal Pitch Video</Label>
+                <p className="text-sm text-white/60 mb-2">
+                  Upload a short video introducing yourself (max 10MB, 1 minute recommended)
+                </p>
+                <FormControl>
+                  <div className="space-y-2">
+                    <div className="relative h-40 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoUpload}
+                        className="absolute inset-0 cursor-pointer opacity-0"
+                        {...field}
+                        disabled={isUpdatingInvestor}
+                      />
+                      <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                        {value ? (
+                          <div className="text-center">
+                            <video
+                              src={value}
+                              className="h-32 w-auto rounded-lg mx-auto mb-2"
+                              controls
+                            />
+                            <p className="text-xs text-white/70">Video uploaded</p>
+                          </div>
+                        ) : isUploadingVideo ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-white" />
+                        ) : (
+                          <div className="text-center">
+                            <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
+                            <p className="text-sm text-white/50">Upload Personal Pitch Video</p>
+                            <p className="text-xs text-white/30">Max 10MB, 1 minute recommended</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {value && (
+                      <button
+                        type="button"
+                        onClick={() => onChange('')}
+                        className="text-red-500 hover:text-red-600 text-sm"
+                        disabled={isUpdatingInvestor}
+                      >
+                        Remove video
+                      </button>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
