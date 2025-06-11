@@ -234,6 +234,15 @@ export const Header = () => {
       {/* Mobile Navigation Menu */}
       {isSignedIn && isMobileMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 md:hidden">
+          {userMetadata?.userIsAdmin && (
+            <Button
+              onClick={() => void handleNavigation('/admin/dashboard')}
+              className="hover:cursor-pointer"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Admin
+            </Button>
+          )}
           {getMenus().map(menu => (
             <Button
               key={menu.href}
@@ -245,6 +254,15 @@ export const Header = () => {
               {menu.label}
             </Button>
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start text-red-400"
+            onClick={() => signOut({ redirectUrl: '/login' })}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign out
+          </Button>
         </div>
       )}
     </div>
