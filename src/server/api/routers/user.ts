@@ -42,6 +42,36 @@ export const userRouter = createTRPCRouter({
 
     return { ...user, openNegotiations };
   }),
+
+  getUserById: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Only allow admins to query other users' data, or users to query their own data
+      const isOwnProfile = ctx.auth.userId === input.userId;
+
+      if (!isOwnProfile) {
+        // Check if current user is admin using Clerk metadata
+        const { clerkClient } = await import('@clerk/nextjs/server');
+        const clerk = await clerkClient();
+        const currentUser = await clerk.users.getUser(ctx.auth.userId);
+        const userMetadata = currentUser.publicMetadata as {
+          userIsAdmin?: boolean;
+        };
+
+        if (!userMetadata?.userIsAdmin) {
+          throw new Error('Unauthorized: You can only view your own profile');
+        }
+      }
+
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      });
+
+      return user;
+    }),
+
   getMyReferrals: protectedProcedure
     .input(z.object({ page: z.number().optional() }))
     .query(async ({ ctx, input }) => {
@@ -144,6 +174,7 @@ export const userRouter = createTRPCRouter({
           ctx.db.investor.findMany({
             select: {
               id: true,
+              userId: true,
               firstName: true,
               lastName: true,
               mobileFone: true,
@@ -153,6 +184,7 @@ export const userRouter = createTRPCRouter({
           ctx.db.entrepreneur.findMany({
             select: {
               id: true,
+              userId: true,
               firstName: true,
               lastName: true,
               mobileFone: true,
@@ -167,6 +199,7 @@ export const userRouter = createTRPCRouter({
           ctx.db.partner.findMany({
             select: {
               id: true,
+              userId: true,
               firstName: true,
               lastName: true,
               mobileFone: true,
@@ -176,6 +209,7 @@ export const userRouter = createTRPCRouter({
           ctx.db.incubator.findMany({
             select: {
               id: true,
+              userId: true,
               name: true,
               email: true,
               phone: true,
@@ -190,6 +224,7 @@ export const userRouter = createTRPCRouter({
           ctx.db.vcGroup.findMany({
             select: {
               id: true,
+              userId: true,
               name: true,
               email: true,
               phone: true,
@@ -207,7 +242,7 @@ export const userRouter = createTRPCRouter({
         // Combine all users into a single array
         const allUsers = [
           ...investors.map(investor => ({
-            id: investor.id,
+            id: investor.userId,
             email: investor.mobileFone ?? 'N/A',
             userType: 'INVESTOR' as const,
             referralCode: 'N/A',
@@ -217,7 +252,7 @@ export const userRouter = createTRPCRouter({
             projectsCount: 0, // Investors don't publish projects
           })),
           ...entrepreneurs.map(entrepreneur => ({
-            id: entrepreneur.id,
+            id: entrepreneur.userId,
             email: entrepreneur.mobileFone ?? 'N/A',
             userType: 'ENTREPRENEUR' as const,
             referralCode: 'N/A',
@@ -227,7 +262,7 @@ export const userRouter = createTRPCRouter({
             projectsCount: entrepreneur.projects.length, // Count projects using existing relation
           })),
           ...partners.map(partner => ({
-            id: partner.id,
+            id: partner.userId,
             email: partner.mobileFone ?? 'N/A',
             userType: 'PARTNER' as const,
             referralCode: 'N/A',

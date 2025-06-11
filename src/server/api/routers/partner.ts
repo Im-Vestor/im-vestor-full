@@ -12,6 +12,30 @@ export const partnerRouter = createTRPCRouter({
       where: { userId: ctx.auth.userId },
     });
   }),
+
+  getByUserIdForAdmin: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const isOwnProfile = ctx.auth.userId === input.userId;
+
+      if (!isOwnProfile) {
+        // Check if current user is admin using Clerk metadata
+        const clerk = await clerkClient();
+        const currentUser = await clerk.users.getUser(ctx.auth.userId);
+        const userMetadata = currentUser.publicMetadata as {
+          userIsAdmin?: boolean;
+        };
+
+        if (!userMetadata?.userIsAdmin) {
+          throw new Error('Unauthorized: Only admins can view other users profiles');
+        }
+      }
+
+      return ctx.db.partner.findUnique({
+        where: { userId: input.userId },
+      });
+    }),
+
   create: publicProcedure
     .input(
       z.object({

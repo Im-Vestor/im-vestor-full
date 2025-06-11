@@ -17,10 +17,17 @@ import { EntrepreneurForm } from './entrepreneur-form';
 import Link from 'next/link';
 import { SkeletonProfile } from '../skeleton-profile';
 
-export const EntrepreneurProfile = () => {
+export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
+
+  // Use different query based on whether userId is provided (admin view) or not (own profile)
+  const { data: entrepreneur, isPending: isLoading } = userId
+    ? api.entrepreneur.getByUserIdForAdmin.useQuery({ userId })
+    : api.entrepreneur.getByUserId.useQuery();
+
+  // Disable editing when viewing someone else's profile
+  const canEdit = !userId;
 
   if (isLoading) {
     return <SkeletonProfile />;
@@ -70,14 +77,16 @@ export const EntrepreneurProfile = () => {
           <h2 className="text-3xl font-semibold">
             {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
           </h2>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <Pencil className="h-2 w-2" />
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Button>
+          {canEdit && (
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <Pencil className="h-2 w-2" />
+              {isEditing ? 'Cancel' : 'Edit'}
+            </Button>
+          )}
         </div>
         <p className="mt-3 text-lg text-gray-400">
           {entrepreneur?.companyRole ?? 'Entrepreneur'}
@@ -110,10 +119,12 @@ export const EntrepreneurProfile = () => {
             ))}
           </div>
         )}
-        <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
-          Add a Company
-          <ArrowRight className="ml-2" />
-        </Button>
+        {canEdit && (
+          <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
+            Add a Company
+            <ArrowRight className="ml-2" />
+          </Button>
+        )}
       </div>
     </div>
   );

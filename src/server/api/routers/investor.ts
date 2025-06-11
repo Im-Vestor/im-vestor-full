@@ -31,6 +31,37 @@ export const investorRouter = createTRPCRouter({
       },
     });
   }),
+  getByUserIdForAdmin: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const isOwnProfile = ctx.auth.userId === input.userId;
+
+      if (!isOwnProfile) {
+        // Check if current user is admin using Clerk metadata
+        const clerk = await clerkClient();
+        const currentUser = await clerk.users.getUser(ctx.auth.userId);
+        const userMetadata = currentUser.publicMetadata as {
+          userIsAdmin?: boolean;
+        };
+
+        if (!userMetadata?.userIsAdmin) {
+          throw new Error('Unauthorized: Only admins can view other users profiles');
+        }
+      }
+
+      return ctx.db.investor.findUnique({
+        where: { userId: input.userId },
+        include: {
+          country: true,
+          state: true,
+          favoriteProjects: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+    }),
   getInvestorsRelatedToEntrepreneur: protectedProcedure
     .input(
       z.object({
@@ -48,22 +79,22 @@ export const investorRouter = createTRPCRouter({
         where: {
           ...(input.searchQuery
             ? {
-                OR: [
-                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-                ],
-              }
+              OR: [
+                { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+              ],
+            }
             : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
           ...(input.areaIds && input.areaIds.length > 0
             ? {
-                areas: {
-                  some: {
-                    id: { in: input.areaIds },
-                  },
+              areas: {
+                some: {
+                  id: { in: input.areaIds },
                 },
-              }
+              },
+            }
             : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
@@ -74,22 +105,22 @@ export const investorRouter = createTRPCRouter({
         where: {
           ...(input.searchQuery
             ? {
-                OR: [
-                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-                ],
-              }
+              OR: [
+                { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+              ],
+            }
             : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
           ...(input.areaIds && input.areaIds.length > 0
             ? {
-                areas: {
-                  some: {
-                    id: { in: input.areaIds },
-                  },
+              areas: {
+                some: {
+                  id: { in: input.areaIds },
                 },
-              }
+              },
+            }
             : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
