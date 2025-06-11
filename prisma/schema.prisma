@@ -235,6 +235,7 @@ model Investor {
     photo              String?
     banner             String?
     about              String?
+    personalPitchUrl   String?
     currency           Currency  @default(USD)
     state              State?    @relation(fields: [stateId], references: [id])
     country            Country?  @relation(fields: [countryId], references: [id])
@@ -275,19 +276,20 @@ model Meeting {
 }
 
 model Entrepreneur {
-    id          String    @id @default(uuid())
-    firstName   String
-    lastName    String
-    mobileFone  String?
-    companyName String?
-    companyRole String?
-    fiscalCode  String?
-    birthDate   DateTime?
-    photo       String?
-    banner      String?
-    about       String?
-    state       State?    @relation(fields: [stateId], references: [id])
-    country     Country?  @relation(fields: [countryId], references: [id])
+    id               String    @id @default(uuid())
+    firstName        String
+    lastName         String
+    mobileFone       String?
+    companyName      String?
+    companyRole      String?
+    fiscalCode       String?
+    birthDate        DateTime?
+    photo            String?
+    banner           String?
+    about            String?
+    personalPitchUrl String?
+    state            State?    @relation(fields: [stateId], references: [id])
+    country          Country?  @relation(fields: [countryId], references: [id])
 
     preferredHours PreferredHours[]
 

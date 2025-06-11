@@ -130,6 +130,7 @@ export const entrepreneurRouter = createTRPCRouter({
         banner: z.string().optional(),
         mobileFone: z.string().min(1),
         fiscalCode: z.string().min(1),
+        personalPitchUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -164,6 +165,7 @@ export const entrepreneurRouter = createTRPCRouter({
           banner: input.banner,
           mobileFone: input.mobileFone,
           fiscalCode: input.fiscalCode,
+          personalPitchUrl: input.personalPitchUrl,
         },
       });
     }),

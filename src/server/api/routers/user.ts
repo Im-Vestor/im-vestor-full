@@ -9,7 +9,38 @@ export const userRouter = createTRPCRouter({
       },
     });
 
-    return user;
+    const whereClause = {
+      OR: [
+        {
+          investor: {
+            userId: ctx.auth.userId,
+          },
+        },
+        {
+          project: {
+            Entrepreneur: {
+              userId: ctx.auth.userId,
+            },
+          },
+        },
+      ],
+    };
+
+    // check is user have an open negotiation
+    const negotiationWhereClause = {
+      ...whereClause,
+      ...(user?.userType === 'ENTREPRENEUR' && { entrepreneurActionNeeded: true }),
+      ...(user?.userType === 'INVESTOR' && { investorActionNeeded: true }),
+    };
+
+    const openNegotiations = await ctx.db.negotiation.findMany({
+      where: negotiationWhereClause,
+      include: {
+        project: true,
+      },
+    });
+
+    return { ...user, openNegotiations };
   }),
   getMyReferrals: protectedProcedure
     .input(z.object({ page: z.number().optional() }))
@@ -97,9 +128,9 @@ export const userRouter = createTRPCRouter({
         page: z.number().min(1),
         limit: z.number().min(1),
         sortBy: z.string().optional(),
-        sortDirection: z.enum(["asc", "desc"]).optional(),
+        sortDirection: z.enum(['asc', 'desc']).optional(),
         search: z.string().optional(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const { page, limit, sortBy, sortDirection, search } = input;
@@ -116,7 +147,7 @@ export const userRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               mobileFone: true,
-            }
+            },
           }),
           // Entrepreneurs - include projects to count them
           ctx.db.entrepreneur.findMany({
@@ -130,7 +161,7 @@ export const userRouter = createTRPCRouter({
                   id: true,
                 },
               },
-            }
+            },
           }),
           // Partners
           ctx.db.partner.findMany({
@@ -139,7 +170,7 @@ export const userRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               mobileFone: true,
-            }
+            },
           }),
           // Incubators - include projects to count them
           ctx.db.incubator.findMany({
@@ -153,7 +184,7 @@ export const userRouter = createTRPCRouter({
                   id: true,
                 },
               },
-            }
+            },
           }),
           // VC Groups
           ctx.db.vcGroup.findMany({
@@ -162,7 +193,7 @@ export const userRouter = createTRPCRouter({
               name: true,
               email: true,
               phone: true,
-            }
+            },
           }),
         ]);
 
@@ -182,7 +213,7 @@ export const userRouter = createTRPCRouter({
             referralCode: 'N/A',
             firstName: investor.firstName,
             lastName: investor.lastName,
-            name: "",
+            name: '',
             projectsCount: 0, // Investors don't publish projects
           })),
           ...entrepreneurs.map(entrepreneur => ({
@@ -192,7 +223,7 @@ export const userRouter = createTRPCRouter({
             referralCode: 'N/A',
             firstName: entrepreneur.firstName,
             lastName: entrepreneur.lastName,
-            name: "",
+            name: '',
             projectsCount: entrepreneur.projects.length, // Count projects using existing relation
           })),
           ...partners.map(partner => ({
@@ -202,7 +233,7 @@ export const userRouter = createTRPCRouter({
             referralCode: 'N/A',
             firstName: partner.firstName,
             lastName: partner.lastName,
-            name: "",
+            name: '',
             projectsCount: 0, // Partners don't publish projects
           })),
           ...incubators.map(incubator => ({
@@ -210,8 +241,8 @@ export const userRouter = createTRPCRouter({
             email: incubator.email,
             userType: 'INCUBATOR' as const,
             referralCode: 'N/A',
-            firstName: "",
-            lastName: "",
+            firstName: '',
+            lastName: '',
             name: incubator.name,
             projectsCount: incubator.projects.length, // Count projects using existing relation
           })),
@@ -220,8 +251,8 @@ export const userRouter = createTRPCRouter({
             email: vcGroup.email,
             userType: 'VC_GROUP' as const,
             referralCode: 'N/A',
-            firstName: "",
-            lastName: "",
+            firstName: '',
+            lastName: '',
             name: vcGroup.name,
             projectsCount: 0, // VC Groups don't publish projects directly
           })),
@@ -245,10 +276,10 @@ export const userRouter = createTRPCRouter({
         // Apply sorting if specified
         if (sortBy && sortDirection) {
           filteredUsers.sort((a, b) => {
-            const aValue = a[sortBy as keyof typeof a] ?? "";
-            const bValue = b[sortBy as keyof typeof b] ?? "";
+            const aValue = a[sortBy as keyof typeof a] ?? '';
+            const bValue = b[sortBy as keyof typeof b] ?? '';
 
-            if (sortDirection === "asc") {
+            if (sortDirection === 'asc') {
               return aValue.toString().localeCompare(bValue.toString());
             } else {
               return bValue.toString().localeCompare(aValue.toString());

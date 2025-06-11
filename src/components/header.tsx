@@ -148,7 +148,7 @@ export const Header = () => {
         {/* User Profile / Login */}
         {isSignedIn ? (
           <div className="flex items-center">
-            <Notifications />
+            <Notifications userDetails={userDetails ?? { openNegotiations: [] }} />
             <FloatingSupportButton />
 
             <DropdownMenu>

@@ -171,7 +171,7 @@ export default function CompanyDetails() {
       const meetingDateTime = new Date(selectedDate);
       meetingDateTime.setHours(parseInt(time.split(':')[0] ?? '0'));
 
-      if (negotiation?.stage === NegotiationStage.PITCH) {
+      if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: meetingDateTime,
@@ -192,7 +192,7 @@ export default function CompanyDetails() {
   const handleScheduleMeetingNow = async () => {
     if (companyId && project?.Entrepreneur?.id && investor?.id) {
       const now = new Date();
-      if (negotiation?.stage === NegotiationStage.PITCH) {
+      if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: now,
