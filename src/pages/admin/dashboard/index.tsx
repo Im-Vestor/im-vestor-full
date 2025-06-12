@@ -149,7 +149,7 @@ export function Dashboard() {
                       href={`/profile/${user.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline"
+                      className="border-b border-blue-600 hover:border-blue-800"
                     >
                       {user.name || `${user.firstName} ${user.lastName}`.trim()}
                     </Link>

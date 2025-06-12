@@ -6,9 +6,16 @@ import { api } from '~/utils/api';
 import { InvestorForm } from './investor-form';
 import { SkeletonProfile } from '../skeleton-profile';
 
-export const InvestorProfile = () => {
+export const InvestorProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { data: investor, isPending: isLoading } = api.investor.getByUserId.useQuery();
+
+  // Use different query based on whether userId is provided (admin view) or not (own profile)
+  const { data: investor, isPending: isLoading } = userId
+    ? api.investor.getByUserIdForAdmin.useQuery({ userId })
+    : api.investor.getByUserId.useQuery();
+
+  // Disable editing when viewing someone else's profile
+  const canEdit = !userId;
 
   if (isLoading) {
     return <SkeletonProfile />;
@@ -52,19 +59,21 @@ export const InvestorProfile = () => {
         </div>
       </div>
 
-      <div className="px-12 pt-16">
+      <div className="md:px-12 px-6 pt-16">
         <div className="mt-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold">
             {investor?.firstName + ' ' + investor?.lastName}
           </h2>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <Pencil className="h-2 w-2" />
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Button>
+          {canEdit && (
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <Pencil className="h-2 w-2" />
+              {isEditing ? 'Cancel' : 'Edit'}
+            </Button>
+          )}
         </div>
         <hr className="my-4 sm:my-6 border-white/10" />
         <p className="mt-1 flex items-center gap-1 text-gray-400">

@@ -4,9 +4,16 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { PartnerForm } from './partner-form';
 
-export const PartnerProfile = () => {
+export const PartnerProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { data: partner, isPending: isLoading } = api.partner.getByUserId.useQuery();
+
+  // Use different query based on whether userId is provided (admin view) or not (own profile)
+  const { data: partner, isPending: isLoading } = userId
+    ? api.partner.getByUserIdForAdmin.useQuery({ userId })
+    : api.partner.getByUserId.useQuery();
+
+  // Disable editing when viewing someone else's profile
+  const canEdit = !userId;
 
   if (isLoading) {
     return (
@@ -34,14 +41,16 @@ export const PartnerProfile = () => {
       <div className="px-12 pt-16">
         <div className="mt-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold">{partner?.firstName + ' ' + partner?.lastName}</h2>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            <Pencil className="h-2 w-2" />
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Button>
+          {canEdit && (
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <Pencil className="h-2 w-2" />
+              {isEditing ? 'Cancel' : 'Edit'}
+            </Button>
+          )}
         </div>
         <p className="mt-1 flex items-center gap-1 text-gray-400">
           <Building className="mr-0.5 h-4 w-4" />

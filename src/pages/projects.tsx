@@ -1,5 +1,5 @@
 import { type Area, type Country, type Project, type State, type ProjectStage } from '@prisma/client';
-import { Building2, Heart, SearchIcon } from 'lucide-react';
+import { Building2, Heart, SearchIcon, Calendar, MapPin, Globe, CircleUserRound, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -333,20 +333,26 @@ function CompanyCard({
 
           {/* Project Information */}
           <div className="mt-4">
-            <div className="flex flex-wrap gap-4 items-center">
+            <div className="grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
               {project.stage && (
-                <div>
-                  <span className="text-sm text-white/70">Stage: </span>
-                  <span className="text-sm font-medium">
-                    {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
-                  </span>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}</span>
+                </div>
+              )}
+
+              {project.country && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>{project.country.name}</span>
                 </div>
               )}
 
               {project.investmentGoal && (
-                <div>
-                  <span className="text-sm text-white/70">Investimento: </span>
-                  <span className="text-sm font-medium">
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  <span>
+                    Investment Goal:{' '}
                     {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}
                     {project.investmentGoal.toLocaleString()}
                   </span>
@@ -355,13 +361,32 @@ function CompanyCard({
 
               {project.sector && (
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-white/70">Setor: </span>
                   <span className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light">
                     {project.sector.name}
                   </span>
                 </div>
               )}
             </div>
+
+            {/* Investor Slots */}
+            {project.investorSlots && (
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <span>Investor Slots: </span>
+                  <div className="flex space-x-1">
+                    {Array.from({
+                      length: Math.min(project.investorSlots ?? 0, 5),
+                    }).map((_, i) => (
+                      <CircleUserRound
+                        key={i}
+                        color="#EFD687"
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
