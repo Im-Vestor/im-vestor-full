@@ -10,11 +10,12 @@ import {
   MapPin,
   User,
   UserPlus,
+  Video,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
@@ -159,11 +160,20 @@ export default function EntrepreneurDetails() {
 
         {/* About section */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
-          <div>
-            <h2 className="text-lg font-semibold sm:text-xl">About</h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm text-white/80 sm:mt-4 sm:text-base">
-              {entrepreneur.about ?? 'No detailed description available.'}
-            </p>
+          <div className="flex flex-col gap-4">
+            <div>
+              <h2 className="text-lg font-semibold sm:text-xl">About</h2>
+              <p className="mt-3 whitespace-pre-wrap text-sm text-white/80 sm:mt-4 sm:text-base">
+                {entrepreneur.about ?? 'No detailed description available.'}
+              </p>
+            </div>
+
+            {entrepreneur.personalPitchUrl && (
+              <VideoRequestButton
+                userId={entrepreneur.user.id}
+                videoUrl={entrepreneur.personalPitchUrl}
+              />
+            )}
           </div>
 
           {/* Projects */}
@@ -264,5 +274,61 @@ export default function EntrepreneurDetails() {
         </div>
       </div>
     </main>
+  );
+}
+
+export function VideoRequestButton({ userId, videoUrl }: { userId: string; videoUrl: string }) {
+  const [hasRequested, setHasRequested] = useState(false);
+
+  const requestVideoMutation = api.user.requestPersonalPitchVideo.useMutation({
+    onSuccess: () => {
+      setHasRequested(true);
+      toast.success('Video access granted! You are now connected.');
+    },
+    onError: error => {
+      toast.error('Failed to request video access: ' + error.message);
+    },
+  });
+
+  const handleRequestVideo = () => {
+    requestVideoMutation.mutate({ userId });
+  };
+
+  if (hasRequested && videoUrl) {
+    return (
+      <video src={videoUrl} controls className="w-full max-w-md rounded-lg">
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-card p-4 sm:p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Video className="h-6 w-6 text-[#EFD687]" />
+        <h3 className="text-lg font-medium">Personal Pitch Video Available</h3>
+      </div>
+      <p className="text-sm text-white/70 mb-4">
+        This user has uploaded a video presentation. Request access to view it and connect with the
+        user.
+      </p>
+      <Button
+        onClick={handleRequestVideo}
+        disabled={requestVideoMutation.isPending}
+        className="w-full sm:w-auto"
+      >
+        {requestVideoMutation.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Requesting Access...
+          </>
+        ) : (
+          <>
+            <Video className="mr-2 h-4 w-4" />
+            Request Video Access
+          </>
+        )}
+      </Button>
+    </div>
   );
 }

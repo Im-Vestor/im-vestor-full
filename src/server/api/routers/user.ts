@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
+import { sendEmail } from '~/utils/email';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
@@ -302,5 +303,61 @@ export const userRouter = createTRPCRouter({
         console.error('Error in getAll query:', error);
         throw error;
       }
+    }),
+  requestPersonalPitchVideo: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const loggedInUser = await ctx.db.user.findUnique({
+        where: {
+          id: ctx.auth.userId,
+        },
+      });
+
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+        include: {
+          entrepreneur: true,
+          investor: true,
+        },
+      });
+
+      // Create connection between the requesting user and the entrepreneur
+      const existingConnection = await ctx.db.connection.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: loggedInUser?.id ?? '',
+            followingId: user?.id ?? '',
+          },
+        },
+      });
+
+      if (!existingConnection) {
+        await ctx.db.connection.create({
+          data: {
+            followerId: ctx.auth.userId,
+            followingId: user?.id ?? '',
+          },
+        });
+      }
+
+      const videOwnerUserType = user?.userType;
+
+      await sendEmail(
+        videOwnerUserType === 'ENTREPRENEUR'
+          ? (user?.entrepreneur?.firstName ?? '')
+          : (user?.investor?.firstName ?? ''),
+        'Video access requested',
+        'A user has requested access to your video presentation.',
+        user?.email ?? '',
+        'Video access requested'
+      );
+
+      return { success: true };
     }),
 });

@@ -4,7 +4,7 @@ import {
   NotificationType,
   type Project,
 } from '@prisma/client';
-import { ArrowUpRight, Bell, Trash2 } from 'lucide-react';
+import { Bell, Building2, Trash2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Button } from '../ui/button';
 import {
@@ -16,6 +16,7 @@ import {
 
 import { useUser } from '@clerk/nextjs';
 import { formatDistanceToNow } from 'date-fns';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
@@ -38,12 +39,15 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
   const [negotiationNotifications, setNegotiationNotifications] = useState<Notification[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
-  const { data: notificationsFromQuery, isFetching: isFetchingNotifications } =
-    api.notifications.getUnreadNotifications.useQuery(undefined, {
+
+  const { data: notificationsFromQuery } = api.notifications.getUnreadNotifications.useQuery(
+    undefined,
+    {
       staleTime: 600000, // 10 minutes in milliseconds
       refetchInterval: 600000, // 10 minutes in milliseconds
       enabled: !!isSignedIn,
-    });
+    }
+  );
 
   const { mutateAsync: readNotification } = api.notifications.readNotification.useMutation({
     onMutate: data => {
@@ -61,7 +65,11 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     notifications &&
     notifications.length === 0 &&
     negotiationNotifications &&
-    negotiationNotifications.length === 0;
+    negotiationNotifications.length === 0 &&
+    notificationsFromQuery &&
+    notificationsFromQuery.length === 0;
+
+  const noNegotiations = userDetails.openNegotiations.length === 0;
 
   useEffect(() => {
     // For now, don't separate negotiation notifications since NEGOTIATION_CREATED doesn't exist
@@ -71,9 +79,9 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild disabled={isFetchingNotifications || noNotifications}>
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          {noNotifications ? (
+          {noNotifications && noNegotiations ? (
             <Bell fill="none" className="size-4" />
           ) : (
             <Bell fill="currentColor" className="size-4" />
@@ -102,7 +110,17 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
                 onClick={() => void readAllNotifications()}
                 className="w-full justify-start text-left"
               >
-                <ArrowUpRight className="size-4" />
+                {negotiation.project.logo ? (
+                  <Image
+                    src={negotiation.project.logo ?? ''}
+                    alt={negotiation.project.name ?? ''}
+                    width={16}
+                    height={16}
+                    className="rounded-sm"
+                  />
+                ) : (
+                  <Building2 className="size-4 text-muted-foreground" />
+                )}
                 <p className="text-sm text-muted-foreground">
                   {negotiation.project.name} | want to move forward?
                 </p>

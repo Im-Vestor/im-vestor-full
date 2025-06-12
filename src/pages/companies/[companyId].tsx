@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   CircleUserRound,
   Clock,
+  Globe,
   Heart,
   Loader2,
   MapPin,
@@ -88,6 +89,7 @@ export default function CompanyDetails() {
   const tomorrow = startOfTomorrow();
 
   const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
+  const [websiteIsHidden, setWebsiteIsHidden] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(tomorrow);
   const [time, setTime] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -302,6 +304,27 @@ export default function CompanyDetails() {
                     <span>Location not specified</span>
                   )}
 
+                  <span className="mx-2">•</span>
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {websiteIsHidden ? (
+                      <span
+                        className="text-white/70 cursor-pointer hover:underline"
+                        onClick={() => setWebsiteIsHidden(false)}
+                      >
+                        Click to show website
+                      </span>
+                    ) : (
+                      <Link
+                        href={project.website ?? ''}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/70 hover:underline"
+                      >
+                        {project.website}
+                      </Link>
+                    )}
+                  </div>
                   <span className="mx-2">•</span>
                   <span className="w-fit rounded-full bg-white/10 border border-white/10 px-2 py-0.5 text-sm text-primary sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Header } from '~/components/header';
 import { api } from '~/utils/api';
+import { VideoRequestButton } from '../entrepreneur/[entrepreneurId]';
 
 export default function InvestorDetails() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function InvestorDetails() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
       <Header />
       <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8">
-        {/* Entrepreneur Header */}
+        {/* Investor Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
@@ -89,6 +90,9 @@ export default function InvestorDetails() {
               {investor.about ?? 'No detailed description available.'}
             </p>
           </div>
+          {investor.personalPitchUrl && (
+            <VideoRequestButton userId={investor.user.id} videoUrl={investor.personalPitchUrl} />
+          )}
         </div>
       </div>
     </main>

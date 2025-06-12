@@ -14,6 +14,7 @@ export const investorRouter = createTRPCRouter({
         country: true,
         state: true,
         areas: true,
+        user: true,
       },
     });
   }),
