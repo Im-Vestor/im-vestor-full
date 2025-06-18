@@ -44,12 +44,10 @@ export default function ProfilePage({ targetUserId, isAdmin }: ProfilePageProps)
         <Header />
         <div className="mt-16 text-center">
           <h1 className="text-2xl font-bold text-red-400">User not found</h1>
-          <p className="mt-2 text-gray-400">The profile you're looking for doesn't exist.</p>
-          <Button
-            onClick={() => router.back()}
-            className="mt-4"
-            variant="outline"
-          >
+          <p className="mt-2 text-gray-400">
+            The profile you&apos;re looking for doesn&apos;t exist.
+          </p>
+          <Button onClick={() => router.back()} className="mt-4" variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Go Back
           </Button>
@@ -63,9 +61,7 @@ export default function ProfilePage({ targetUserId, isAdmin }: ProfilePageProps)
       <Header />
       {isAdmin && (
         <div className="mb-4 flex items-center justify-between gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 pr-6">
-          <div className="text-sm text-blue-400">
-            👨‍💼 Admin View
-          </div>
+          <div className="text-sm text-blue-400">👨‍💼 Admin View</div>
         </div>
       )}
       <div className="mt-12">
@@ -90,7 +86,7 @@ export default function ProfilePage({ targetUserId, isAdmin }: ProfilePageProps)
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ctx => {
   const { userId } = getAuth(ctx.req);
   const { id: targetUserId } = ctx.query;
 
@@ -133,8 +129,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       props: {
         targetUserId,
-        isAdmin
-      }
+        isAdmin,
+      },
     };
   } catch (error) {
     console.error('Error fetching user:', error);

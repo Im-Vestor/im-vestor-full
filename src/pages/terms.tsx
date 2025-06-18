@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function Terms() {
   const router = useRouter();
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
 
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">

@@ -1,4 +1,5 @@
 import { useUser } from '@clerk/nextjs';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
@@ -10,13 +11,17 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
+import { api } from '~/utils/api';
 
 interface ProductProps {
   title: string;
   description: string;
+  onBuy?: () => void;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
-const Product = ({ title, description }: ProductProps) => {
+const Product = ({ title, description, onBuy, isLoading, disabled }: ProductProps) => {
   return (
     <Card className="flex h-full flex-col transition-all hover:shadow-md">
       <CardHeader>
@@ -25,8 +30,12 @@ const Product = ({ title, description }: ProductProps) => {
       </CardHeader>
       <CardContent className="flex-grow"></CardContent>
       <CardFooter>
-        <Button onClick={() => toast.error('Coming Soon')} className="w-full">
-          Buy Now
+        <Button
+          onClick={onBuy ?? (() => toast.error('Coming Soon'))}
+          className="w-full"
+          disabled={isLoading ?? disabled}
+        >
+          {isLoading ? 'Processing...' : 'Buy Now'}
         </Button>
       </CardFooter>
     </Card>
@@ -35,13 +44,60 @@ const Product = ({ title, description }: ProductProps) => {
 
 export default function Shop() {
   const { user } = useUser();
+  const [isProcessing, setIsProcessing] = useState(false);
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
+
+  // Get user data including available pokes
+  const { data: userData } = api.user.getUser.useQuery();
+
+  const handlePokePurchase = async () => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { sessionId, url } = (await response.json()) as {
+        sessionId: string;
+        url: string;
+      };
+
+      console.log('sessionId', sessionId);
+      console.log('url', url);
+
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      toast.error('Failed to start checkout process');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
-        <h1 className="mb-8 text-2xl font-bold">Shop</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Shop</h1>
+          {userData && (
+            <div className="rounded-lg bg-primary/10 px-3 py-2">
+              <span className="text-sm font-medium">
+                Available Pokes: {userData.availablePokes}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {!isInvestor && (
@@ -53,6 +109,8 @@ export default function Shop() {
           <Product
             title="Poke"
             description="Sends an introduction note to investors about your entrepreneur profile, helping you make that crucial first connection."
+            onBuy={handlePokePurchase}
+            isLoading={isProcessing}
           />
           <Product
             title="Hyper Train Ticket"

@@ -1,5 +1,19 @@
-import { type Area, type Country, type Project, type State, type ProjectStage } from '@prisma/client';
-import { Building2, Heart, SearchIcon, Calendar, MapPin, Globe, CircleUserRound, DollarSign } from 'lucide-react';
+import {
+  type Area,
+  type Country,
+  type Project,
+  type State,
+  type ProjectStage,
+} from '@prisma/client';
+import {
+  Building2,
+  Heart,
+  SearchIcon,
+  Calendar,
+  MapPin,
+  CircleUserRound,
+  DollarSign,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -292,7 +306,9 @@ export default function Companies() {
 function CompanyCard({
   project,
 }: {
-  project: Project & { state: State | null; country: Country | null; sector: Area } & { isFavorite: boolean };
+  project: Project & { state: State | null; country: Country | null; sector: Area } & {
+    isFavorite: boolean;
+  };
 }) {
   return (
     <Link
@@ -328,7 +344,9 @@ function CompanyCard({
               </span>
             )}
 
-            <p className="mt-2 line-clamp-2">{project.quickSolution ?? 'No description available'}</p>
+            <p className="mt-2 line-clamp-2">
+              {project.quickSolution ?? 'No description available'}
+            </p>
           </div>
 
           {/* Project Information */}
@@ -337,7 +355,9 @@ function CompanyCard({
               {project.stage && (
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  <span>{PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}</span>
+                  <span>
+                    {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
+                  </span>
                 </div>
               )}
 
@@ -377,11 +397,7 @@ function CompanyCard({
                     {Array.from({
                       length: Math.min(project.investorSlots ?? 0, 5),
                     }).map((_, i) => (
-                      <CircleUserRound
-                        key={i}
-                        color="#EFD687"
-                        className="h-3 w-3 sm:h-4 sm:w-4"
-                      />
+                      <CircleUserRound key={i} color="#EFD687" className="h-3 w-3 sm:h-4 sm:w-4" />
                     ))}
                   </div>
                 </div>

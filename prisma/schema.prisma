@@ -88,16 +88,18 @@ enum UserType {
 }
 
 model User {
-    id           String        @id @default(uuid())
-    email        String        @unique
-    imageUrl     String?
-    referralCode String        @unique
-    userType     UserType
-    investor     Investor?
-    entrepreneur Entrepreneur?
-    partner      Partner?
-    vcGroup      VcGroup?
-    incubator    Incubator?
+    id               String        @id @default(uuid())
+    email            String        @unique
+    imageUrl         String?
+    referralCode     String        @unique
+    userType         UserType
+    stripeCustomerId String?
+    availablePokes   Int           @default(0)
+    investor         Investor?
+    entrepreneur     Entrepreneur?
+    partner          Partner?
+    vcGroup          VcGroup?
+    incubator        Incubator?
 
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
