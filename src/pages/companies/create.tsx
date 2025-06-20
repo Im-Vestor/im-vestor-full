@@ -180,8 +180,8 @@ export default function CreateCompany() {
         return;
       }
 
-      if (file.size > 1024 * 1024 * 10) {
-        toast.error('Video file must be under 10MB');
+      if (file.size > 1024 * 1024 * 50) {
+        toast.error('Video file must be under 50MB');
         return;
       }
 
@@ -718,7 +718,7 @@ export default function CreateCompany() {
               </div>
               <h3 className="mt-2 text-lg">Company Video</h3>
               <p className="text-sm text-white/60">
-                Upload a video of your company (max 10MB, recommended 1 minute duration)
+                Upload a video of your company (max 50MB, recommended 1 minute duration)
               </p>
               <FormField
                 control={form.control}
@@ -752,7 +752,7 @@ export default function CreateCompany() {
                                 <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
                                 <p className="text-sm text-white/50">Upload Company Video</p>
                                 <p className="text-xs text-white/30">
-                                  Max 10MB, 1 minute recommended
+                                  Max 50MB, 1 minute recommended
                                 </p>
                               </div>
                             )}

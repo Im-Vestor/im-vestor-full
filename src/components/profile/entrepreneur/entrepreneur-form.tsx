@@ -100,8 +100,8 @@ export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormPro
         return;
       }
 
-      if (file.size > 1024 * 1024 * 10) {
-        toast.error('Video file must be under 10MB');
+      if (file.size > 1024 * 1024 * 50) {
+        toast.error('Video file must be under 50MB'); // 50MB
         return;
       }
 
@@ -335,7 +335,7 @@ export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormPro
               <FormItem>
                 <Label className="font-normal text-neutral-200">Personal Pitch Video</Label>
                 <p className="text-sm text-white/60 mb-2">
-                  Upload a short video introducing yourself (max 10MB, 1 minute recommended)
+                  Upload a short video introducing yourself (max 50MB, 1 minute recommended)
                 </p>
                 <FormControl>
                   <div className="space-y-2">
@@ -364,7 +364,7 @@ export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormPro
                           <div className="text-center">
                             <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
                             <p className="text-sm text-white/50">Upload Personal Pitch Video</p>
-                            <p className="text-xs text-white/30">Max 10MB, 1 minute recommended</p>
+                            <p className="text-xs text-white/30">Max 50MB, 1 minute recommended</p>
                           </div>
                         )}
                       </div>
