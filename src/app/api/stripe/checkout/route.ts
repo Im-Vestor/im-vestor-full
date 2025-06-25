@@ -8,7 +8,7 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-05-28.basil',
 });
 
-export const products = [
+const products = [
   {
     id: 'poke',
     name: 'Poke',
