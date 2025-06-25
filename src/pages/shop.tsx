@@ -18,22 +18,76 @@ interface ProductProps {
   description: string;
   onBuy?: () => void;
   isLoading?: boolean;
-  disabled?: boolean;
+  onlyEntrepreneur?: boolean;
+  value: number;
 }
 
-const Product = ({ title, description, onBuy, isLoading, disabled }: ProductProps) => {
+const products = [
+  {
+    id: 'poke',
+    name: '3 Pokes',
+    description:
+      'Sends an introduction note to investors about your entrepreneur profile, helping you make that crucial first connection.',
+    onlyEntrepreneur: true,
+    value: 25,
+  },
+  {
+    id: 'boost',
+    name: 'Boost',
+    description:
+      'Places your project at the top of business sector searches, increasing visibility to potential investors.',
+    onlyEntrepreneur: true,
+    value: 20,
+  },
+  {
+    id: 'daily-pitch-ticket',
+    name: 'Daily Pitch Ticket',
+    description:
+      'Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
+    onlyEntrepreneur: false,
+    value: 20,
+  },
+  {
+    id: 'hyper-train-ticket',
+    name: 'Hyper Train Ticket',
+    description:
+      "Makes your project appear in the investors' hyper train feed, exposing your venture to a targeted audience.",
+    onlyEntrepreneur: false,
+    value: 35,
+  },
+];
+
+const Product = ({
+  title,
+  description,
+  onBuy,
+  isLoading,
+  onlyEntrepreneur,
+  value,
+}: ProductProps) => {
+  const { user } = useUser();
+  const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
+
+  if (onlyEntrepreneur && !isEntrepreneur) {
+    return null;
+  }
+
   return (
     <Card className="flex h-full flex-col transition-all hover:shadow-md">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow"></CardContent>
+      <CardContent className="flex flex-grow w-full items-center justify-center">
+        <p className="text-2xl font-bold">
+          {value}€ <span className="text-sm text-neutral-500">+ IVA</span>
+        </p>
+      </CardContent>
       <CardFooter>
         <Button
           onClick={onBuy ?? (() => toast.error('Coming Soon'))}
           className="w-full"
-          disabled={isLoading ?? disabled}
+          disabled={isLoading}
         >
           {isLoading ? 'Processing...' : 'Buy Now'}
         </Button>
@@ -43,37 +97,35 @@ const Product = ({ title, description, onBuy, isLoading, disabled }: ProductProp
 };
 
 export default function Shop() {
-  const { user } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
-  const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
   // Get user data including available pokes
   const { data: userData } = api.user.getUser.useQuery();
 
-  const handlePokePurchase = async () => {
+  const handlePurchase = async (productId: string) => {
     if (isProcessing) return;
 
     setIsProcessing(true);
 
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      const response = await fetch(`/api/stripe/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          productId,
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to create checkout session');
       }
 
-      const { sessionId, url } = (await response.json()) as {
+      const { url } = (await response.json()) as {
         sessionId: string;
         url: string;
       };
-
-      console.log('sessionId', sessionId);
-      console.log('url', url);
 
       window.location.href = url;
     } catch (error) {
@@ -100,28 +152,16 @@ export default function Shop() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {!isInvestor && (
+          {products.map(product => (
             <Product
-              title="Boost"
-              description="Places your project at the top of business sector searches, increasing visibility to potential investors."
+              key={product.id}
+              title={product.name}
+              description={product.description}
+              onBuy={() => handlePurchase(product.id)}
+              isLoading={isProcessing}
+              value={product.value}
             />
-          )}
-          <Product
-            title="Poke"
-            description="Sends an introduction note to investors about your entrepreneur profile, helping you make that crucial first connection."
-            onBuy={handlePokePurchase}
-            isLoading={isProcessing}
-          />
-          <Product
-            title="Hyper Train Ticket"
-            description="Makes your project appear in the investors' hyper train feed, exposing your venture to a targeted audience."
-          />
-          {!isInvestor && (
-            <Product
-              title="Daily Pitch Ticket"
-              description="Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects."
-            />
-          )}
+          ))}
         </div>
       </div>
     </main>
