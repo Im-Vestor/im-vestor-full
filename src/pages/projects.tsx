@@ -12,7 +12,7 @@ import {
   Calendar,
   MapPin,
   CircleUserRound,
-  DollarSign,
+  Zap,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -313,7 +313,10 @@ function CompanyCard({
   return (
     <Link
       href={`/companies/${project.id}`}
-      className="group relative cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 hover:shadow-lg hover:shadow-white/5"
+      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${project.isBoosted
+        ? 'border-yellow-500/50 hover:border-yellow-600/50'
+        : 'border-white/10 hover:border-white/20'
+        }`}
     >
       {/* Stage Badge - Top Right */}
       {project.stage && (
@@ -361,8 +364,24 @@ function CompanyCard({
           </div>
 
           {/* Project Information */}
-          <div className="mt-4 flex items-end justify-between">
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
+              {project.stage && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>
+                    {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
+                  </span>
+                </div>
+              )}
+
+              {project.country && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>{project.country.name}</span>
+                </div>
+              )}
+
               {project.investmentGoal && (
                 <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 transition-colors group-hover:bg-white/10">
                   <span className="truncate text-xs text-white/70">
@@ -380,24 +399,29 @@ function CompanyCard({
                   </span>
                 </div>
               )}
-            </div>
 
-            {/* Investor Slots - Bottom Right */}
-            {project.investorSlots && (
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {Array.from({
-                    length: Math.min(project.investorSlots ?? 0, 5),
-                  }).map((_, i) => (
-                    <CircleUserRound
-                      key={i}
-                      color="#EFD687"
-                      className="h-5 w-5"
-                    />
-                  ))}
+              {project.investorSlots && (
+                <div className="flex gap-2 text-xs text-white/70 sm:text-sm">
+                  <div className="flex items-center gap-2">
+                    <span>Investor Slots: </span>
+                    <div className="flex space-x-1">
+                      {Array.from({
+                        length: Math.min(project.investorSlots ?? 0, 5),
+                      }).map((_, i) => (
+                        <CircleUserRound key={i} color="#EFD687" className="h-3 w-3" />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {project.isBoosted && (
+                <div className="flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-yellow-500" />
+                  <span>Boosted</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

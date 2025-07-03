@@ -170,7 +170,7 @@ export default function Home() {
   }, [isVideoPlaying]);
 
   return (
-    <>
+    <div className="w-full">
       <div className="w-full fixed top-0 left-0 py-2 bg-card border-b border-white/10 z-50 backdrop-blur-sm">
         <div className="flex items-center justify-center text-sm gap-2">
           <Flag className="w-3 h-3 text-yellow-500" />
@@ -179,18 +179,19 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <main className="min-h-screen bg-background pt-32 overflow-x-hidden relative w-full">
+      <main className="min-h-screen pt-32">
         <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10]" />
         <motion.header
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex justify-end gap-2 absolute top-10 right-4 sm:right-10 md:right-20 z-50">
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="m-6 flex justify-end gap-2 fixed top-10 sm:right-40 right-0 z-50"
+        >
           <LanguageSwitcher />
           <Link href="/login">
             <Button variant="outline" className="border-2 border-white/10">
               <LogIn className="h-6 w-6" />
-              {t("signIn")}
+              {t('signIn')}
             </Button>
           </Link>
         </motion.header>
@@ -228,10 +229,10 @@ export default function Home() {
             </motion.span>
             <motion.div variants={popUp} transition={{ delay: 1.6 }}>
               <Button
-                onClick={async () => await router.push("/sign-up")}
+                onClick={async () => await router.push('/sign-up')}
                 className="mt-16 rounded-full hover:opacity-75 hover:scale-x-105 transition-all duration-500"
               >
-                {t("getStarted")} <ArrowUpRight />
+                {t('getStarted')} <ArrowUpRight />
               </Button>
             </motion.div>
           </div>
@@ -733,10 +734,7 @@ export default function Home() {
                         {t('entrepreneurDesc')}
                       </motion.p>
 
-                      <Link
-                        className="mt-8 z-50"
-                        href="/sign-up/entrepreneur"
-                      >
+                      <Link className="mt-8 z-50" href="/sign-up/entrepreneur">
                         <Button>
                           Join as {t('entrepreneur')}
                           <ArrowRight className="ml-2" />
@@ -786,10 +784,7 @@ export default function Home() {
                         {t('investorDesc')}
                       </motion.p>
 
-                      <Link
-                        className="mt-8 z-50"
-                        href="/sign-up/investor"
-                      >
+                      <Link className="mt-8 z-50" href="/sign-up/investor">
                         <Button>
                           Join as {t('investor')}
                           <ArrowRight className="ml-2" />
@@ -848,12 +843,9 @@ export default function Home() {
                     </span>
                   </h2>
                   <p className="mt-2 text-sm text-gray-300">
-                    {t("dontHaveAccount")}{" "}
-                    <Link
-                      href="/sign-up"
-                      className="text-primary hover:opacity-70"
-                    >
-                      {t("createOne")}
+                    {t('dontHaveAccount')}{' '}
+                    <Link href="/sign-up" className="text-primary hover:opacity-70">
+                      {t('createOne')}
                     </Link>
                   </p>
                   <Input
@@ -895,7 +887,10 @@ export default function Home() {
               <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
               <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">
                 <p>{t('followUs')}</p>
-                <Link href="https://www.linkedin.com/in/guilherme-beauvalet-3227b3291" className="hover:opacity-70">
+                <Link
+                  href="https://www.linkedin.com/in/guilherme-beauvalet-3227b3291"
+                  className="hover:opacity-70"
+                >
                   <Linkedin className="ml-2 h-6 w-6" />
                 </Link>
                 <Link href="https://www.instagram.com/im_vestor/" className="hover:opacity-70">
@@ -928,31 +923,6 @@ export default function Home() {
           </StarField>
         </motion.div>
       </main>
-      <style jsx global>{`
-        /* Dark mode scrollbar */
-        ::-webkit-scrollbar {
-          width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: #1e1e2e;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #3f3f5a;
-          border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-
-        /* For Firefox */
-        * {
-          scrollbar-width: thin;
-          scrollbar-color: #3f3f5a #1e1e2e;
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

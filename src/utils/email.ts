@@ -7,13 +7,15 @@ export async function sendEmail(
   firstText: string,
   secondText: string,
   to: string,
-  subject: string
+  subject: string,
+  link?: string,
+  buttonText?: string
 ) {
   const { data, error } = await resend.emails.send({
     from: 'Im-Vestor <hey@updates.im-vestor.com>',
     to: [to],
     subject: subject,
-    react: EmailTemplate({ name, firstText, secondText }),
+    react: EmailTemplate({ name, firstText, secondText, link, buttonText }),
   });
 
   if (error) {

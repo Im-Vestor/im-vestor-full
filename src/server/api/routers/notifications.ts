@@ -9,6 +9,9 @@ export const notificationsRouter = createTRPCRouter({
         userId: ctx.auth.userId,
         read: false,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }),
   readNotification: protectedProcedure

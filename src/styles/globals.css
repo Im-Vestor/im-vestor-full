@@ -8,8 +8,8 @@
 
     /* Primary Theme Colors */
     --primary: 47 84% 73%;
-    --primary-from: #EDD689;
-    --primary-to: #D3B662;
+    --primary-from: #edd689;
+    --primary-to: #d3b662;
 
     /* Sidebar Theme Variables */
     --sidebar-background: 225 17% 15%;
@@ -28,7 +28,6 @@
 }
 
 @layer utilities {
-
   /* Primary Color Utilities */
   .bg-primary {
     @apply bg-primary-gradient;
@@ -118,7 +117,6 @@
 
 /* Additional print styles */
 @media print {
-
   /* Reset the page margins and background */
   @page {
     size: 8.5in 11in;
@@ -311,7 +309,7 @@
 
   /* Gold text for classic theme */
   .card-classic-title {
-    color: #E5CD82 !important;
+    color: #e5cd82 !important;
   }
 
   /* White text for modern theme */

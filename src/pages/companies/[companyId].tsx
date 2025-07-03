@@ -41,6 +41,7 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+import { BoostDialog } from '~/components/boosts/boost-dialog';
 
 const availableHours = [
   '07:00',
@@ -332,6 +333,12 @@ export default function CompanyDetails() {
                 </div>
               </div>
               <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
+                {isProjectOwner && (
+                  <BoostDialog
+                    project={project}
+                    availableBoosts={project.Entrepreneur?.user.availableBoosts ?? 0}
+                  />
+                )}
                 {isInvestor &&
                   negotiation?.stage !== NegotiationStage.CLOSED &&
                   negotiation?.stage !== NegotiationStage.CANCELLED && (
@@ -503,23 +510,38 @@ export default function CompanyDetails() {
             </p>
 
             {/* Company Photos Section */}
-            {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
-            {(project.photo1 || project.photo2 || project.photo3 || project.photo4) && (
+            {(project.photo1 ?? project.photo2 ?? project.photo3 ?? project.photo4) && (
               <>
                 <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Company Photos</h2>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
                   {[project.photo1, project.photo2, project.photo3, project.photo4]
                     .filter((photo): photo is string => Boolean(photo))
                     .map((photo, index) => (
-                      <div key={index} className="aspect-video overflow-hidden rounded-lg">
-                        <Image
-                          src={photo}
-                          alt={`${project.name} photo ${index + 1}`}
-                          width={300}
-                          height={200}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
+                      <Dialog key={index}>
+                        <DialogTrigger asChild>
+                          <div
+                            key={index}
+                            className="aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                          >
+                            <Image
+                              src={photo}
+                              alt={`${project.name} photo ${index + 1}`}
+                              width={300}
+                              height={200}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-7xl">
+                          <Image
+                            src={photo}
+                            alt={`${project.name} photo ${index + 1}`}
+                            width={1920}
+                            height={1080}
+                            className="h-full w-full object-cover"
+                          />
+                        </DialogContent>
+                      </Dialog>
                     ))}
                 </div>
               </>

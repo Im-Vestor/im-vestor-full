@@ -22,6 +22,11 @@ export const entrepreneurRouter = createTRPCRouter({
         },
         country: true,
         state: true,
+        user: {
+          select: {
+            availableBoosts: true,
+          },
+        },
       },
     });
   }),
@@ -57,6 +62,11 @@ export const entrepreneurRouter = createTRPCRouter({
           },
           country: true,
           state: true,
+          user: {
+            select: {
+              availableBoosts: true,
+            },
+          },
         },
       });
     }),
