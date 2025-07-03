@@ -22,13 +22,17 @@ const roboto = Roboto({
   variable: '--font-sans',
 });
 
+interface CookieSettings {
+  analytics: boolean;
+}
+
 const MyApp: AppType = ({ Component, pageProps }) => {
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
   useEffect(() => {
     const consent = localStorage.getItem('cookieConsent');
     if (consent) {
-      const settings = JSON.parse(consent);
+      const settings = JSON.parse(consent) as CookieSettings;
       setAnalyticsEnabled(settings.analytics);
     }
   }, []);
