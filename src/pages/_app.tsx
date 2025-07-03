@@ -12,6 +12,8 @@ import '~/styles/globals.css';
 import { Toaster } from 'sonner';
 import { LanguageProvider } from '~/contexts/LanguageContext';
 import { GoogleAnalytics } from '~/lib/GoogleAnalytics';
+import { CookieConsent } from '~/components/ui/cookie-consent';
+import { useEffect, useState } from 'react';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -21,13 +23,27 @@ const roboto = Roboto({
 });
 
 const MyApp: AppType = ({ Component, pageProps }) => {
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+
+  useEffect(() => {
+    const consent = localStorage.getItem('cookieConsent');
+    if (consent) {
+      const settings = JSON.parse(consent);
+      setAnalyticsEnabled(settings.analytics);
+    }
+  }, []);
+
   return (
     <ClerkProvider>
       <LanguageProvider>
         <Toaster theme="dark" />
-        <SpeedInsights />
-        <Analytics />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID ?? ''} />
+        {analyticsEnabled && (
+          <>
+            <SpeedInsights />
+            <Analytics />
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID ?? ''} />
+          </>
+        )}
         <Head>
           <title>Im-Vestor</title>
           <meta name="description" content="Imvestor" />
@@ -36,6 +52,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <div className={`${roboto.className} ${roboto.variable} bg-background text-ui-text`}>
           <Component {...pageProps} />
         </div>
+        <CookieConsent />
       </LanguageProvider>
     </ClerkProvider>
   );

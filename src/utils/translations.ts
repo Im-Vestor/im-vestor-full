@@ -43,7 +43,27 @@ type TranslationKey =
   | 'receiveUpdates'
   | 'beNotified'
   | 'forBeingFirst'
-  | 'revolution';
+  | 'revolution'
+  | 'cookieConsent'
+  | 'cookieConsentDescription'
+  | 'notice'
+  | 'preferences'
+  | 'cookieNoticeText'
+  | 'cookieNoticePrivacyText'
+  | 'privacyPolicy'
+  | 'necessaryCookies'
+  | 'necessaryCookiesDescription'
+  | 'analyticsCookies'
+  | 'analyticsCookiesDescription'
+  | 'marketingCookies'
+  | 'marketingCookiesDescription'
+  | 'preferenceCookies'
+  | 'preferenceCookiesDescription'
+  | 'acceptAll'
+  | 'rejectAll'
+  | 'savePreferences'
+  | 'freeYearPromo'
+  | 'cancel';
 
 // Define the translations for each language
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -100,6 +120,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     beNotified: 'and be notified first-hand when Im-Vestor is launched, and receive a',
     forBeingFirst: 'for being among the first',
     revolution: 'Business Revolution',
+    cookieConsent: 'Cookie Settings',
+    cookieConsentDescription: 'We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. Please choose your preferences below.',
+    notice: 'Notice',
+    preferences: 'Preferences',
+    cookieNoticeText: 'This website uses cookies to ensure you get the best experience on our website. Some cookies are necessary for the website to function properly, while others help us improve our services and your experience.',
+    cookieNoticePrivacyText: 'For more information about how we use cookies, please see our',
+    privacyPolicy: 'Privacy Policy',
+    necessaryCookies: 'Necessary Cookies',
+    necessaryCookiesDescription: 'These cookies are essential for the website to function properly and cannot be disabled.',
+    analyticsCookies: 'Analytics Cookies',
+    analyticsCookiesDescription: 'These cookies help us understand how visitors interact with our website.',
+    marketingCookies: 'Marketing Cookies',
+    marketingCookiesDescription: 'These cookies are used to deliver advertisements more relevant to you and your interests.',
+    preferenceCookies: 'Preference Cookies',
+    preferenceCookiesDescription: 'These cookies allow the website to remember choices you make and provide enhanced functionality.',
+    acceptAll: 'Accept All',
+    rejectAll: 'Reject All',
+    savePreferences: 'Save Preferences',
+    freeYearPromo: 'Sign up now and get 1 year free.',
+    cancel: 'Cancel'
   },
   'pt-PT': {
     signIn: 'Iniciar Sessão',
@@ -154,6 +194,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     receiveUpdates: 'Receba',
     beNotified: 'e seja notificado em primeira mão quando o Im-Vestor for lançado, e receba um',
     forBeingFirst: 'por estar entre os primeiros',
+    cookieConsent: 'Configurações de Cookies',
+    cookieConsentDescription: 'Utilizamos cookies para melhorar sua experiência de navegação, fornecer conteúdo personalizado e analisar nosso tráfego. Por favor, escolha suas preferências abaixo.',
+    notice: 'Aviso',
+    preferences: 'Preferências',
+    cookieNoticeText: 'Este site usa cookies para garantir que você obtenha a melhor experiência em nosso site. Alguns cookies são necessários para o funcionamento adequado do site, enquanto outros nos ajudam a melhorar nossos serviços e sua experiência.',
+    cookieNoticePrivacyText: 'Para mais informações sobre como usamos cookies, consulte nossa',
+    privacyPolicy: 'Política de Privacidade',
+    necessaryCookies: 'Cookies Necessários',
+    necessaryCookiesDescription: 'Estes cookies são essenciais para o funcionamento adequado do site e não podem ser desativados.',
+    analyticsCookies: 'Cookies de Análise',
+    analyticsCookiesDescription: 'Estes cookies nos ajudam a entender como os visitantes interagem com nosso site.',
+    marketingCookies: 'Cookies de Marketing',
+    marketingCookiesDescription: 'Estes cookies são usados para entregar anúncios mais relevantes para você e seus interesses.',
+    preferenceCookies: 'Cookies de Preferência',
+    preferenceCookiesDescription: 'Estes cookies permitem que o site lembre as escolhas que você faz e forneça funcionalidades aprimoradas.',
+    acceptAll: 'Aceitar Todos',
+    rejectAll: 'Rejeitar Todos',
+    savePreferences: 'Salvar Preferências',
+    freeYearPromo: 'Inscreva-se agora e aproveite 1 ano grátis.',
+    cancel: 'Cancelar'
   },
   'pt-BR': {
     signIn: 'Entrar',
@@ -207,6 +267,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     receiveUpdates: 'Receba',
     beNotified: 'e seja notificado em primeira mão quando o Im-Vestor for lançado, e receba um',
     forBeingFirst: 'por estar entre os primeiros',
+    cookieConsent: 'Configurações de Cookies',
+    cookieConsentDescription: 'Utilizamos cookies para melhorar sua experiência de navegação, fornecer conteúdo personalizado e analisar nosso tráfego. Por favor, escolha suas preferências abaixo.',
+    notice: 'Aviso',
+    preferences: 'Preferências',
+    cookieNoticeText: 'Este site usa cookies para garantir que você obtenha a melhor experiência em nosso site. Alguns cookies são necessários para o funcionamento adequado do site, enquanto outros nos ajudam a melhorar nossos serviços e sua experiência.',
+    cookieNoticePrivacyText: 'Para mais informações sobre como usamos cookies, consulte nossa',
+    privacyPolicy: 'Política de Privacidade',
+    necessaryCookies: 'Cookies Necessários',
+    necessaryCookiesDescription: 'Estes cookies são essenciais para o funcionamento adequado do site e não podem ser desativados.',
+    analyticsCookies: 'Cookies de Análise',
+    analyticsCookiesDescription: 'Estes cookies nos ajudam a entender como os visitantes interagem com nosso site.',
+    marketingCookies: 'Cookies de Marketing',
+    marketingCookiesDescription: 'Estes cookies são usados para entregar anúncios mais relevantes para você e seus interesses.',
+    preferenceCookies: 'Cookies de Preferência',
+    preferenceCookiesDescription: 'Estes cookies permitem que o site lembre as escolhas que você faz e forneça funcionalidades aprimoradas.',
+    acceptAll: 'Aceitar Todos',
+    rejectAll: 'Rejeitar Todos',
+    savePreferences: 'Salvar Preferências',
+    freeYearPromo: 'Inscreva-se agora e aproveite 1 ano grátis.',
+    cancel: 'Cancelar'
   },
 };
 

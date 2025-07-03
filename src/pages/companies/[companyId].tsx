@@ -417,7 +417,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                        'bg-primary text-primary-foreground opacity-100'
+                                      'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -451,7 +451,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                              scheduleOtherStageMeetingMutation.isPending ? (
+                                scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -618,13 +618,6 @@ export default function CompanyDetails() {
                   {project.startInvestment
                     ? formatCurrency(project.startInvestment, project.currency)
                     : 'Not specified'}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm sm:text-base">
-                <span className="text-white/70">Investment Goal</span>
-                <span className="font-medium">
-                  {formatCurrency(project.investmentGoal, project.currency)}
                 </span>
               </div>
 

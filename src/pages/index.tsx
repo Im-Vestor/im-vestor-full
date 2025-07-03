@@ -175,17 +175,17 @@ export default function Home() {
         <div className="flex items-center justify-center text-sm gap-2">
           <Flag className="w-3 h-3 text-yellow-500" />
           <p className="text-white tracking-wider opacity-70">
-            Inscreva-se agora e aproveite 1 ano grátis.
+            {t('freeYearPromo')}
           </p>
         </div>
       </div>
-      <main className="min-h-screen bg-background pt-32">
+      <main className="min-h-screen bg-background pt-32 overflow-x-hidden relative w-full">
         <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10]" />
         <motion.header
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="m-6 flex justify-end gap-2 fixed top-10 sm:right-40 right-0 z-50">
+          className="flex justify-end gap-2 absolute top-10 right-4 sm:right-10 md:right-20 z-50">
           <LanguageSwitcher />
           <Link href="/login">
             <Button variant="outline" className="border-2 border-white/10">

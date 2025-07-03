@@ -43,7 +43,7 @@ const companyFormSchema = z.object({
     .string()
     .min(10, 'About must be at least 10 characters')
     .max(280, 'About must be at most 280 characters'),
-  startInvestment: z.number().min(1, 'Start investment is required'),
+  startInvestment: z.number().min(1, 'Requested founds is required'),
   investorSlots: z.number().min(1, 'Investors slots is required'),
   annualRevenue: z.number().min(1, 'Annual revenue is required'),
   monthsToReturn: z.number().min(1, 'Months to return is required'),
@@ -492,7 +492,7 @@ export default function CreateCompany() {
                   name="startInvestment"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">Start Investment*</Label>
+                      <Label className="font-normal text-neutral-200">Requested founds*</Label>
                       <FormControl>
                         <Input
                           type="number"
@@ -586,30 +586,6 @@ export default function CreateCompany() {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="investmentGoal"
-                  render={({ field: { value, onChange, ...fieldProps } }) => (
-                    <FormItem>
-                      <Label className="font-normal text-neutral-200">Investment Goal*</Label>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="Enter amount in USD"
-                          value={value === 0 ? '' : value}
-                          onChange={e => {
-                            const inputValue = e.target.value;
-                            onChange(inputValue === '' ? 0 : Number(inputValue));
-                          }}
-                          {...fieldProps}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="monthsToReturn"

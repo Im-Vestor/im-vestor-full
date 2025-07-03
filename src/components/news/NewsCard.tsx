@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, ArrowRight } from 'lucide-react';
-import { type BlockObjectResponse, type PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { type BlockObjectResponse, type PartialBlockObjectResponse, type PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { extractPageTitle, getPageIcon, extractFirstLineFromBlocks } from '~/utils/notion';
 import { api } from '~/utils/api';
 
@@ -17,7 +18,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
   const title = extractPageTitle(block);
   const icon = getPageIcon(block);
 
-  // Fetch page content to get the first line as description
+  // Fetch page content to get the first line as description and cover image
   const { data: pageData } = api.news.getPageContent.useQuery(
     { pageId: block.id },
     {
@@ -28,7 +29,20 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
 
   const description = pageData ? extractFirstLineFromBlocks(pageData.blocks) : 'Loading...';
 
-  // Extract date from block if available (you might need to adjust based on your Notion structure)
+  // Extract cover image from page data
+  const getCoverImage = (page: PageObjectResponse) => {
+    if (!page.cover) return null;
+    if (page.cover.type === 'external') {
+      return page.cover.external.url;
+    } else if (page.cover.type === 'file') {
+      return page.cover.file.url;
+    }
+    return null;
+  };
+
+  const coverImage = pageData?.page ? getCoverImage(pageData.page as PageObjectResponse) : null;
+
+  // Extract date from block if available
   const createdDate = block.created_time ? new Date(block.created_time).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -39,10 +53,22 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
     <Link href={`/news/page/${block.id}`} className="group">
       <article className="h-full rounded-3xl bg-card border border-white/10 overflow-hidden hover:border-white/20 transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-2xl">
         {/* Cover Image/Icon */}
-        <div className="relative h-48 bg-gradient-to-br from-primary-from to-primary-to flex items-center justify-center">
-          <div className="text-6xl text-gray-900/80">
-            {icon}
-          </div>
+        <div className="relative h-48 bg-gradient-to-br from-primary-from to-primary-to">
+          {coverImage ? (
+            <Image
+              src={coverImage}
+              alt={title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="text-6xl text-gray-900/80">
+                {icon}
+              </div>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
 

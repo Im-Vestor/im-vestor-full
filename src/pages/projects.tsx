@@ -313,93 +313,88 @@ function CompanyCard({
   return (
     <Link
       href={`/companies/${project.id}`}
-      className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
+      className="group relative cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 hover:shadow-lg hover:shadow-white/5"
     >
+      {/* Stage Badge - Top Right */}
+      {project.stage && (
+        <div className="absolute right-4 top-4">
+          <span className="rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors group-hover:bg-white/10">
+            {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (
-          <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
+          <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg ring-2 ring-white/10 transition-all group-hover:ring-white/20">
             <Image
               src={project.logo}
               alt={`${project.name} Logo`}
               width={72}
               height={72}
-              className="h-full w-full rounded-md object-cover"
+              className="h-full w-full rounded-md object-cover transition-transform duration-300 group-hover:scale-110"
             />
           </div>
         ) : (
-          <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
-            <Building2 className="size-8 text-neutral-500" />
+          <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-2 ring-white/10 transition-all group-hover:ring-white/20">
+            <Building2 className="size-8 text-neutral-500 transition-colors group-hover:text-neutral-400" />
           </div>
         )}
 
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-1 flex-col">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-semibold">{project.name}</h3>
-              {project.isFavorite && <Heart className="size-4 text-yellow-500 fill-yellow-500" />}
+              <h3 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-white/90">{project.name}</h3>
+              {project.isFavorite && (
+                <Heart className="size-4 fill-yellow-500 text-yellow-500 transition-transform group-hover:scale-110" />
+              )}
             </div>
             {project.state?.name && project.country?.name && (
-              <span className="text-white/70">
+              <span className="text-sm text-white/70 transition-colors group-hover:text-white/80">
                 {project.state.name}, {project.country.name}
               </span>
             )}
 
-            <p className="mt-2 line-clamp-2">
+            <p className="mt-2 line-clamp-2 text-sm text-white/60 transition-colors group-hover:text-white/70">
               {project.quickSolution ?? 'No description available'}
             </p>
           </div>
 
           {/* Project Information */}
-          <div className="mt-4">
-            <div className="grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
-              {project.stage && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
-                  </span>
-                </div>
-              )}
-
-              {project.country && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  <span>{project.country.name}</span>
-                </div>
-              )}
-
+          <div className="mt-4 flex items-end justify-between">
+            <div className="flex flex-wrap gap-2">
               {project.investmentGoal && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  <span>
-                    Investment Goal:{' '}
+                <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 transition-colors group-hover:bg-white/10">
+                  <span className="truncate text-xs text-white/70">
                     {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}
+                    {' '}
                     {project.investmentGoal.toLocaleString()}
                   </span>
                 </div>
               )}
 
               {project.sector && (
-                <div className="flex items-center gap-1">
-                  <span className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light">
+                <div className="flex items-center rounded-full bg-[#323645] px-3 py-1.5 transition-colors group-hover:bg-[#3a3f50]">
+                  <span className="truncate text-xs font-medium text-white/70">
                     {project.sector.name}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Investor Slots */}
+            {/* Investor Slots - Bottom Right */}
             {project.investorSlots && (
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
-                <div className="flex items-center gap-2">
-                  <span>Investor Slots: </span>
-                  <div className="flex space-x-1">
-                    {Array.from({
-                      length: Math.min(project.investorSlots ?? 0, 5),
-                    }).map((_, i) => (
-                      <CircleUserRound key={i} color="#EFD687" className="h-3 w-3 sm:h-4 sm:w-4" />
-                    ))}
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {Array.from({
+                    length: Math.min(project.investorSlots ?? 0, 5),
+                  }).map((_, i) => (
+                    <CircleUserRound
+                      key={i}
+                      color="#EFD687"
+                      className="h-5 w-5"
+                    />
+                  ))}
                 </div>
               </div>
             )}
