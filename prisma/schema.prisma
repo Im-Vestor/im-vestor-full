@@ -95,6 +95,7 @@ model User {
     userType         UserType
     stripeCustomerId String?
     availablePokes   Int           @default(0)
+    availableBoosts  Int           @default(0)
     investor         Investor?
     entrepreneur     Entrepreneur?
     partner          Partner?
@@ -347,6 +348,7 @@ model Project {
     equity          Float?
     investmentGoal  Float
     logo            String?
+    isBoosted       Boolean       @default(false)
     currency        Currency      @default(USD)
 
     // New fields for photos and video
@@ -491,7 +493,7 @@ enum NotificationType {
     NEGOTIATION_CREATED
     NEGOTIATION_CANCELLED
     NEGOTIATION_GO_TO_NEXT_STAGE
-    // POKE
+    POKE
     // MESSAGE
     // INVESTMENT_REQUEST
     // INVESTMENT_CONFIRMATION

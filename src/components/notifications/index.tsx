@@ -27,6 +27,7 @@ const NotificationTextMap: Record<string, string> = {
   [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
   [NotificationType.NEGOTIATION_CREATED]: 'You have a new negotiation',
+  [NotificationType.POKE]: 'You have a new poke!',
   SUPPORT_REPLY: 'You have a new reply to your support ticket',
 };
 

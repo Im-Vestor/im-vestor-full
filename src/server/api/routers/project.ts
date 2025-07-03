@@ -15,6 +15,11 @@ export const projectRouter = createTRPCRouter({
           include: {
             state: true,
             country: true,
+            user: {
+              select: {
+                availableBoosts: true,
+              },
+            },
           },
         },
         knowYourNumbers: {
@@ -128,9 +133,14 @@ export const projectRouter = createTRPCRouter({
           state: true,
           sector: true,
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: [
+          {
+            isBoosted: 'desc',
+          },
+          {
+            createdAt: 'desc',
+          },
+        ],
         skip: (input.page ?? 1) * 20,
         take: 20,
       });

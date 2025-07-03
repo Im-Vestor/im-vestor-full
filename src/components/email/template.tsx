@@ -1,16 +1,30 @@
-import { Body, Container, Head, Html, Img, Preview, Section, Text } from '@react-email/components';
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Html,
+  Img,
+  Preview,
+  Section,
+  Text,
+} from '@react-email/components';
 import * as React from 'react';
 
 interface EmailTemplateProps {
   name: string;
   firstText: string;
   secondText: string;
+  link?: string;
+  buttonText?: string;
 }
 
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   name,
   firstText,
   secondText,
+  link,
+  buttonText,
 }) => (
   <Html>
     <Head />
@@ -29,6 +43,13 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
         <Text style={heading}>Hey, {name}!</Text>
         <Text style={paragraph}>{firstText}</Text>
         <Text style={secondaryText}>{secondText}</Text>
+        {link && (
+          <Section style={buttonSection}>
+            <Button href={link} style={button}>
+              {buttonText}
+            </Button>
+          </Section>
+        )}
       </Container>
     </Body>
   </Html>
@@ -81,4 +102,18 @@ const secondaryText = {
   textAlign: 'center' as const,
   margin: '10px 0',
   color: '#6b7280',
+};
+
+const buttonSection = {
+  textAlign: 'center' as const,
+  margin: '20px 0',
+};
+
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  padding: '10px 20px',
+  borderRadius: '5px',
+  textDecoration: 'none',
+  display: 'inline-block',
 };

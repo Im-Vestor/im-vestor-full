@@ -41,6 +41,7 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+import { BoostDialog } from '~/components/boosts/boost-dialog';
 
 const availableHours = [
   '07:00',
@@ -332,6 +333,12 @@ export default function CompanyDetails() {
                 </div>
               </div>
               <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
+                {isProjectOwner && (
+                  <BoostDialog
+                    project={project}
+                    availableBoosts={project.Entrepreneur?.user.availableBoosts ?? 0}
+                  />
+                )}
                 {isInvestor &&
                   negotiation?.stage !== NegotiationStage.CLOSED &&
                   negotiation?.stage !== NegotiationStage.CANCELLED && (

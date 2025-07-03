@@ -80,5 +80,17 @@ async function processEvent(event: Stripe.Event) {
 
       console.log(`Added 1 poke to user ${userId}`);
     }
+
+    if (userId && productType === 'boost') {
+      // Increment user's available boosts
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          availableBoosts: {
+            increment: 1,
+          },
+        },
+      });
+    }
   }
 }
