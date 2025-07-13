@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Loader2, PlusIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
@@ -18,9 +19,8 @@ import {
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
 import { api } from '~/utils/api';
-import { renderBannerUpload, renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
-import { PlusIcon, Loader2 } from 'lucide-react';
 import { sendImageToBackend } from '~/utils/file';
+import { renderBannerUpload, renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
 
 const investorFormSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -29,7 +29,23 @@ const investorFormSchema = z.object({
   fiscalCode: z.string().min(1, 'Fiscal code is required'),
   country: z.string().min(1, 'Country is required'),
   state: z.string().min(1, 'State is required'),
-  about: z.string().optional(),
+  about: z
+    .string()
+    .optional()
+    .refine(
+      value => {
+        // Regex to detect URLs including:
+        // - http://example.com, https://example.com
+        // - www.example.com
+        // - ftp://example.com
+        // - example.com, subdomain.example.com
+        const urlRegex = /(?:https?:\/\/|www\.|ftp:\/\/|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?)/gi;
+        return !urlRegex.test(value ?? '');
+      },
+      {
+        message: 'URLs are not allowed in About me section',
+      }
+    ),
   photo: z.string().optional(),
   banner: z.string().optional(),
   personalPitchUrl: z.string().optional(),

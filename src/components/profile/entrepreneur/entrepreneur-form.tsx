@@ -31,7 +31,23 @@ const entrepreneurFormSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   fiscalCode: z.string().min(1, 'Fiscal code is required'),
   mobileFone: z.string().min(1, 'Mobile phone is required'),
-  about: z.string().min(12, 'About me must be at least 12 characters'),
+  about: z
+    .string()
+    .min(12, 'About me must be at least 12 characters')
+    .refine(
+      value => {
+        // Regex to detect URLs including:
+        // - http://example.com, https://example.com
+        // - www.example.com
+        // - ftp://example.com
+        // - example.com, subdomain.example.com
+        const urlRegex = /(?:https?:\/\/|www\.|ftp:\/\/|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?)/gi;
+        return !urlRegex.test(value);
+      },
+      {
+        message: 'URLs are not allowed in About me section',
+      }
+    ),
   photo: z.string().optional(),
   banner: z.string().optional(),
   personalPitchUrl: z.string().optional(),
