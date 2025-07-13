@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Button } from './button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Switch } from './switch';
-import { useTranslation } from '~/hooks/use-translation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Settings2, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useTranslation } from '~/hooks/use-translation';
+import { Button } from './button';
+import { Switch } from './switch';
 
 interface CookieSettings {
   necessary: boolean;
@@ -30,7 +29,7 @@ export function CookieConsent() {
     if (!consent) {
       setShowConsent(true);
     } else {
-      setSettings(JSON.parse(consent));
+      setSettings(JSON.parse(consent) as CookieSettings);
     }
   }, []);
 
@@ -83,7 +82,7 @@ export function CookieConsent() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-white/10 shadow-lg"
         >
           <div className="container mx-auto p-4 md:p-6">
@@ -105,11 +104,7 @@ export function CookieConsent() {
                     <Settings2 className="h-4 w-4" />
                     {t('preferences')}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRejectAll}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleRejectAll}>
                     {t('rejectAll')}
                   </Button>
                   <Button
@@ -125,11 +120,7 @@ export function CookieConsent() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-foreground">{t('preferences')}</h2>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowPreferences(false)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => setShowPreferences(false)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -186,11 +177,7 @@ export function CookieConsent() {
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPreferences(false)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setShowPreferences(false)}>
                     {t('cancel')}
                   </Button>
                   <Button
