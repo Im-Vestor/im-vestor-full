@@ -20,6 +20,11 @@ enum ProjectStatus {
     COMPLETED
 }
 
+enum ProjectVisibility {
+    PUBLIC
+    PRIVATE
+}
+
 enum SupportTicketStatus {
     OPEN
     CLOSED
@@ -331,16 +336,17 @@ enum ProjectStage {
 }
 
 model Project {
-    id              String        @id @default(uuid())
+    id              String            @id @default(uuid())
     name            String
     quickSolution   String?
     website         String?
     foundationDate  DateTime?
     stage           ProjectStage?
-    country         Country?      @relation(fields: [countryId], references: [id])
-    state           State?        @relation(fields: [stateId], references: [id])
+    country         Country?          @relation(fields: [countryId], references: [id])
+    state           State?            @relation(fields: [stateId], references: [id])
     about           String?
-    status          ProjectStatus @default(ACTIVE)
+    status          ProjectStatus     @default(ACTIVE)
+    visibility      ProjectVisibility @default(PRIVATE)
     startInvestment Float?
     investorSlots   Int?
     annualRevenue   Float?
@@ -348,8 +354,8 @@ model Project {
     equity          Float?
     investmentGoal  Float
     logo            String?
-    isBoosted       Boolean       @default(false)
-    currency        Currency      @default(USD)
+    isBoosted       Boolean           @default(false)
+    currency        Currency          @default(USD)
 
     // New fields for photos and video
     photo1   String?

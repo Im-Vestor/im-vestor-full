@@ -12,6 +12,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
@@ -164,6 +165,9 @@ function ProjectCard({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg sm:text-xl font-semibold">{project.name}</h3>
+                <Badge variant="outline" className="text-primary">
+                  {project.visibility}
+                </Badge>
               </div>
               {project.state?.name && project.country?.name && (
                 <span className="text-sm sm:text-base text-white/70">

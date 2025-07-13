@@ -1,8 +1,17 @@
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Currency, ProjectStage } from '@prisma/client';
+import { Currency, ProjectStage, ProjectVisibility } from '@prisma/client';
 import { format } from 'date-fns';
-import { ArrowLeft, ArrowRight, CalendarIcon, Loader2, PlusIcon, Trash2Icon } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarIcon,
+  Globe,
+  Loader2,
+  Lock,
+  PlusIcon,
+  Trash2Icon,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -97,6 +106,14 @@ export default function EditCompany() {
       enabled: !!companyId,
     }
   );
+
+  const { mutateAsync: updateVisibility, isPending: isUpdatingVisibility } =
+    api.project.updateVisibility.useMutation({
+      onSuccess: () => {
+        toast.success('Visibility updated successfully!');
+        void router.push('/profile');
+      },
+    });
 
   const { mutateAsync: updateCompany, isPending } = api.project.update.useMutation({
     onSuccess: () => {
@@ -842,10 +859,46 @@ export default function EditCompany() {
                 </Button>
               </div>
               <div className="flex justify-end gap-4">
-                <Button type="button" variant="outline" onClick={() => router.back()}>
-                  Cancel
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  disabled={isPending || isUpdatingVisibility}
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back
                 </Button>
-                <Button className="w-1/3" type="submit" disabled={isPending}>
+                <Button
+                  className="w-1/6"
+                  variant="secondary"
+                  type="button"
+                  disabled={isPending || isUpdatingVisibility}
+                  onClick={() =>
+                    updateVisibility({
+                      id: companyId as string,
+                      visibility:
+                        project?.visibility === ProjectVisibility.PRIVATE
+                          ? ProjectVisibility.PUBLIC
+                          : ProjectVisibility.PRIVATE,
+                    })
+                  }
+                >
+                  {project?.visibility === ProjectVisibility.PRIVATE ? (
+                    <div className="flex items-center gap-2">
+                      <span>Make Public</span>
+                      <Globe className="h-4 w-4" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>Make Private</span>
+                      <Lock className="h-4 w-4" />
+                    </div>
+                  )}
+                </Button>
+                <Button
+                  className="w-1/6"
+                  type="submit"
+                  disabled={isPending || isUpdatingVisibility}
+                >
                   {isPending ? (
                     'Updating...'
                   ) : (

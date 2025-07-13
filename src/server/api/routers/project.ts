@@ -1,4 +1,10 @@
-import { Currency, NotificationType, type Prisma, ProjectStage } from '@prisma/client';
+import {
+  Currency,
+  NotificationType,
+  type Prisma,
+  ProjectStage,
+  ProjectVisibility,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -60,6 +66,8 @@ export const projectRouter = createTRPCRouter({
           favoriteProjects: true,
         },
       });
+
+      where.visibility = ProjectVisibility.PUBLIC;
 
       if (input.sectorId && input.sectorId.length > 0) {
         where.sectorId = {
@@ -206,6 +214,7 @@ export const projectRouter = createTRPCRouter({
             answer: z.string(),
           })
         ),
+        visibility: z.nativeEnum(ProjectVisibility),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -230,6 +239,7 @@ export const projectRouter = createTRPCRouter({
           startInvestment: input.startInvestment,
           investorSlots: input.investorSlots,
           annualRevenue: input.annualRevenue,
+          visibility: input.visibility,
           monthsToReturn: input.monthsToReturn,
           equity: input.equity,
           investmentGoal: input.investmentGoal,
@@ -258,6 +268,21 @@ export const projectRouter = createTRPCRouter({
 
       return project;
     }),
+  updateVisibility: protectedProcedure
+    .input(z.object({ id: z.string(), visibility: z.nativeEnum(ProjectVisibility) }))
+    .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUniqueOrThrow({
+        where: { id: input.id },
+      });
+
+      await ctx.db.project.update({
+        where: { id: input.id },
+        data: { visibility: input.visibility },
+      });
+
+      return project;
+    }),
+
   update: protectedProcedure
     .input(
       z.object({

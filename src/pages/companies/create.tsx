@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ProjectStage, Currency } from '@prisma/client';
+import { ProjectStage, Currency, ProjectVisibility } from '@prisma/client';
 import { format } from 'date-fns';
 import { ArrowLeft, ArrowRight, CalendarIcon, Loader2, PlusIcon, Trash2Icon } from 'lucide-react';
 import Image from 'next/image';
@@ -34,6 +34,7 @@ const companyFormSchema = z.object({
   logo: z.string().optional(),
   quickSolution: z.string().min(10, 'Quick solution must be at least 10 characters'),
   website: z.string().optional(),
+  visibility: z.nativeEnum(ProjectVisibility),
   foundationDate: z.date(),
   sectorId: z.string().min(1, 'Company sector is required'),
   stage: z.nativeEnum(ProjectStage),
@@ -111,6 +112,7 @@ export default function CreateCompany() {
       logo: '',
       quickSolution: '',
       website: '',
+      visibility: ProjectVisibility.PRIVATE,
       foundationDate: new Date(),
       sectorId: '',
       stage: ProjectStage.PRE_SEED,
@@ -198,8 +200,17 @@ export default function CreateCompany() {
   };
 
   async function onSubmit(data: CompanyFormValues) {
+    console.log('fdasfdhasfhsajgfas');
+
+    console.log('data', data);
+
+    console.log('data', data);
+
     await createCompany(data);
   }
+
+  // log all errors from form
+  console.log('errors', form.formState.errors);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
@@ -262,19 +273,46 @@ export default function CreateCompany() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label className="font-normal text-neutral-200">Company Name*</Label>
-                    <FormControl>
-                      <Input placeholder="Enter company name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">Company Name*</Label>
+                      <FormControl>
+                        <Input placeholder="Enter company name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="visibility"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">Visibility*</Label>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value: string) => {
+                            field.onChange(value);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select visibility" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={ProjectVisibility.PRIVATE}>Private</SelectItem>
+                            <SelectItem value={ProjectVisibility.PUBLIC}>Public</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="quickSolution"
@@ -288,63 +326,69 @@ export default function CreateCompany() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label className="font-normal text-neutral-200">Website (optional)</Label>
-                    <FormControl>
-                      <Input
-                        className="w-full md:w-1/2"
-                        type="url"
-                        placeholder="https://example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="foundationDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
-                    <Label className="font-normal text-neutral-200">Foundation Date*</Label>
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={'outline'}
-                              className={cn(
-                                'w-full md:w-1/2 border-none pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? format(field.value, 'PPP') : <span>Select date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto border-none p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            captionLayout="dropdown"
-                            showOutsideDays={false}
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            fromYear={1930}
-                            toYear={2025}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">Website (optional)</Label>
+                      <FormControl>
+                        <Input
+                          className="w-full"
+                          type="url"
+                          placeholder="https://example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="foundationDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col gap-2">
+                      <Label className="font-normal text-neutral-200">Foundation Date*</Label>
+                      <FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full border-none pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Select date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto border-none p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              showOutsideDays={false}
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              fromYear={1930}
+                              toYear={2025}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -492,7 +536,7 @@ export default function CreateCompany() {
                   name="startInvestment"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <Label className="font-normal text-neutral-200">Requested founds*</Label>
+                      <Label className="font-normal text-neutral-200">Requested funds*</Label>
                       <FormControl>
                         <Input
                           type="number"
@@ -502,6 +546,7 @@ export default function CreateCompany() {
                           onChange={e => {
                             const inputValue = e.target.value;
                             onChange(inputValue === '' ? 0 : Number(inputValue));
+                            form.setValue('investmentGoal', Number(inputValue));
                           }}
                           {...fieldProps}
                         />
@@ -812,12 +857,12 @@ export default function CreateCompany() {
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                   Cancel
                 </Button>
-                <Button className="w-1/3" type="submit" disabled={isPending}>
+                <Button className="w-1/6" type="submit" disabled={isPending}>
                   {isPending ? (
                     'Saving...'
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span>Save</span>
+                      <span>Create</span>
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   )}
