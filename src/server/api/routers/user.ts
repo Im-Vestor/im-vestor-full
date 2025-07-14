@@ -179,6 +179,12 @@ export const userRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               mobileFone: true,
+              user: {
+                select: {
+                  email: true,
+                  referralCode: true,
+                },
+              },
             },
           }),
           // Entrepreneurs - include projects to count them
@@ -189,6 +195,12 @@ export const userRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               mobileFone: true,
+              user: {
+                select: {
+                  email: true,
+                  referralCode: true,
+                },
+              },
               projects: {
                 select: {
                   id: true,
@@ -204,6 +216,12 @@ export const userRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               mobileFone: true,
+              user: {
+                select: {
+                  email: true,
+                  referralCode: true,
+                },
+              },
             },
           }),
           // Incubators - include projects to count them
@@ -244,53 +262,58 @@ export const userRouter = createTRPCRouter({
         const allUsers = [
           ...investors.map(investor => ({
             id: investor.userId,
-            email: investor.mobileFone ?? 'N/A',
+            email: investor.user.email ?? 'N/A',
+            phone: investor.mobileFone ?? 'N/A',
             userType: 'INVESTOR' as const,
-            referralCode: 'N/A',
             firstName: investor.firstName,
             lastName: investor.lastName,
             name: '',
             projectsCount: 0, // Investors don't publish projects
+            referralCode: investor.user.referralCode ?? 'N/A',
           })),
           ...entrepreneurs.map(entrepreneur => ({
             id: entrepreneur.userId,
-            email: entrepreneur.mobileFone ?? 'N/A',
+            email: entrepreneur.user.email ?? 'N/A',
+            phone: entrepreneur.mobileFone ?? 'N/A',
             userType: 'ENTREPRENEUR' as const,
-            referralCode: 'N/A',
             firstName: entrepreneur.firstName,
             lastName: entrepreneur.lastName,
             name: '',
-            projectsCount: entrepreneur.projects.length, // Count projects using existing relation
+            projectsCount: entrepreneur.projects.length,
+            referralCode: entrepreneur.user.referralCode ?? 'N/A',
           })),
           ...partners.map(partner => ({
             id: partner.userId,
-            email: partner.mobileFone ?? 'N/A',
+            email: partner.user.email ?? 'N/A',
+            phone: partner.mobileFone ?? 'N/A',
             userType: 'PARTNER' as const,
-            referralCode: 'N/A',
             firstName: partner.firstName,
             lastName: partner.lastName,
             name: '',
-            projectsCount: 0, // Partners don't publish projects
+            projectsCount: 0,
+            referralCode: partner.user.referralCode ?? 'N/A',
           })),
           ...incubators.map(incubator => ({
             id: incubator.id,
             email: incubator.email,
+            phone: incubator.phone ?? 'N/A',
             userType: 'INCUBATOR' as const,
-            referralCode: 'N/A',
             firstName: '',
             lastName: '',
             name: incubator.name,
-            projectsCount: incubator.projects.length, // Count projects using existing relation
+            projectsCount: incubator.projects.length,
+            referralCode: 'N/A',
           })),
           ...vcGroups.map(vcGroup => ({
             id: vcGroup.id,
             email: vcGroup.email,
+            phone: vcGroup.phone ?? 'N/A',
             userType: 'VC_GROUP' as const,
-            referralCode: 'N/A',
             firstName: '',
             lastName: '',
             name: vcGroup.name,
-            projectsCount: 0, // VC Groups don't publish projects directly
+            projectsCount: 0,
+            referralCode: 'N/A',
           })),
         ];
 

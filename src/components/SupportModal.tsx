@@ -15,6 +15,7 @@ import {
 } from '~/components/ui/dialog'; // Import Dialog parts
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '~/components/ui/form';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '~/components/ui/alert';
 
 const supportSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
@@ -38,7 +39,7 @@ export function SupportModal({ onClose }: SupportModalProps) {
 
   const createTicketMutation = api.support.create.useMutation({
     onSuccess: () => {
-      toast.success('Support ticket submitted successfully!');
+      toast.success('Support ticket submitted successfully! We will review it shortly.');
       form.reset();
       onClose(); // Close modal on success
     },
@@ -62,6 +63,12 @@ export function SupportModal({ onClose }: SupportModalProps) {
       <Form {...form}>
         {/* Add py-4 for spacing between header/footer and form */}
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <Alert>
+            <AlertDescription>
+              Your ticket will be reviewed by our support team and you will receive a notification when we respond.
+            </AlertDescription>
+          </Alert>
+
           <FormField
             control={form.control}
             name="subject"
@@ -69,7 +76,11 @@ export function SupportModal({ onClose }: SupportModalProps) {
               <FormItem>
                 <FormLabel>Subject</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter the subject" {...field} />
+                  <Input
+                    placeholder="Enter the subject"
+                    {...field}
+                    disabled={createTicketMutation.isPending}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -87,6 +98,7 @@ export function SupportModal({ onClose }: SupportModalProps) {
                     className="resize-none"
                     rows={5}
                     {...field}
+                    disabled={createTicketMutation.isPending}
                   />
                 </FormControl>
                 <FormMessage />
@@ -95,14 +107,23 @@ export function SupportModal({ onClose }: SupportModalProps) {
           />
           {/* Footer contains action buttons */}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={createTicketMutation.isPending}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={createTicketMutation.isPending}>
               {createTicketMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Submit Ticket
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Ticket'
+              )}
             </Button>
           </DialogFooter>
         </form>

@@ -1,6 +1,6 @@
 import { useClerk, useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Book, LogOut, Mail, Menu, Settings, User, Users, X } from 'lucide-react';
+import { Book, HelpCircle, LogOut, Mail, Menu, Settings, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
@@ -189,6 +189,13 @@ export const Header = () => {
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Referrals
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => void handleNavigation('/support-tickets')}
+                  className="hover:cursor-pointer"
+                >
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Support Tickets
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => void handleNavigation('/terms')}

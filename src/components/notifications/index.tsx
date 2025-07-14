@@ -13,6 +13,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
 
 import { useUser } from '@clerk/nextjs';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,7 +39,10 @@ const NotificationTextMap: Record<string, string> = {
   [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
   [NotificationType.NEGOTIATION_CREATED]: 'You have a new negotiation',
   [NotificationType.POKE]: 'You have a new poke!',
-  SUPPORT_REPLY: 'You have a new reply to your support ticket',
+  [NotificationType.SUPPORT_TICKET_REPLY]: 'Click here to view support ticket reply',
+  [NotificationType.SUPPORT_TICKET_STATUS_UPDATED]: 'Your support ticket status has been updated',
+  [NotificationType.SUPPORT_TICKET_CREATED]: 'A new support ticket requires your attention',
+  [NotificationType.SUPPORT_TICKET_RECEIVED]: 'Your support ticket has been received and will be reviewed soon',
 };
 
 type UserDetails = {
@@ -58,7 +72,11 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
 
   const { mutateAsync: readAllNotifications } = api.notifications.readAllNotifications.useMutation({
     onMutate: () => {
-      setNotifications([]);
+      // Don't clear support ticket notifications when marking all as read
+      setNotifications(notifications.filter(n =>
+        n.type === NotificationType.SUPPORT_TICKET_REPLY ||
+        n.type === NotificationType.SUPPORT_TICKET_STATUS_UPDATED
+      ));
     },
   });
 
@@ -77,6 +95,12 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     setNegotiationNotifications([]);
     setNotifications(notificationsFromQuery ?? []);
   }, [notificationsFromQuery]);
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === NotificationType.SUPPORT_TICKET_REPLY) {
+      void router.push('/support-tickets');
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -128,25 +152,60 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
               </Button>
             </DropdownMenuItem>
           ))}
-          {notifications?.map(notification => (
+          {notifications.map(notification => (
             <DropdownMenuItem
               key={notification.id}
               className="flex items-center gap-1 focus:bg-transparent focus:text-foreground pl-4"
+              onClick={() => handleNotificationClick(notification)}
             >
-              {NotificationTextMap[notification.type] ?? 'You have a new notification'}
-              <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={e => {
-                  e.stopPropagation();
-                  void readNotification({ id: notification.id });
-                }}
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              <div className="flex-1 cursor-pointer">
+                <span className={notification.type.includes('SUPPORT_TICKET') ? 'text-primary font-medium' : ''}>
+                  {NotificationTextMap[notification.type] ?? 'You have a new notification'}
+                </span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
+                </span>
+              </div>
+              {notification.type.includes('SUPPORT_TICKET') ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Support Notification</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this support ticket notification? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => void readNotification({ id: notification.id })}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={e => {
+                    e.stopPropagation();
+                    void readNotification({ id: notification.id });
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </DropdownMenuItem>
           ))}
         </div>

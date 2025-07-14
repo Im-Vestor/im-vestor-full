@@ -1,85 +1,210 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure, adminProcedure } from '../trpc'; // Correctly import adminProcedure
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { SupportTicketStatus, NotificationType } from '@prisma/client';
+import { createNotifications } from './notifications';
+import { TRPCError } from '@trpc/server';
+import type { Context } from '~/server/context';
+import { sendEmail } from '~/utils/email';
+
+const checkAdmin = (ctx: Context) => {
+  if (!ctx.auth.sessionClaims?.publicMetadata?.userIsAdmin) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Only admins can perform this action',
+    });
+  }
+};
 
 export const supportRouter = createTRPCRouter({
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    checkAdmin(ctx);
+    return await ctx.db.supportTicket.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        replies: {
+          include: {
+            admin: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }),
+
   create: protectedProcedure
     .input(
       z.object({
-        subject: z.string().min(1, 'Subject cannot be empty'),
-        message: z.string().min(1, 'Message cannot be empty'),
+        subject: z.string(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.auth.userId; // Correctly access userId from auth context
-
-      if (!userId) {
-        // This check is redundant due to protectedProcedure, but safe
-        throw new Error('User not authenticated');
-      }
-
-      const ticket = await ctx.db.supportTicket.create({
+      return await ctx.db.supportTicket.create({
         data: {
           subject: input.subject,
           message: input.message,
-          userId: userId,
+          userId: ctx.auth.userId,
+          status: SupportTicketStatus.OPEN,
+        },
+      });
+    }),
+
+  addReply: protectedProcedure
+    .input(
+      z.object({
+        ticketId: z.string(),
+        message: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      checkAdmin(ctx);
+      const reply = await ctx.db.supportTicketReply.create({
+        data: {
+          message: input.message,
+          ticketId: input.ticketId,
+          adminId: ctx.auth.userId,
         },
       });
 
-      return ticket;
-    }),
-
-  getAll: adminProcedure // Use the new adminProcedure
-    .query(async ({ ctx }) => {
-      const tickets = await ctx.db.supportTicket.findMany({
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
+      const ticket = await ctx.db.supportTicket.findUnique({
+        where: { id: input.ticketId },
+        select: {
+          userId: true,
+          subject: true,
           user: {
             select: {
-              id: true,
               email: true,
-              // You can add more User fields here if needed for the admin view
             },
           },
         },
       });
-      return tickets;
-    }),
 
-  getUserTickets: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userId = ctx.auth.userId;
-
-      if (!userId) {
-        throw new Error('User not authenticated');
+      if (!ticket) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Ticket not found',
+        });
       }
 
-      const tickets = await ctx.db.supportTicket.findMany({
-        where: { userId },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+      // Send notification
+      await createNotifications(ctx.db, [ticket.userId], NotificationType.SUPPORT_TICKET_REPLY);
 
-      return tickets;
+      // Send email notification
+      await sendEmail(
+        'User',
+        'Support Ticket Reply',
+        'Your support ticket has received a reply. Please check your dashboard to view the response.',
+        ticket.user.email,
+        `Re: ${ticket.subject}`,
+      );
+
+      return reply;
     }),
 
-  updateStatus: adminProcedure
+  updateStatus: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
-        status: z.enum(['OPEN', 'CLOSED']),
+        ticketId: z.string(),
+        status: z.nativeEnum(SupportTicketStatus),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const ticket = await ctx.db.supportTicket.update({
-        where: { id: input.id },
-        data: { status: input.status },
+      checkAdmin(ctx);
+      return await ctx.db.supportTicket.update({
+        where: {
+          id: input.ticketId,
+        },
+        data: {
+          status: input.status,
+        },
       });
-
-      return ticket;
     }),
 
-  // Optional: Add procedures to update status (e.g., mark as closed) or delete tickets later
+  getMyTickets: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.supportTicket.findMany({
+      where: {
+        userId: ctx.auth.userId,
+      },
+      include: {
+        replies: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+          include: {
+            admin: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }),
+
+  addUserReply: protectedProcedure
+    .input(
+      z.object({
+        ticketId: z.string(),
+        message: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if ticket exists and belongs to the user
+      const ticket = await ctx.db.supportTicket.findFirst({
+        where: {
+          id: input.ticketId,
+          userId: ctx.auth.userId,
+          status: 'OPEN' // Only allow replies to open tickets
+        },
+      });
+
+      if (!ticket) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Ticket not found or closed',
+        });
+      }
+
+      const reply = await ctx.db.supportTicketReply.create({
+        data: {
+          message: input.message,
+          ticketId: input.ticketId,
+          adminId: ctx.auth.userId, // Using adminId for consistency, but it's the user in this case
+        },
+      });
+
+      // Notify admins about the new reply
+      const admins = await ctx.db.user.findMany({
+        where: {
+          userType: 'ADMIN'
+        },
+      });
+
+      await createNotifications(
+        ctx.db,
+        admins.map(admin => admin.id),
+        NotificationType.SUPPORT_TICKET_CREATED
+      );
+
+      return reply;
+    }),
 });

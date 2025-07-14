@@ -133,8 +133,8 @@ export function Dashboard() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Referral Code</TableHead>
                 <TableHead>Projetos</TableHead>
                 <TableHead>Business Card</TableHead>
               </TableRow>
@@ -154,9 +154,13 @@ export function Dashboard() {
                       {user.name || `${user.firstName} ${user.lastName}`.trim()}
                     </Link>
                   </TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <a href={`mailto:${user.email}`} className="hover:underline">
+                      {user.email}
+                    </a>
+                  </TableCell>
+                  <TableCell>{user.phone}</TableCell>
                   <TableCell>{user.userType}</TableCell>
-                  <TableCell>{user.referralCode}</TableCell>
                   <TableCell>{user.projectsCount ?? 0}</TableCell>
                   <TableCell>
                     <BusinessCardDialog

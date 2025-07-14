@@ -114,6 +114,7 @@ model User {
     followerConnections  Connection[]    @relation("Following")
     Notification         Notification[]
     supportTickets       SupportTicket[]
+    supportTicketReplies SupportTicketReply[] @relation("AdminReplies")
 }
 
 model VcGroup {
@@ -506,12 +507,10 @@ enum NotificationType {
     NEGOTIATION_CANCELLED
     NEGOTIATION_GO_TO_NEXT_STAGE
     POKE
-    // MESSAGE
-    // INVESTMENT_REQUEST
-    // INVESTMENT_CONFIRMATION
-    // INVESTMENT_REJECTED
-    // INVESTMENT_CONFIRMED
-    // INVESTMENT_CANCELLED
+    SUPPORT_TICKET_REPLY
+    SUPPORT_TICKET_STATUS_UPDATED
+    SUPPORT_TICKET_CREATED
+    SUPPORT_TICKET_RECEIVED
 }
 
 model Notification {
@@ -536,6 +535,20 @@ model SupportTicket {
 
     user   User   @relation(fields: [userId], references: [id])
     userId String
+
+    replies SupportTicketReply[]
+}
+
+model SupportTicketReply {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    message   String
+
+    admin   User   @relation("AdminReplies", fields: [adminId], references: [id])
+    adminId String
+
+    ticket   SupportTicket @relation(fields: [ticketId], references: [id])
+    ticketId String
 }
 
 model PotentialUser {
