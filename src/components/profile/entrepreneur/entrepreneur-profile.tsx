@@ -122,7 +122,7 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
         )}
         {canEdit && (
           <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
-            Add a Company
+            Add a Project
             <ArrowRight className="ml-2" />
           </Button>
         )}
