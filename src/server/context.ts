@@ -13,7 +13,7 @@ type SessionClaims = {
 };
 
 export const createContext = async (opts: trpcNext.CreateNextContextOptions) => {
-  const auth = await getAuth(opts.req);
+  const auth = getAuth(opts.req);
 
   // Cast the session claims to our defined type
   const sessionClaims = auth.sessionClaims as SessionClaims;
@@ -23,7 +23,7 @@ export const createContext = async (opts: trpcNext.CreateNextContextOptions) => 
       ...auth,
       sessionClaims,
     },
-    db
+    db,
   };
 };
 
