@@ -333,6 +333,7 @@ enum ProjectStage {
     SERIES_B
     SERIES_C
     IPO
+    SOCIAL_IMPACT
 }
 
 model Project {
@@ -356,6 +357,11 @@ model Project {
     logo            String?
     isBoosted       Boolean           @default(false)
     currency        Currency          @default(USD)
+
+    // Social impact fields
+    socialImpactDescription   String?
+    socialImpactBeneficiaries Int?
+    socialImpactMetrics      String?
 
     // New fields for photos and video
     photo1   String?

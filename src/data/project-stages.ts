@@ -7,4 +7,5 @@ export const PROJECT_STAGES = [
   { value: ProjectStage.SERIES_B, label: 'Series B' },
   { value: ProjectStage.SERIES_C, label: 'Series C' },
   { value: ProjectStage.IPO, label: 'IPO' },
+  { value: ProjectStage.SOCIAL_IMPACT, label: 'Social Impact' },
 ];

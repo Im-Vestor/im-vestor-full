@@ -3,7 +3,7 @@ import {
   type Country,
   type Project,
   type State,
-  type ProjectStage,
+  ProjectStage,
 } from '@prisma/client';
 import {
   Building2,
@@ -208,6 +208,17 @@ export default function Companies() {
                     <p className="text-sm">{stage.label}</p>
                   </div>
                 ))}
+              </div>
+              <p className="mt-2 font-medium">Social Impact</p>
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="social-impact"
+                    checked={selectedStages.includes(ProjectStage.SOCIAL_IMPACT)}
+                    onCheckedChange={checked => handleStageChange(ProjectStage.SOCIAL_IMPACT, checked === true)}
+                  />
+                  <p className="text-sm">Social Impact Projects</p>
+                </div>
               </div>
               <p className="mt-2 font-medium">Revenue</p>
               <div className="ml-2 mt-1.5 gap-1 flex flex-col">

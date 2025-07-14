@@ -215,6 +215,10 @@ export const projectRouter = createTRPCRouter({
           })
         ),
         visibility: z.nativeEnum(ProjectVisibility),
+        // Add social impact fields
+        socialImpactDescription: z.string().optional(),
+        socialImpactBeneficiaries: z.number().optional(),
+        socialImpactMetrics: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -263,6 +267,10 @@ export const projectRouter = createTRPCRouter({
               userId: ctx.auth.userId,
             },
           },
+          // Add social impact fields
+          socialImpactDescription: input.socialImpactDescription,
+          socialImpactBeneficiaries: input.socialImpactBeneficiaries,
+          socialImpactMetrics: input.socialImpactMetrics,
         },
       });
 

@@ -67,6 +67,10 @@ const companyFormSchema = z.object({
     )
     .optional()
     .default([]),
+  // Add social impact fields
+  socialImpactDescription: z.string().optional(),
+  socialImpactBeneficiaries: z.number().optional(),
+  socialImpactMetrics: z.string().optional(),
 });
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
@@ -132,6 +136,9 @@ export default function CreateCompany() {
       photo4: '',
       videoUrl: '',
       faqs: [{ question: '', answer: '' }],
+      socialImpactDescription: '',
+      socialImpactBeneficiaries: 0,
+      socialImpactMetrics: '',
     },
   });
 
@@ -529,6 +536,66 @@ export default function CreateCompany() {
                   </FormItem>
                 )}
               />
+              <div className={cn("space-y-4", form.watch('stage') === ProjectStage.SOCIAL_IMPACT ? 'block' : 'hidden')}>
+                <h3 className="mt-2 text-lg">Social Impact Details</h3>
+                <FormField
+                  control={form.control}
+                  name="socialImpactDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="font-normal text-neutral-200">Impact Description</Label>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the social impact of your project"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="socialImpactBeneficiaries"
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Number of Beneficiaries</Label>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="Enter number of people impacted"
+                            value={value === 0 ? '' : value}
+                            onChange={e => {
+                              const inputValue = e.target.value;
+                              onChange(inputValue === '' ? 0 : Number(inputValue));
+                            }}
+                            {...fieldProps}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="socialImpactMetrics"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Impact Metrics</Label>
+                        <FormControl>
+                          <Input
+                            placeholder="How will you measure your impact?"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               <h3 className="mt-2 text-lg">Financial Requirements</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
