@@ -131,7 +131,7 @@ export default function SupportTickets() {
                     <div className="flex flex-1 items-center justify-between gap-4">
                       <div className="flex-1 text-left">
                         <h3 className="font-medium text-lg">{ticket.subject}</h3>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
                           <Badge className={cn("px-3 py-1", getStatusColor(ticket.status))}>
                             {getStatusLabel(ticket.status)}
                           </Badge>
@@ -152,7 +152,7 @@ export default function SupportTickets() {
                       {/* Original Message */}
                       <div className="flex items-start gap-3 mb-6">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-medium text-primary">You</span>
+                          <span className="text-[10px] font-medium text-primary">User</span>
                         </div>
                         <div className="flex-1">
                           <div className="bg-white/5 rounded-lg rounded-tl-none p-4 border border-white/10">
@@ -170,7 +170,7 @@ export default function SupportTickets() {
                       {ticket.replies && ticket.replies.length > 0 && (
                         <div className="space-y-6 mt-6">
                           {ticket.replies.map((reply) => {
-                            const isUserReply = reply.adminId === ticket.userId;
+                            const isUserReply = reply.admin.email === undefined;
                             return (
                               <div
                                 key={reply.id}
@@ -184,10 +184,10 @@ export default function SupportTickets() {
                                   isUserReply ? "bg-primary/10" : "bg-blue-500/20"
                                 )}>
                                   <span className={cn(
-                                    "text-xs font-medium",
+                                    "text-[10px] font-medium",
                                     isUserReply ? "text-primary" : "text-blue-500"
                                   )}>
-                                    {isUserReply ? 'You' : 'S'}
+                                    {isUserReply ? 'User' : 'Support'}
                                   </span>
                                 </div>
                                 <div className={cn(
