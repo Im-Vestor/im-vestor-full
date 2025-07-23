@@ -134,6 +134,7 @@ export const entrepreneurRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.ENTREPRENEUR,
+          availablePokes: input.referralToken ? 2 : 0,
         },
       });
 
