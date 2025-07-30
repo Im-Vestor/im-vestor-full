@@ -1,5 +1,6 @@
 import { useClerk, useSignIn, useUser } from '@clerk/nextjs';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
+import { UserStatus } from '@prisma/client';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { api } from '~/utils/api';
 
 export default function Login() {
   const user = useUser();
@@ -19,6 +21,8 @@ export default function Login() {
   const [isPending, setIsPending] = useState(false);
 
   const { isLoaded, signIn, setActive } = useSignIn();
+
+  const { mutateAsync: checkUserStatus } = api.user.checkUserStatus.useMutation();
 
   useEffect(() => {
     if (user.isLoaded && user.isSignedIn) {
@@ -38,6 +42,13 @@ export default function Login() {
         await signOut({
           redirectUrl: '/login',
         });
+      }
+
+      const userStatus = await checkUserStatus({ email });
+
+      if (userStatus === UserStatus.INACTIVE) {
+        toast.error('Your account has been deactivated. Please contact support.');
+        return;
       }
 
       const signInAttempt = await signIn.create({

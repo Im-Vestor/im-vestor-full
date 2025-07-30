@@ -92,6 +92,11 @@ enum UserType {
     ADMIN
 }
 
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+}
+
 model User {
     id               String        @id @default(uuid())
     email            String        @unique
@@ -101,6 +106,7 @@ model User {
     stripeCustomerId String?
     availablePokes   Int           @default(0)
     availableBoosts  Int           @default(0)
+    status           UserStatus    @default(ACTIVE)
     investor         Investor?
     entrepreneur     Entrepreneur?
     partner          Partner?
@@ -110,8 +116,8 @@ model User {
     referralsAsReferrer Referral[] @relation("ReferrerToUser")
     referralsAsReferred Referral[] @relation("ReferredToUser")
 
-    followingConnections Connection[]    @relation("Follower")
-    followerConnections  Connection[]    @relation("Following")
+    followingConnections Connection[]         @relation("Follower")
+    followerConnections  Connection[]         @relation("Following")
     Notification         Notification[]
     supportTickets       SupportTicket[]
     supportTicketReplies SupportTicketReply[] @relation("AdminReplies")
@@ -363,14 +369,18 @@ model Project {
     // Social impact fields
     socialImpactDescription   String?
     socialImpactBeneficiaries Int?
-    socialImpactMetrics      String?
+    socialImpactMetrics       String?
 
     // New fields for photos and video
-    photo1   String?
-    photo2   String?
-    photo3   String?
-    photo4   String?
-    videoUrl String?
+    photo1        String?
+    photo1Caption String?
+    photo2        String?
+    photo2Caption String?
+    photo3        String?
+    photo3Caption String?
+    photo4        String?
+    photo4Caption String?
+    videoUrl      String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

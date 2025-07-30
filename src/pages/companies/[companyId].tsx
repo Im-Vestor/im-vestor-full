@@ -424,7 +424,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                      'bg-primary text-primary-foreground opacity-100'
+                                        'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -458,7 +458,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                                scheduleOtherStageMeetingMutation.isPending ? (
+                              scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -514,34 +514,48 @@ export default function CompanyDetails() {
               <>
                 <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Company Photos</h2>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
-                  {[project.photo1, project.photo2, project.photo3, project.photo4]
-                    .filter((photo): photo is string => Boolean(photo))
-                    .map((photo, index) => (
-                      <Dialog key={index}>
-                        <DialogTrigger asChild>
-                          <div
-                            key={index}
-                            className="aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                          >
-                            <Image
-                              src={photo}
-                              alt={`${project.name} photo ${index + 1}`}
-                              width={300}
-                              height={200}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-7xl">
-                          <Image
-                            src={photo}
-                            alt={`${project.name} photo ${index + 1}`}
-                            width={1920}
-                            height={1080}
-                            className="h-full w-full object-cover"
-                          />
-                        </DialogContent>
-                      </Dialog>
+                  {[
+                    { photo: project.photo1, caption: project.photo1Caption },
+                    { photo: project.photo2, caption: project.photo2Caption },
+                    { photo: project.photo3, caption: project.photo3Caption },
+                    { photo: project.photo4, caption: project.photo4Caption },
+                  ]
+                    .filter(item => Boolean(item.photo))
+                    .map((item, index) => (
+                      <div key={index} className="space-y-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="aspect-video overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity">
+                              <Image
+                                src={item.photo!}
+                                alt={item.caption ?? `${project.name} photo ${index + 1}`}
+                                width={300}
+                                height={200}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-7xl">
+                            <div className="space-y-4">
+                              <Image
+                                src={item.photo!}
+                                alt={item.caption ?? `${project.name} photo ${index + 1}`}
+                                width={1920}
+                                height={1080}
+                                className="h-full w-full object-cover rounded-lg"
+                              />
+                              {item.caption && (
+                                <p className="text-center text-sm text-white/70 px-4">
+                                  {item.caption}
+                                </p>
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        {item.caption && (
+                          <p className="text-xs text-white/60 text-center px-1">{item.caption}</p>
+                        )}
+                      </div>
                     ))}
                 </div>
               </>

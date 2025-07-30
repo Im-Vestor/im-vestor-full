@@ -1,18 +1,37 @@
-import { MapPin, Pencil, User } from 'lucide-react';
+import { MapPin, Pencil, Trash2Icon, User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { InvestorForm } from './investor-form';
 import { SkeletonProfile } from '../skeleton-profile';
+import { useClerk } from '@clerk/nextjs';
 
 export const InvestorProfile = ({ userId }: { userId?: string }) => {
+  const { signOut } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: investor, isPending: isLoading } = userId
     ? api.investor.getByUserIdForAdmin.useQuery({ userId })
     : api.investor.getByUserId.useQuery();
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: async () => {
+      await signOut({ redirectUrl: '/login' });
+    },
+  });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;
@@ -65,14 +84,44 @@ export const InvestorProfile = ({ userId }: { userId?: string }) => {
             {investor?.firstName + ' ' + investor?.lastName}
           </h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="flex items-center gap-2">
+                    <Trash2Icon className="h-2 w-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your account and
+                      remove all your data from our servers. You will lose access to all your
+                      investment opportunities and connections.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        await deleteUser();
+                      }}
+                    >
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
         <hr className="my-4 sm:my-6 border-white/10" />

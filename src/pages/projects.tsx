@@ -1,19 +1,5 @@
-import {
-  type Area,
-  type Country,
-  type Project,
-  type State,
-  ProjectStage,
-} from '@prisma/client';
-import {
-  Building2,
-  Heart,
-  SearchIcon,
-  Calendar,
-  MapPin,
-  CircleUserRound,
-  Zap,
-} from 'lucide-react';
+import { type Area, type Country, type Project, type State, ProjectStage } from '@prisma/client';
+import { Building2, Heart, SearchIcon, Calendar, MapPin, CircleUserRound, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -154,7 +140,7 @@ export default function Companies() {
             <div className="w-full md:w-1/5">
               <p className="font-medium">Sector</p>
               <div className="ml-2 mt-1.5 flex gap-1 max-w-[150px] flex-col">
-                {Array.from({ length: INITIAL_VISIBLE_AREAS }).map((_, i) => (
+                {Array.from({ length: visibleAreasCount }).map((_, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Checkbox
                       id={areas?.[i]?.id.toString() ?? ''}
@@ -215,7 +201,9 @@ export default function Companies() {
                   <Checkbox
                     id="social-impact"
                     checked={selectedStages.includes(ProjectStage.SOCIAL_IMPACT)}
-                    onCheckedChange={checked => handleStageChange(ProjectStage.SOCIAL_IMPACT, checked === true)}
+                    onCheckedChange={checked =>
+                      handleStageChange(ProjectStage.SOCIAL_IMPACT, checked === true)
+                    }
                   />
                   <p className="text-sm">Social Impact Projects</p>
                 </div>
@@ -324,10 +312,11 @@ function CompanyCard({
   return (
     <Link
       href={`/companies/${project.id}`}
-      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${project.isBoosted
-        ? 'border-yellow-500/50 hover:border-yellow-600/50'
-        : 'border-white/10 hover:border-white/20'
-        }`}
+      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${
+        project.isBoosted
+          ? 'border-yellow-500/50 hover:border-yellow-600/50'
+          : 'border-white/10 hover:border-white/20'
+      }`}
     >
       {/* Stage Badge - Top Right */}
       {project.stage && (
@@ -358,7 +347,9 @@ function CompanyCard({
         <div className="flex flex-1 flex-col">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-white/90">{project.name}</h3>
+              <h3 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-white/90">
+                {project.name}
+              </h3>
               {project.isFavorite && (
                 <Heart className="size-4 fill-yellow-500 text-yellow-500 transition-transform group-hover:scale-110" />
               )}
@@ -396,8 +387,7 @@ function CompanyCard({
               {project.investmentGoal && (
                 <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 transition-colors group-hover:bg-white/10">
                   <span className="truncate text-xs text-white/70">
-                    {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}
-                    {' '}
+                    {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}{' '}
                     {project.investmentGoal.toLocaleString()}
                   </span>
                 </div>

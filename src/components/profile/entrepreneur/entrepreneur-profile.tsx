@@ -6,26 +6,46 @@ import {
   DollarSign,
   MapPin,
   Pencil,
+  Trash2Icon,
   User,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { EntrepreneurForm } from './entrepreneur-form';
+import { useClerk } from '@clerk/nextjs';
 
 export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
+  const { signOut } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: entrepreneur, isPending: isLoading } = userId
     ? api.entrepreneur.getByUserIdForAdmin.useQuery({ userId })
     : api.entrepreneur.getByUserId.useQuery();
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: async () => {
+      await signOut({ redirectUrl: '/login' });
+    },
+  });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;
@@ -79,14 +99,44 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
             {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
           </h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="flex items-center gap-2">
+                    <Trash2Icon className="h-2 w-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your account and
+                      remove all your data from our servers. You will lose access to all your
+                      projects and connections.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={async () => {
+                        await deleteUser();
+                      }}
+                    >
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
         <p className="mt-3 text-lg text-gray-400">
@@ -122,7 +172,7 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
         )}
         {canEdit && (
           <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
-            Add a Company
+            Add a Project
             <ArrowRight className="ml-2" />
           </Button>
         )}

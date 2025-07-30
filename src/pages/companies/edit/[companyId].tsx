@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Currency, ProjectStage, ProjectVisibility } from '@prisma/client';
+import { Currency, ProjectStage, ProjectStatus, ProjectVisibility } from '@prisma/client';
 import { format } from 'date-fns';
 import {
   ArrowLeft,
@@ -19,6 +19,17 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Header } from '~/components/header';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
@@ -61,9 +72,13 @@ const companyFormSchema = z.object({
     required_error: 'Currency is required',
   }),
   photo1: z.string().optional(),
+  photo1Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo2: z.string().optional(),
+  photo2Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo3: z.string().optional(),
+  photo3Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo4: z.string().optional(),
+  photo4Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   videoUrl: z.string().optional(),
   faqs: z
     .array(
@@ -115,6 +130,14 @@ export default function EditCompany() {
       },
     });
 
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
+    api.project.updateStatus.useMutation({
+      onSuccess: () => {
+        toast.success('Project deleted successfully!');
+        void router.push('/profile');
+      },
+    });
+
   const { mutateAsync: updateCompany, isPending } = api.project.update.useMutation({
     onSuccess: () => {
       toast.success('Company updated successfully!');
@@ -149,9 +172,13 @@ export default function EditCompany() {
       equity: 0,
       currency: Currency.USD,
       photo1: '',
+      photo1Caption: '',
       photo2: '',
+      photo2Caption: '',
       photo3: '',
+      photo3Caption: '',
       photo4: '',
+      photo4Caption: '',
       videoUrl: '',
       faqs: [{ question: '', answer: '' }],
     },
@@ -178,9 +205,13 @@ export default function EditCompany() {
         equity: project.equity ?? 0,
         currency: project.currency ?? Currency.USD,
         photo1: project.photo1 ?? '',
+        photo1Caption: project.photo1Caption ?? '',
         photo2: project.photo2 ?? '',
+        photo2Caption: project.photo2Caption ?? '',
         photo3: project.photo3 ?? '',
+        photo3Caption: project.photo3Caption ?? '',
         photo4: project.photo4 ?? '',
+        photo4Caption: project.photo4Caption ?? '',
         videoUrl: project.videoUrl ?? '',
         faqs: project.faqs.map(faq => ({
           question: faq.question,
@@ -689,58 +720,88 @@ export default function EditCompany() {
                 Upload up to 4 photos of your company (max 2MB each)
               </p>
               <div className="grid grid-cols-2 gap-4">
-                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => (
-                  <FormField
-                    key={photoField}
-                    control={form.control}
-                    name={photoField}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="space-y-2">
-                            <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={e => handlePhotoUpload(e, photoField)}
-                                className="absolute inset-0 cursor-pointer opacity-0"
-                                {...field}
-                              />
-                              <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
-                                {value ? (
-                                  <Image
-                                    src={value}
-                                    alt={`Photo ${index + 1} preview`}
-                                    className="h-full w-full rounded-lg object-cover"
-                                    width={200}
-                                    height={128}
+                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => {
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                  const captionField = `${photoField}Caption` as
+                    | 'photo1Caption'
+                    | 'photo2Caption'
+                    | 'photo3Caption'
+                    | 'photo4Caption';
+                  return (
+                    <div key={photoField} className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name={photoField}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="space-y-2">
+                                <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => handlePhotoUpload(e, photoField)}
+                                    className="absolute inset-0 cursor-pointer opacity-0"
+                                    {...field}
                                   />
-                                ) : uploadingPhotos[photoField] ? (
-                                  <Loader2 className="h-6 w-6 animate-spin text-white" />
-                                ) : (
-                                  <div className="text-center">
-                                    <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
-                                    <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                  <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                                    {value ? (
+                                      <Image
+                                        src={value}
+                                        alt={`Photo ${index + 1} preview`}
+                                        className="h-full w-full rounded-lg object-cover"
+                                        width={200}
+                                        height={128}
+                                      />
+                                    ) : uploadingPhotos[photoField] ? (
+                                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                                    ) : (
+                                      <div className="text-center">
+                                        <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
+                                        <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                      </div>
+                                    )}
                                   </div>
+                                </div>
+                                {value && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onChange('');
+                                      form.setValue(captionField, '');
+                                    }}
+                                    className="text-red-500 hover:text-red-600 text-sm"
+                                  >
+                                    Remove photo
+                                  </button>
                                 )}
                               </div>
-                            </div>
-                            {value && (
-                              <button
-                                type="button"
-                                onClick={() => onChange('')}
-                                className="text-red-500 hover:text-red-600 text-sm"
-                              >
-                                Remove photo
-                              </button>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {form.watch(photoField) && (
+                        <FormField
+                          control={form.control}
+                          name={captionField}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder={`Caption for photo ${index + 1} (max 50 chars)`}
+                                  maxLength={50}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <h3 className="mt-2 text-lg">Company Video</h3>
               <p className="text-sm text-white/60">
@@ -863,15 +924,16 @@ export default function EditCompany() {
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                 >
                   <ArrowLeft className="h-4 w-4" /> Back
                 </Button>
+
                 <Button
                   className="w-1/6"
                   variant="secondary"
                   type="button"
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                   onClick={() =>
                     updateVisibility({
                       id: companyId as string,
@@ -894,10 +956,44 @@ export default function EditCompany() {
                     </div>
                   )}
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
+                    >
+                      <Trash2Icon className="h-4 w-4" />
+                      Delete Project
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your project and
+                        remove all associated data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          updateStatus({
+                            id: companyId as string,
+                            status: ProjectStatus.INACTIVE,
+                          });
+                        }}
+                      >
+                        Delete Project
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button
                   className="w-1/6"
                   type="submit"
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                 >
                   {isPending ? (
                     'Updating...'

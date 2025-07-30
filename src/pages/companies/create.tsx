@@ -54,9 +54,13 @@ const companyFormSchema = z.object({
     required_error: 'Currency is required',
   }),
   photo1: z.string().optional(),
+  photo1Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo2: z.string().optional(),
+  photo2Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo3: z.string().optional(),
+  photo3Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   photo4: z.string().optional(),
+  photo4Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   videoUrl: z.string().optional(),
   faqs: z
     .array(
@@ -131,9 +135,13 @@ export default function CreateCompany() {
       equity: 0,
       currency: Currency.USD,
       photo1: '',
+      photo1Caption: '',
       photo2: '',
+      photo2Caption: '',
       photo3: '',
+      photo3Caption: '',
       photo4: '',
+      photo4Caption: '',
       videoUrl: '',
       faqs: [{ question: '', answer: '' }],
       socialImpactDescription: '',
@@ -207,17 +215,8 @@ export default function CreateCompany() {
   };
 
   async function onSubmit(data: CompanyFormValues) {
-    console.log('fdasfdhasfhsajgfas');
-
-    console.log('data', data);
-
-    console.log('data', data);
-
     await createCompany(data);
   }
-
-  // log all errors from form
-  console.log('errors', form.formState.errors);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
@@ -536,7 +535,12 @@ export default function CreateCompany() {
                   </FormItem>
                 )}
               />
-              <div className={cn("space-y-4", form.watch('stage') === ProjectStage.SOCIAL_IMPACT ? 'block' : 'hidden')}>
+              <div
+                className={cn(
+                  'space-y-4',
+                  form.watch('stage') === ProjectStage.SOCIAL_IMPACT ? 'block' : 'hidden'
+                )}
+              >
                 <h3 className="mt-2 text-lg">Social Impact Details</h3>
                 <FormField
                   control={form.control}
@@ -560,7 +564,9 @@ export default function CreateCompany() {
                     name="socialImpactBeneficiaries"
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Number of Beneficiaries</Label>
+                        <Label className="font-normal text-neutral-200">
+                          Number of Beneficiaries
+                        </Label>
                         <FormControl>
                           <Input
                             type="number"
@@ -585,10 +591,7 @@ export default function CreateCompany() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Impact Metrics</Label>
                         <FormControl>
-                          <Input
-                            placeholder="How will you measure your impact?"
-                            {...field}
-                          />
+                          <Input placeholder="How will you measure your impact?" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -751,58 +754,88 @@ export default function CreateCompany() {
                 Upload up to 4 photos of your company (max 2MB each)
               </p>
               <div className="grid grid-cols-2 gap-4">
-                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => (
-                  <FormField
-                    key={photoField}
-                    control={form.control}
-                    name={photoField}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="space-y-2">
-                            <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={e => handlePhotoUpload(e, photoField)}
-                                className="absolute inset-0 cursor-pointer opacity-0"
-                                {...field}
-                              />
-                              <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
-                                {value ? (
-                                  <Image
-                                    src={value}
-                                    alt={`Photo ${index + 1} preview`}
-                                    className="h-full w-full rounded-lg object-cover"
-                                    width={200}
-                                    height={128}
+                {(['photo1', 'photo2', 'photo3', 'photo4'] as const).map((photoField, index) => {
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                  const captionField = `${photoField}Caption` as
+                    | 'photo1Caption'
+                    | 'photo2Caption'
+                    | 'photo3Caption'
+                    | 'photo4Caption';
+                  return (
+                    <div key={photoField} className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name={photoField}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="space-y-2">
+                                <div className="relative h-32 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => handlePhotoUpload(e, photoField)}
+                                    className="absolute inset-0 cursor-pointer opacity-0"
+                                    {...field}
                                   />
-                                ) : uploadingPhotos[photoField] ? (
-                                  <Loader2 className="h-6 w-6 animate-spin text-white" />
-                                ) : (
-                                  <div className="text-center">
-                                    <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
-                                    <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                  <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                                    {value ? (
+                                      <Image
+                                        src={value}
+                                        alt={`Photo ${index + 1} preview`}
+                                        className="h-full w-full rounded-lg object-cover"
+                                        width={200}
+                                        height={128}
+                                      />
+                                    ) : uploadingPhotos[photoField] ? (
+                                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                                    ) : (
+                                      <div className="text-center">
+                                        <PlusIcon className="h-6 w-6 text-white/50 mx-auto mb-2" />
+                                        <p className="text-xs text-white/50">Photo {index + 1}</p>
+                                      </div>
+                                    )}
                                   </div>
+                                </div>
+                                {value && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onChange('');
+                                      form.setValue(captionField, '');
+                                    }}
+                                    className="text-red-500 hover:text-red-600 text-sm"
+                                  >
+                                    Remove photo
+                                  </button>
                                 )}
                               </div>
-                            </div>
-                            {value && (
-                              <button
-                                type="button"
-                                onClick={() => onChange('')}
-                                className="text-red-500 hover:text-red-600 text-sm"
-                              >
-                                Remove photo
-                              </button>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {form.watch(photoField) && (
+                        <FormField
+                          control={form.control}
+                          name={captionField}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder={`Caption for photo ${index + 1} (max 50 chars)`}
+                                  maxLength={50}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <h3 className="mt-2 text-lg">Company Video</h3>
               <p className="text-sm text-white/60">

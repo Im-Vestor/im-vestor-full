@@ -9,13 +9,13 @@ import { api } from '~/utils/api';
 import { cn } from '~/lib/utils';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "~/components/ui/accordion";
+} from '~/components/ui/accordion';
 
 type SupportTicket = {
   id: string;
@@ -52,7 +52,7 @@ export default function SupportTickets() {
       setIsReplyBoxOpen(null);
       void utils.support.getMyTickets.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -111,7 +111,9 @@ export default function SupportTickets() {
           )}
           {!isLoading && !error && tickets && tickets.length === 0 && (
             <Alert>
-              <AlertDescription>You haven't submitted any support tickets yet.</AlertDescription>
+              <AlertDescription>
+                You haven&apos;t submitted any support tickets yet.
+              </AlertDescription>
             </Alert>
           )}
           {!isLoading && !error && tickets && tickets.length > 0 && (
@@ -121,17 +123,17 @@ export default function SupportTickets() {
                   key={ticket.id}
                   value={ticket.id}
                   className={cn(
-                    "border rounded-lg overflow-hidden",
-                    "hover:border-white/20 hover:shadow-lg",
-                    "bg-gradient-to-br from-background to-background/50"
+                    'border rounded-lg overflow-hidden',
+                    'hover:border-white/20 hover:shadow-lg',
+                    'bg-gradient-to-br from-background to-background/50'
                   )}
                 >
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex flex-1 items-center justify-between gap-4">
                       <div className="flex-1 text-left">
                         <h3 className="font-medium text-lg">{ticket.subject}</h3>
-                        <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
-                          <Badge className={cn("px-3 py-1", getStatusColor(ticket.status))}>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <Badge className={cn('px-3 py-1', getStatusColor(ticket.status))}>
                             {getStatusLabel(ticket.status)}
                           </Badge>
                           <div className="flex items-center gap-1">
@@ -144,8 +146,8 @@ export default function SupportTickets() {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </AccordionTrigger>
+                    </div >
+                  </AccordionTrigger >
                   <AccordionContent>
                     <div className="px-4 py-3 border-t border-white/10">
                       {/* Original Message */}
@@ -168,42 +170,52 @@ export default function SupportTickets() {
                       {/* Replies */}
                       {ticket.replies && ticket.replies.length > 0 && (
                         <div className="space-y-6 mt-6">
-                          {ticket.replies.map((reply) => {
-                            const isUserReply = reply.admin.email === undefined;
+                          {ticket.replies.map(reply => {
+                            const isUserReply = reply.adminId === ticket.userId;
                             return (
                               <div
                                 key={reply.id}
                                 className={cn(
-                                  "flex items-start gap-3",
-                                  isUserReply ? "" : "flex-row-reverse"
+                                  'flex items-start gap-3',
+                                  isUserReply ? '' : 'flex-row-reverse'
                                 )}
                               >
-                                <div className={cn(
-                                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                                  isUserReply ? "bg-primary/10" : "bg-blue-500/20"
-                                )}>
-                                  <span className={cn(
-                                    "text-[10px] font-medium",
-                                    isUserReply ? "text-primary" : "text-blue-500"
-                                  )}>
-                                    {isUserReply ? 'User' : 'Support'}
+                                <div
+                                  className={cn(
+                                    'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+                                    isUserReply ? 'bg-primary/10' : 'bg-blue-500/20'
+                                  )}
+                                >
+                                  <span
+                                    className={cn(
+                                      'text-xs font-medium',
+                                      isUserReply ? 'text-primary' : 'text-blue-500'
+                                    )}
+                                  >
+                                    {isUserReply ? 'You' : 'S'}
                                   </span>
                                 </div>
-                                <div className={cn(
-                                  "flex-1",
-                                  isUserReply ? "" : "flex flex-col items-end"
-                                )}>
-                                  <div className={cn(
-                                    "max-w-[85%]",
-                                    "rounded-lg p-4 border",
-                                    isUserReply
-                                      ? "bg-white/5 rounded-tl-none border-white/10"
-                                      : "bg-blue-500/10 rounded-tr-none border-blue-500/20"
-                                  )}>
-                                    <div className={cn(
-                                      "flex items-center gap-2 mb-2",
-                                      isUserReply ? "" : "flex-row-reverse"
-                                    )}>
+                                <div
+                                  className={cn(
+                                    'flex-1',
+                                    isUserReply ? '' : 'flex flex-col items-end'
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      'max-w-[85%]',
+                                      'rounded-lg p-4 border',
+                                      isUserReply
+                                        ? 'bg-white/5 rounded-tl-none border-white/10'
+                                        : 'bg-blue-500/10 rounded-tr-none border-blue-500/20'
+                                    )}
+                                  >
+                                    <div
+                                      className={cn(
+                                        'flex items-center gap-2 mb-2',
+                                        isUserReply ? '' : 'flex-row-reverse'
+                                      )}
+                                    >
                                       <span className="text-xs text-muted-foreground">
                                         {new Date(reply.createdAt).toLocaleString()}
                                       </span>
@@ -213,86 +225,89 @@ export default function SupportTickets() {
                                 </div>
                               </div>
                             );
-                          })}
-                        </div>
+                          })
+                          }
+                        </div >
                       )}
 
                       {/* Reply Input - Only show for open tickets */}
-                      {ticket.status === 'OPEN' && (
-                        <div className="mt-6 pt-6 border-t border-white/10">
-                          <Collapsible
-                            open={isReplyBoxOpen === ticket.id}
-                            onOpenChange={(open) => {
-                              setIsReplyBoxOpen(open ? ticket.id : null);
-                              if (open) {
-                                setReplyingToTicket(ticket.id);
-                              } else {
-                                setReplyMessage('');
-                                setReplyingToTicket(null);
-                              }
-                            }}
-                          >
-                            <CollapsibleTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-center gap-2",
-                                  isReplyBoxOpen === ticket.id && "mb-4"
-                                )}
-                              >
-                                {isReplyBoxOpen === ticket.id ? (
-                                  <>
-                                    <X className="h-4 w-4" />
-                                    Close Reply
-                                  </>
-                                ) : (
-                                  <>
-                                    <MessageCircle className="h-4 w-4" />
-                                    Reply to Ticket
-                                  </>
-                                )}
-                              </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="space-y-4">
-                              <div className="flex gap-3">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-[10px] font-medium text-primary">You</span>
-                                </div>
-                                <div className="flex-1 space-y-2">
-                                  <Textarea
-                                    placeholder="Type your reply..."
-                                    value={replyMessage}
-                                    onChange={(e) => setReplyMessage(e.target.value)}
-                                    className="min-h-[100px] bg-white/5 border-white/10"
-                                  />
-                                  <div className="flex justify-end">
-                                    <Button
-                                      onClick={() => handleReply(ticket.id)}
-                                      disabled={isAddingReply && replyingToTicket === ticket.id}
-                                      className="gap-2"
-                                    >
-                                      {isAddingReply && replyingToTicket === ticket.id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <Send className="h-4 w-4" />
-                                      )}
-                                      Send Reply
-                                    </Button>
+                      {
+                        ticket.status === 'OPEN' && (
+                          <div className="mt-6 pt-6 border-t border-white/10">
+                            <Collapsible
+                              open={isReplyBoxOpen === ticket.id}
+                              onOpenChange={open => {
+                                setIsReplyBoxOpen(open ? ticket.id : null);
+                                if (open) {
+                                  setReplyingToTicket(ticket.id);
+                                } else {
+                                  setReplyMessage('');
+                                  setReplyingToTicket(null);
+                                }
+                              }}
+                            >
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    'w-full justify-center gap-2',
+                                    isReplyBoxOpen === ticket.id && 'mb-4'
+                                  )}
+                                >
+                                  {isReplyBoxOpen === ticket.id ? (
+                                    <>
+                                      <X className="h-4 w-4" />
+                                      Close Reply
+                                    </>
+                                  ) : (
+                                    <>
+                                      <MessageCircle className="h-4 w-4" />
+                                      Reply to Ticket
+                                    </>
+                                  )}
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-4">
+                                <div className="flex gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-[10px] font-medium text-primary">You</span>
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                    <Textarea
+                                      placeholder="Type your reply..."
+                                      value={replyMessage}
+                                      onChange={e => setReplyMessage(e.target.value)}
+                                      className="min-h-[100px] bg-white/5 border-white/10"
+                                    />
+                                    <div className="flex justify-end">
+                                      <Button
+                                        onClick={() => handleReply(ticket.id)}
+                                        disabled={isAddingReply && replyingToTicket === ticket.id}
+                                        className="gap-2"
+                                      >
+                                        {isAddingReply && replyingToTicket === ticket.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Send className="h-4 w-4" />
+                                        )}
+                                        Send Reply
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </div>
-                      )}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          </div>
+                        )
+                      }
+                    </div >
+                  </AccordionContent >
+                </AccordionItem >
               ))}
-            </Accordion>
+            </Accordion >
           )}
-        </div>
-      </main>
+        </div >
+      </main >
     </>
   );
 }

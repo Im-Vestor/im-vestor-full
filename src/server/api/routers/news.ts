@@ -49,7 +49,8 @@ export const newsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         // Get user type from Clerk's session metadata, fallback to entrepreneur for public access
-        const userType = (ctx.auth?.sessionClaims?.publicMetadata?.userType as NewsUserType) || 'ENTREPRENEUR';
+        const userType = (ctx.auth?.sessionClaims?.publicMetadata?.userType ??
+          'ENTREPRENEUR') as NewsUserType;
 
         console.log('User type being used:', userType);
 
@@ -135,14 +136,16 @@ export const newsRouter = createTRPCRouter({
           if (error.message.includes('page_not_found')) {
             throw new TRPCError({
               code: 'NOT_FOUND',
-              message: 'Notion page not found. Please check if the page ID is correct and the integration has access to it.',
+              message:
+                'Notion page not found. Please check if the page ID is correct and the integration has access to it.',
             });
           }
 
           if (error.message.includes('unauthorized')) {
             throw new TRPCError({
               code: 'UNAUTHORIZED',
-              message: 'Notion API unauthorized. Please check if the API key is correct and the integration has access to the page.',
+              message:
+                'Notion API unauthorized. Please check if the API key is correct and the integration has access to the page.',
             });
           }
 
@@ -236,14 +239,16 @@ export const newsRouter = createTRPCRouter({
           if (error.message.includes('page_not_found')) {
             throw new TRPCError({
               code: 'NOT_FOUND',
-              message: 'Notion page not found. Please check if the page ID is correct and the integration has access to it.',
+              message:
+                'Notion page not found. Please check if the page ID is correct and the integration has access to it.',
             });
           }
 
           if (error.message.includes('unauthorized')) {
             throw new TRPCError({
               code: 'UNAUTHORIZED',
-              message: 'Notion API unauthorized. Please check if the API key is correct and the integration has access to the page.',
+              message:
+                'Notion API unauthorized. Please check if the API key is correct and the integration has access to the page.',
             });
           }
 

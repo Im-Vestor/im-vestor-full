@@ -3,6 +3,7 @@ import {
   NotificationType,
   type Prisma,
   ProjectStage,
+  ProjectStatus,
   ProjectVisibility,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -14,7 +15,7 @@ import { sendEmail } from '~/utils/email';
 export const projectRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     return ctx.db.project.findUniqueOrThrow({
-      where: { id: input.id },
+      where: { id: input.id, status: ProjectStatus.ACTIVE },
       include: {
         sector: true,
         Entrepreneur: {
@@ -68,6 +69,7 @@ export const projectRouter = createTRPCRouter({
       });
 
       where.visibility = ProjectVisibility.PUBLIC;
+      where.status = ProjectStatus.ACTIVE;
 
       if (input.sectorId && input.sectorId.length > 0) {
         where.sectorId = {
@@ -204,9 +206,13 @@ export const projectRouter = createTRPCRouter({
         sectorId: z.string(),
         currency: z.nativeEnum(Currency),
         photo1: z.string().optional(),
+        photo1Caption: z.string().optional(),
         photo2: z.string().optional(),
+        photo2Caption: z.string().optional(),
         photo3: z.string().optional(),
+        photo3Caption: z.string().optional(),
         photo4: z.string().optional(),
+        photo4Caption: z.string().optional(),
         videoUrl: z.string().optional(),
         faqs: z.array(
           z.object({
@@ -249,9 +255,13 @@ export const projectRouter = createTRPCRouter({
           investmentGoal: input.investmentGoal,
           logo: input.logo,
           photo1: input.photo1,
+          photo1Caption: input.photo1Caption,
           photo2: input.photo2,
+          photo2Caption: input.photo2Caption,
           photo3: input.photo3,
+          photo3Caption: input.photo3Caption,
           photo4: input.photo4,
+          photo4Caption: input.photo4Caption,
           videoUrl: input.videoUrl,
           currency: input.currency,
           faqs: {
@@ -311,9 +321,13 @@ export const projectRouter = createTRPCRouter({
         logo: z.string().optional(),
         currency: z.nativeEnum(Currency).optional(),
         photo1: z.string().optional(),
+        photo1Caption: z.string().optional(),
         photo2: z.string().optional(),
+        photo2Caption: z.string().optional(),
         photo3: z.string().optional(),
+        photo3Caption: z.string().optional(),
         photo4: z.string().optional(),
+        photo4Caption: z.string().optional(),
         videoUrl: z.string().optional(),
         faqs: z.array(
           z.object({
@@ -354,9 +368,13 @@ export const projectRouter = createTRPCRouter({
           investmentGoal: input.investmentGoal,
           logo: input.logo,
           photo1: input.photo1,
+          photo1Caption: input.photo1Caption,
           photo2: input.photo2,
+          photo2Caption: input.photo2Caption,
           photo3: input.photo3,
+          photo3Caption: input.photo3Caption,
           photo4: input.photo4,
+          photo4Caption: input.photo4Caption,
           videoUrl: input.videoUrl,
           currency: input.currency,
           faqs: {
@@ -536,39 +554,15 @@ export const projectRouter = createTRPCRouter({
 
       return { success: true, videoUrl: project.videoUrl };
     }),
-  getFollowedProjectUpdates: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.auth.userId },
-      include: {
-        investor: {
-          include: {
-            favoriteProjects: true,
-          },
-        },
-      },
-    });
 
-    if (!user) {
-      throw new Error('User not found');
-    }
+  updateStatus: protectedProcedure
+    .input(z.object({ id: z.string(), status: z.nativeEnum(ProjectStatus) }))
+    .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.update({
+        where: { id: input.id },
+        data: { status: input.status },
+      });
 
-    const followedProjectIds = user.investor?.favoriteProjects.map(p => p.id) || [];
-
-    const updates = await ctx.db.projectUpdate.findMany({
-      where: {
-        projectId: {
-          in: followedProjectIds,
-        },
-      },
-      include: {
-        project: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 5,
-    });
-
-    return updates;
-  }),
+      return project;
+    }),
 });

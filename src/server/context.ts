@@ -23,7 +23,7 @@ export const createContext = async (opts: trpcNext.CreateNextContextOptions) => 
       ...auth,
       sessionClaims,
     },
-    db
+    db,
   };
 };
 
