@@ -254,6 +254,7 @@ model Investor {
     projectViews     ProjectView[]
     areas            Area[]
     negotiations     Negotiation[]
+    matches          Match[]
 
     userId String @unique
     user   User   @relation(fields: [userId], references: [id])
@@ -379,6 +380,8 @@ model Project {
     files           File[]
     views           ProjectView[]
     negotiation     Negotiation?
+    updates         ProjectUpdate[]
+    matches         Match[]
 
     Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
     entrepreneurId String?
@@ -558,4 +561,34 @@ model PotentialUser {
     phone     String?
     createdAt DateTime @default(now())
     event     String?
+}
+
+enum ProjectUpdateType {
+  BOOST
+  UPDATE
+}
+
+model ProjectUpdate {
+  id        String           @id @default(uuid())
+  type      ProjectUpdateType
+  createdAt DateTime        @default(now())
+  project   Project         @relation(fields: [projectId], references: [id])
+  projectId String
+}
+
+enum MatchType {
+  INVESTOR_MATCH
+  PROJECT_MATCH
+}
+
+model Match {
+  id        String    @id @default(uuid())
+  type      MatchType
+  createdAt DateTime  @default(now())
+
+  project   Project   @relation(fields: [projectId], references: [id])
+  projectId String
+
+  investor   Investor @relation(fields: [investorId], references: [id])
+  investorId String
 }

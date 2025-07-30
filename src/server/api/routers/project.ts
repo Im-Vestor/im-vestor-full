@@ -536,4 +536,39 @@ export const projectRouter = createTRPCRouter({
 
       return { success: true, videoUrl: project.videoUrl };
     }),
+  getFollowedProjectUpdates: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      include: {
+        investor: {
+          include: {
+            favoriteProjects: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const followedProjectIds = user.investor?.favoriteProjects.map(p => p.id) || [];
+
+    const updates = await ctx.db.projectUpdate.findMany({
+      where: {
+        projectId: {
+          in: followedProjectIds,
+        },
+      },
+      include: {
+        project: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 5,
+    });
+
+    return updates;
+  }),
 });

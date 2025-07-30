@@ -146,7 +146,7 @@ export const NewsGrid: React.FC<NewsGridProps> = ({ blocks, title, description }
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
         {newsBlocks.map((block) => (
           <NewsCard key={block.id} block={block} />
         ))}

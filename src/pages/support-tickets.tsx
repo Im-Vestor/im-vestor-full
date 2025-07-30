@@ -1,4 +1,3 @@
-import { useUser } from '@clerk/nextjs';
 import { type SupportTicketStatus } from '@prisma/client';
 import { AlertCircle, Clock, Loader2, MessageCircle, Send, X } from 'lucide-react';
 import { Header } from '~/components/header';
@@ -257,7 +256,7 @@ export default function SupportTickets() {
                             <CollapsibleContent className="space-y-4">
                               <div className="flex gap-3">
                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-xs font-medium text-primary">You</span>
+                                  <span className="text-[10px] font-medium text-primary">You</span>
                                 </div>
                                 <div className="flex-1 space-y-2">
                                   <Textarea

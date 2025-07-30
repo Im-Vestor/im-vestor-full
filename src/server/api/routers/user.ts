@@ -8,6 +8,13 @@ export const userRouter = createTRPCRouter({
       where: {
         id: ctx.auth.userId,
       },
+      include: {
+        entrepreneur: true,
+        investor: true,
+        partner: true,
+        incubator: true,
+        vcGroup: true,
+      }
     });
 
     const whereClause = {
@@ -418,4 +425,42 @@ export const userRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  getRecentMatches: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      include: {
+        investor: true,
+        entrepreneur: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const matches = await ctx.db.match.findMany({
+      where: {
+        OR: [
+          {
+            investorId: user.investor?.id,
+          },
+          {
+            projectId: {
+              in: user.entrepreneur?.projects.map(p => p.id),
+            },
+          },
+        ],
+      },
+      include: {
+        investor: true,
+        project: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 5,
+    });
+
+    return matches;
+  }),
 });

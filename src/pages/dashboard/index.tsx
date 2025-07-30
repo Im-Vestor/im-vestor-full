@@ -1,11 +1,12 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import PartnerDashboard from '~/components/dashboard/partner';
+import { Header } from '~/components/header';
+import Dashboard from '~/components/dashboard';
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -13,5 +14,12 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  return <>{user?.publicMetadata.userType === 'PARTNER' && <PartnerDashboard />}</>;
+  return (
+    <main className="mx-auto min-h-screen max-w-6xl p-8">
+      <Header />
+      <div className="mt-12">
+        <Dashboard />
+      </div>
+    </main>
+  );
 }
