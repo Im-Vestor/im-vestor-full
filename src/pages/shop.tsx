@@ -40,10 +40,10 @@ const products = [
     value: 20,
   },
   {
-    id: 'daily-pitch-ticket',
-    name: 'Daily Pitch Ticket',
+    id: 'pitch-of-the-week-ticket',
+    name: 'Pitch of the Week Ticket',
     description:
-      'Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
+      'Access to 2 public weekly pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
     onlyEntrepreneur: false,
     value: 20,
   },

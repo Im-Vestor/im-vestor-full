@@ -44,8 +44,8 @@ const INVESTOR_MENUS = [
     href: '/meetings',
   },
   {
-    label: 'Daily Pitches',
-    href: '/daily-pitches',
+    label: 'Pitch of the Week',
+    href: '/pitch-of-the-week',
   },
   {
     label: 'News',

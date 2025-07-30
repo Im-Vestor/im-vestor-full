@@ -26,11 +26,11 @@ const products = [
     onlyEntrepreneur: true,
   },
   {
-    id: 'daily-pitch-ticket',
-    name: 'Daily Pitch Ticket',
+    id: 'pitch-of-the-week-ticket',
+    name: 'Pitch of the Week Ticket',
     price: env.STRIPE_DAILY_PITCH_TICKET_PRICE_ID,
     description:
-      'Access to 2 public daily pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
+      'Access to 2 public weekly pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
     onlyEntrepreneur: false,
   },
   {

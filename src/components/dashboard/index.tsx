@@ -66,8 +66,8 @@ const quickActionsByUserType: Record<UserType, QuickAction[]> = {
     },
     {
       icon: BookOpen,
-      label: 'Daily Pitches',
-      href: '/daily-pitches',
+      label: 'Pitch of the Week',
+      href: '/pitch-of-the-week',
       color: 'text-amber-500',
     },
     {
