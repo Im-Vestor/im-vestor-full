@@ -34,7 +34,7 @@ export function NewsPanel() {
         ) : (
           <div className="w-full">
             <NewsGrid
-              blocks={(newsData?.blocks || []).slice(0, 3)}
+              blocks={(newsData?.blocks ?? []).slice(0, 3)}
               title=""
               description=""
             />

@@ -1,10 +1,7 @@
 import { useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
 import {
-  Bell,
   BookOpen,
-  HelpCircle,
-  Mail,
   Plus,
   Search,
   Share2,
@@ -12,22 +9,16 @@ import {
   Eye,
   Calendar,
   Briefcase,
-  Network,
   ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { api } from '~/utils/api';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
-import { ScrollArea } from '~/components/ui/scroll-area';
 import { Skeleton } from '~/components/ui/skeleton';
-import { NewsGrid } from '~/components/news/NewsCard';
 import { cn } from '~/lib/utils';
 import { ActivityPanel } from './activity-panel';
 import { RecommendationsPanel } from './recommendations-panel';
 import { NewsPanel } from './news-panel';
-import { HelpSupportPanel } from './help-support-panel';
 
 interface QuickAction {
   icon: React.ElementType;
@@ -139,16 +130,16 @@ export default function Dashboard() {
   const userType = user?.publicMetadata.userType as UserType;
 
   const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery();
-  const { data: newsData, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
+  api.news.getUserTypeNews.useQuery(
     {},
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
-  const { data: recommendations, isLoading: isLoadingRecommendations } = api.recommendations.getRecommendations.useQuery();
+  const { data: recommendations } = api.recommendations.getRecommendations.useQuery();
 
-  const quickActions = quickActionsByUserType[userType] || [];
+  const quickActions = quickActionsByUserType[userType] ?? [];
 
   // Get the user's name based on their type
   const getUserName = () => {
@@ -185,7 +176,7 @@ export default function Dashboard() {
         ) : (
           <>
             <Image
-              src={user?.imageUrl || '/images/male-avatar.svg'}
+              src={user?.imageUrl ?? '/images/male-avatar.svg'}
               alt="Profile"
               width={64}
               height={64}

@@ -82,8 +82,8 @@ export const recommendationsRouter = createTRPCRouter({
 
       return projects.map(project => ({
         ...project,
-        viewCount: viewCountMap.get(project.id) || 0,
-        matchCount: matchCountMap.get(project.id) || 0,
+        viewCount: viewCountMap.get(project.id) ?? 0,
+        matchCount: matchCountMap.get(project.id) ?? 0,
       }));
     });
 
@@ -171,7 +171,7 @@ export const recommendationsRouter = createTRPCRouter({
 
       case UserType.ENTREPRENEUR: {
         // For entrepreneurs, recommend investors interested in their project areas
-        const projectAreas = user.entrepreneur?.projects.map(p => p.sectorId) || [];
+        const projectAreas = user.entrepreneur?.projects.map(p => p.sectorId) ?? [];
 
         const recommendedInvestors = await ctx.db.investor.findMany({
           where: {

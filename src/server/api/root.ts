@@ -21,6 +21,7 @@ import { newsRouter } from './routers/news';
 import { pokeRouter } from './routers/poke';
 import { boostRouter } from './routers/boost';
 import { recommendationsRouter } from './routers/recommendations';
+import { adminRouter } from './routers/admin';
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -45,6 +46,7 @@ export const appRouter = createTRPCRouter({
   poke: pokeRouter,
   boost: boostRouter,
   recommendations: recommendationsRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

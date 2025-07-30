@@ -1,9 +1,9 @@
 import { Bell, Mail } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { ScrollArea } from '~/components/ui/scroll-area';
+
 import { api } from '~/utils/api';
 import Link from 'next/link';
-import { type NotificationType, type Notification } from '@prisma/client';
+import { type Notification } from '@prisma/client';
 
 export function ActivityPanel() {
   const { data: notifications } = api.notifications.getUnreadNotifications.useQuery();
@@ -24,7 +24,7 @@ export function ActivityPanel() {
               <div>
                 <p className="text-lg font-medium text-white">New Messages</p>
                 <p className="text-muted-foreground text-xs">
-                  {notifications?.filter((n: Notification) => n.type === 'POKE').length || 0} unread messages
+                  {notifications?.filter((n: Notification) => n.type === 'POKE').length ?? 0} unread messages
                 </p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export function ActivityPanel() {
               <div>
                 <p className="text-lg font-medium text-white">Active Negotiations</p>
                 <p className="text-muted-foreground text-xs">
-                  {negotiations?.openNegotiations.length || 0} negotiations need your attention
+                  {negotiations?.openNegotiations.length ?? 0} negotiations need your attention
                 </p>
               </div>
             </div>

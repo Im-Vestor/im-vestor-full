@@ -45,7 +45,7 @@ export function RecommendationsPanel() {
                       <div className="relative flex items-center gap-4">
                         <div className="relative">
                           <Image
-                            src={project.logo || '/images/male-avatar.svg'}
+                            src={project.logo ?? '/images/male-avatar.svg'}
                             alt={project.name}
                             width={48}
                             height={48}
@@ -101,7 +101,7 @@ export function RecommendationsPanel() {
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                       <div className="relative flex items-center gap-4">
                         <Image
-                          src={project.logo || '/images/male-avatar.svg'}
+                          src={project.logo ?? '/images/male-avatar.svg'}
                           alt={project.name}
                           width={48}
                           height={48}
@@ -127,7 +127,7 @@ export function RecommendationsPanel() {
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                       <div className="relative flex items-center gap-4">
                         <Image
-                          src={investor.photo || '/images/male-avatar.svg'}
+                          src={investor.photo ?? '/images/male-avatar.svg'}
                           alt={`${investor.firstName} ${investor.lastName}`}
                           width={48}
                           height={48}
