@@ -6,7 +6,6 @@ import { projectRouter } from './routers/project';
 import { referralRouter } from './routers/referral';
 import { entrepreneurRouter } from './routers/entrepreneur';
 import { userRouter } from './routers/user';
-import { adminRouter } from './routers/admin';
 import { partnerRouter } from './routers/partner';
 import { connectionRouter } from './routers/connection';
 import { notificationsRouter } from './routers/notifications';
@@ -32,7 +31,6 @@ export const appRouter = createTRPCRouter({
   referral: referralRouter,
   entrepreneur: entrepreneurRouter,
   user: userRouter,
-  admin: adminRouter,
   connection: connectionRouter,
   notifications: notificationsRouter,
   meeting: meetingRouter,

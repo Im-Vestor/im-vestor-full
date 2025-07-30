@@ -92,6 +92,11 @@ enum UserType {
     ADMIN
 }
 
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+}
+
 model User {
     id               String        @id @default(uuid())
     email            String        @unique
@@ -101,6 +106,7 @@ model User {
     stripeCustomerId String?
     availablePokes   Int           @default(0)
     availableBoosts  Int           @default(0)
+    status           UserStatus    @default(ACTIVE)
     investor         Investor?
     entrepreneur     Entrepreneur?
     partner          Partner?

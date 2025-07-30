@@ -1,5 +1,12 @@
+import { clerkClient } from '@clerk/nextjs/server';
+import { ProjectStatus, UserStatus } from '@prisma/client';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  adminProcedure,
+  publicProcedure,
+} from '~/server/api/trpc';
 import { sendEmail } from '~/utils/email';
 
 export const userRouter = createTRPCRouter({
@@ -417,5 +424,52 @@ export const userRouter = createTRPCRouter({
       );
 
       return { success: true };
+    }),
+  deleteUser: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      include: {
+        entrepreneur: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    await ctx.db.user.update({
+      where: { id: ctx.auth.userId },
+      data: {
+        status: UserStatus.INACTIVE,
+      },
+    });
+
+    // if entrepreneur, set all projects to inactive
+    if (user.userType === 'ENTREPRENEUR') {
+      await ctx.db.project.updateMany({
+        where: { entrepreneurId: user.entrepreneur?.id },
+        data: { status: ProjectStatus.INACTIVE },
+      });
+    }
+
+    // invalidate user on clerk
+    const client = await clerkClient();
+
+    await client.users.updateUserMetadata(ctx.auth.userId, {
+      publicMetadata: {
+        inactive: true,
+      },
+    });
+
+    return { success: true };
+  }),
+  checkUserStatus: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
+
+      return user?.status;
     }),
 });

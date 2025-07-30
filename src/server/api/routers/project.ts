@@ -3,6 +3,7 @@ import {
   NotificationType,
   type Prisma,
   ProjectStage,
+  ProjectStatus,
   ProjectVisibility,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -14,7 +15,7 @@ import { sendEmail } from '~/utils/email';
 export const projectRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     return ctx.db.project.findUniqueOrThrow({
-      where: { id: input.id },
+      where: { id: input.id, status: ProjectStatus.ACTIVE },
       include: {
         sector: true,
         Entrepreneur: {
@@ -68,6 +69,7 @@ export const projectRouter = createTRPCRouter({
       });
 
       where.visibility = ProjectVisibility.PUBLIC;
+      where.status = ProjectStatus.ACTIVE;
 
       if (input.sectorId && input.sectorId.length > 0) {
         where.sectorId = {
@@ -551,5 +553,15 @@ export const projectRouter = createTRPCRouter({
       );
 
       return { success: true, videoUrl: project.videoUrl };
+    }),
+  updateStatus: protectedProcedure
+    .input(z.object({ id: z.string(), status: z.nativeEnum(ProjectStatus) }))
+    .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.update({
+        where: { id: input.id },
+        data: { status: input.status },
+      });
+
+      return project;
     }),
 });

@@ -6,6 +6,7 @@ import {
   DollarSign,
   MapPin,
   Pencil,
+  Trash2Icon,
   User,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -17,15 +18,23 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { EntrepreneurForm } from './entrepreneur-form';
+import { useClerk } from '@clerk/nextjs';
 
 export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
+  const { signOut } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: entrepreneur, isPending: isLoading } = userId
     ? api.entrepreneur.getByUserIdForAdmin.useQuery({ userId })
     : api.entrepreneur.getByUserId.useQuery();
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: async () => {
+      await signOut({ redirectUrl: '/login' });
+    },
+  });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;
@@ -79,14 +88,26 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
             {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
           </h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex items-center gap-2"
+                onClick={async () => {
+                  await deleteUser();
+                }}
+              >
+                <Trash2Icon className="h-2 w-2" />
+                Delete Account
+              </Button>
+            </div>
           )}
         </div>
         <p className="mt-3 text-lg text-gray-400">

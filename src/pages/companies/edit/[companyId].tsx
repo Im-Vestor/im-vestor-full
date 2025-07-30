@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Currency, ProjectStage, ProjectVisibility } from '@prisma/client';
+import { Currency, ProjectStage, ProjectStatus, ProjectVisibility } from '@prisma/client';
 import { format } from 'date-fns';
 import {
   ArrowLeft,
@@ -19,6 +19,17 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Header } from '~/components/header';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
@@ -115,6 +126,14 @@ export default function EditCompany() {
     api.project.updateVisibility.useMutation({
       onSuccess: () => {
         toast.success('Visibility updated successfully!');
+        void router.push('/profile');
+      },
+    });
+
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
+    api.project.updateStatus.useMutation({
+      onSuccess: () => {
+        toast.success('Project deleted successfully!');
         void router.push('/profile');
       },
     });
@@ -905,15 +924,16 @@ export default function EditCompany() {
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                 >
                   <ArrowLeft className="h-4 w-4" /> Back
                 </Button>
+
                 <Button
                   className="w-1/6"
                   variant="secondary"
                   type="button"
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                   onClick={() =>
                     updateVisibility({
                       id: companyId as string,
@@ -936,10 +956,44 @@ export default function EditCompany() {
                     </div>
                   )}
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
+                    >
+                      <Trash2Icon className="h-4 w-4" />
+                      Delete Project
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your project and
+                        remove all associated data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          updateStatus({
+                            id: companyId as string,
+                            status: ProjectStatus.INACTIVE,
+                          });
+                        }}
+                      >
+                        Delete Project
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button
                   className="w-1/6"
                   type="submit"
-                  disabled={isPending || isUpdatingVisibility}
+                  disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                 >
                   {isPending ? (
                     'Updating...'

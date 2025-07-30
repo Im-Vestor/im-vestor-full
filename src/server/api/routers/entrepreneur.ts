@@ -1,5 +1,5 @@
 import { clerkClient } from '@clerk/nextjs/server';
-import { UserType } from '@prisma/client';
+import { ProjectStatus, UserType } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
@@ -12,6 +12,9 @@ export const entrepreneurRouter = createTRPCRouter({
       where: { userId: ctx.auth.userId },
       include: {
         projects: {
+          where: {
+            status: ProjectStatus.ACTIVE,
+          },
           include: {
             state: true,
             country: true,
@@ -52,6 +55,9 @@ export const entrepreneurRouter = createTRPCRouter({
         where: { userId: input.userId },
         include: {
           projects: {
+            where: {
+              status: ProjectStatus.ACTIVE,
+            },
             include: {
               state: true,
               country: true,
@@ -75,6 +81,9 @@ export const entrepreneurRouter = createTRPCRouter({
       where: { id: input.id },
       include: {
         projects: {
+          where: {
+            status: ProjectStatus.ACTIVE,
+          },
           include: {
             state: true,
             country: true,
