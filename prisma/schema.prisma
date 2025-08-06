@@ -169,13 +169,15 @@ model Incubator {
 }
 
 model Partner {
-  id          String  @id @default(uuid())
-  firstName   String
-  lastName    String
-  companyName String?
-  mobileFone  String?
-  userId      String  @unique
-  user        User    @relation(fields: [userId], references: [id])
+  id             String  @id @default(uuid())
+  firstName      String
+  lastName       String
+  companyName    String?
+  companyLogoUrl String?
+  photo          String?
+  mobileFone     String?
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id])
 }
 
 model Investor {

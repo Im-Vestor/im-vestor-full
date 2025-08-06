@@ -1,4 +1,5 @@
-import { Building, Loader2, Pencil, User } from 'lucide-react';
+import { Building, Building2, Loader2, Pencil, User } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
@@ -33,7 +34,17 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
 
         <div className="absolute bottom-0 left-12 translate-y-1/2">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A]">
-            <User className="h-8 w-8 text-black" />
+            {partner?.photo ? (
+              <Image
+                src={partner.photo}
+                alt="Profile"
+                width={96}
+                height={96}
+                className="h-24 w-24 rounded-full object-cover"
+              />
+            ) : (
+              <User className="h-8 w-8 text-black" />
+            )}
           </div>
         </div>
       </div>
@@ -52,10 +63,29 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
             </Button>
           )}
         </div>
-        <p className="mt-1 flex items-center gap-1 text-gray-400">
-          <Building className="mr-0.5 h-4 w-4" />
-          {partner?.companyName}
-        </p>
+        <div className="mt-4 flex items-center gap-3">
+          {partner?.companyLogoUrl ? (
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white/5">
+              <Image
+                src={partner.companyLogoUrl}
+                alt="Company Logo"
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-lg object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/5">
+              <Building2 className="h-6 w-6 text-neutral-400" />
+            </div>
+          )}
+          <div>
+            <p className="flex items-center gap-1 text-gray-400">
+              <Building className="mr-0.5 h-4 w-4" />
+              {partner?.companyName}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

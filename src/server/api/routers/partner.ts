@@ -116,6 +116,8 @@ export const partnerRouter = createTRPCRouter({
         lastName: z.string().min(1),
         mobileFone: z.string().min(1),
         companyName: z.string().min(1),
+        photo: z.string().optional(),
+        companyLogoUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
