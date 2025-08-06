@@ -26,7 +26,7 @@ const products = [
     id: 'poke',
     name: '3 Pokes',
     description:
-      'Sends an introduction note to investors about your entrepreneur profile, helping you make that crucial first connection.',
+      'Sends an personalized introduction note to other user about your profile, helping you make that crucial first connection.',
     value: 25,
   },
   {
@@ -52,14 +52,7 @@ const products = [
   },
 ];
 
-const Product = ({
-  title,
-  description,
-  onBuy,
-  isLoading,
-  value,
-}: ProductProps) => {
-
+const Product = ({ title, description, onBuy, isLoading, value }: ProductProps) => {
   return (
     <Card className="flex h-full flex-col transition-all hover:shadow-md">
       <CardHeader>
@@ -143,9 +136,19 @@ export default function Shop() {
         </div>
 
         {!isEntrepreneur ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h2 className="text-xl font-semibold text-white/80">Shop Access Restricted</h2>
-            <p className="mt-2 text-white/60">The shop is only available for entrepreneur profiles.</p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {products
+              .filter(product => product.id === 'poke')
+              .map(product => (
+                <Product
+                  key={product.id}
+                  title={product.name}
+                  description={product.description}
+                  onBuy={() => handlePurchase(product.id)}
+                  isLoading={isProcessing}
+                  value={product.value}
+                />
+              ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
