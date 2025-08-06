@@ -1,14 +1,12 @@
-import { clerkClient } from '@clerk/nextjs/server';
-import { ProjectStatus, UserStatus } from '@prisma/client';
 import { z } from 'zod';
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
-  adminProcedure,
   publicProcedure,
 } from '~/server/api/trpc';
-import { sendEmail } from '~/utils/email';
 import { createDeletionLink } from '~/utils/deletion-token';
+import { sendEmail } from '~/utils/email';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
@@ -464,7 +462,7 @@ export const userRouter = createTRPCRouter({
     }
 
     // Generate deletion link
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL ?? 'http://localhost:3000';
     const deletionLink = createDeletionLink(ctx.auth.userId, baseUrl);
 
     // Send confirmation email
