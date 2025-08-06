@@ -8,6 +8,7 @@ import {
   publicProcedure,
 } from '~/server/api/trpc';
 import { sendEmail } from '~/utils/email';
+import { createDeletionLink } from '~/utils/deletion-token';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
@@ -21,7 +22,7 @@ export const userRouter = createTRPCRouter({
         partner: true,
         incubator: true,
         vcGroup: true,
-      }
+      },
     });
 
     const whereClause = {
@@ -437,6 +438,10 @@ export const userRouter = createTRPCRouter({
       where: { id: ctx.auth.userId },
       include: {
         entrepreneur: true,
+        investor: true,
+        partner: true,
+        incubator: true,
+        vcGroup: true,
       },
     });
 
@@ -444,31 +449,36 @@ export const userRouter = createTRPCRouter({
       throw new Error('User not found');
     }
 
-    await ctx.db.user.update({
-      where: { id: ctx.auth.userId },
-      data: {
-        status: UserStatus.INACTIVE,
-      },
-    });
-
-    // if entrepreneur, set all projects to inactive
-    if (user.userType === 'ENTREPRENEUR') {
-      await ctx.db.project.updateMany({
-        where: { entrepreneurId: user.entrepreneur?.id },
-        data: { status: ProjectStatus.INACTIVE },
-      });
+    // Get user's name based on their type
+    let userName = 'User';
+    if (user.entrepreneur) {
+      userName = user.entrepreneur.firstName || 'User';
+    } else if (user.investor) {
+      userName = user.investor.firstName || 'User';
+    } else if (user.partner) {
+      userName = user.partner.firstName || 'User';
+    } else if (user.incubator) {
+      userName = user.incubator.name || 'User';
+    } else if (user.vcGroup) {
+      userName = user.vcGroup.name || 'User';
     }
 
-    // invalidate user on clerk
-    const client = await clerkClient();
+    // Generate deletion link
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const deletionLink = createDeletionLink(ctx.auth.userId, baseUrl);
 
-    await client.users.updateUserMetadata(ctx.auth.userId, {
-      publicMetadata: {
-        inactive: true,
-      },
-    });
+    // Send confirmation email
+    await sendEmail(
+      userName,
+      'We received a request to delete your Im-Vestor account.',
+      'If you want to proceed with the account deletion, please click the button below. This link will expire in 24 hours. If you did not request this deletion, please ignore this email.',
+      user.email,
+      'Confirm Account Deletion',
+      deletionLink,
+      'Delete My Account'
+    );
 
-    return { success: true };
+    return { success: true, message: 'Confirmation email sent' };
   }),
   checkUserStatus: publicProcedure
     .input(z.object({ email: z.string() }))

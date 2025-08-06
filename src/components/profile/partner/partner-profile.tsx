@@ -15,10 +15,9 @@ import {
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { PartnerForm } from './partner-form';
-import { useClerk } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
 export const PartnerProfile = ({ userId }: { userId?: string }) => {
-  const { signOut } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
@@ -27,8 +26,14 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
     : api.partner.getByUserId.useQuery();
 
   const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
-    onSuccess: async () => {
-      await signOut({ redirectUrl: '/login' });
+    onSuccess: () => {
+      toast.success(
+        'Confirmation email sent! Please check your email to complete account deletion.'
+      );
+    },
+    onError: error => {
+      toast.error('Failed to send confirmation email. Please try again.');
+      console.error('Delete user error:', error);
     },
   });
 
@@ -94,7 +99,8 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete your account and
                       remove all your data from our servers. You will lose access to all your
-                      partnerships and connections.
+                      partnerships and connections. An email will be sent to you with a link to
+                      delete your account. This link will expire in 24 hours.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -104,7 +110,7 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                         await deleteUser();
                       }}
                     >
-                      Delete Account
+                      Send Deletion Link
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

@@ -13,6 +13,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,11 +30,9 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { EntrepreneurForm } from './entrepreneur-form';
-import { useClerk } from '@clerk/nextjs';
 
 export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
-  const { signOut } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
@@ -42,8 +41,14 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
     : api.entrepreneur.getByUserId.useQuery();
 
   const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
-    onSuccess: async () => {
-      await signOut({ redirectUrl: '/login' });
+    onSuccess: () => {
+      toast.success(
+        'Confirmation email sent! Please check your email to complete account deletion.'
+      );
+    },
+    onError: error => {
+      toast.error('Failed to send confirmation email. Please try again.');
+      console.error('Delete user error:', error);
     },
   });
 
@@ -121,7 +126,8 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete your account and
                       remove all your data from our servers. You will lose access to all your
-                      projects and connections.
+                      projects and connections. An email will be sent to you with a link to delete
+                      your account. This link will expire in 24 hours.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -131,7 +137,7 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
                         await deleteUser();
                       }}
                     >
-                      Delete Account
+                      Send Deletion Link
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

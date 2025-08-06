@@ -30,6 +30,13 @@ export default function Login() {
     }
   }, [user.isLoaded, user.isSignedIn, router]);
 
+  useEffect(() => {
+    // Check if user was redirected after account deletion
+    if (router.query.deleted === 'true') {
+      toast.success('Your account has been successfully deleted. Thank you for using Im-Vestor.');
+    }
+  }, [router.query.deleted]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
