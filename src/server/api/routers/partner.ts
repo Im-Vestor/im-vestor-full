@@ -24,11 +24,6 @@ export const partnerRouter = createTRPCRouter({
         companyName: true,
         companyLogoUrl: true,
       },
-      orderBy: {
-        user: {
-          createdAt: 'desc',
-        },
-      },
     });
   }),
 
