@@ -63,7 +63,9 @@ type TranslationKey =
   | 'rejectAll'
   | 'savePreferences'
   | 'freeYearPromo'
-  | 'cancel';
+  | 'cancel'
+  | 'trustedByPartners'
+  | 'partnersDescription';
 
 // Define the translations for each language
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -139,7 +141,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     rejectAll: 'Reject All',
     savePreferences: 'Save Preferences',
     freeYearPromo: 'Sign up now and get 1 year free.',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    trustedByPartners: 'Trusted by Leading Partners',
+    partnersDescription: 'Join forces with industry leaders and innovative companies that trust Im-Vestor to connect the best entrepreneurs with strategic investors.'
   },
   'pt-PT': {
     signIn: 'Iniciar Sessão',
@@ -183,7 +187,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       'O Im-Vestor prioriza a segurança de todos os utilizadores. Garantimos que todos os projetos e investidores são minuciosamente verificados, criando um ambiente de confiança para os negócios prosperarem.',
     investmentsProtectedShort:
       'O Im-Vestor prioriza a segurança de todos os utilizadores e um ambiente de confiança para os negócios prosperarem.',
-    businessRevolution: 'Faça parte da nova',
+    businessRevolution: 'Escolha seu caminho',
     revolution: 'Revolução de Negócios',
     selectPath: 'Selecione o seu caminho e comece a sua jornada hoje!',
     entrepreneurDesc:
@@ -213,7 +217,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     rejectAll: 'Rejeitar Todos',
     savePreferences: 'Salvar Preferências',
     freeYearPromo: 'Inscreva-se agora e aproveite 1 ano grátis.',
-    cancel: 'Cancelar'
+    cancel: 'Cancelar',
+    trustedByPartners: 'Confiado pelos Principais Parceiros',
+    partnersDescription: 'Junte-se às empresas líderes da indústria e empresas inovadoras que confiam no Im-Vestor para conectar os melhores empreendedores com investidores estratégicos.'
   },
   'pt-BR': {
     signIn: 'Entrar',
@@ -256,7 +262,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       'O Im-Vestor prioriza a segurança de todos os usuários. Garantimos que todos os projetos e investidores sejam minuciosamente verificados, criando um ambiente de confiança para os negócios prosperarem.',
     investmentsProtectedShort:
       'O Im-Vestor prioriza a segurança de todos os usuários e um ambiente de confiança para os negócios prosperarem.',
-    businessRevolution: 'Faça parte da nova',
+    businessRevolution: 'Escolha seu caminho',
     revolution: 'Revolução de Negócios',
     selectPath: 'Selecione seu caminho e comece sua jornada hoje!',
     entrepreneurDesc:
@@ -286,7 +292,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     rejectAll: 'Rejeitar Todos',
     savePreferences: 'Salvar Preferências',
     freeYearPromo: 'Inscreva-se agora e aproveite 1 ano grátis.',
-    cancel: 'Cancelar'
+    cancel: 'Cancelar',
+    trustedByPartners: 'Confiado pelos Principais Parceiros',
+    partnersDescription: 'Junte-se às empresas líderes da indústria e empresas inovadoras que confiam no Im-Vestor para conectar os melhores empreendedores com investidores estratégicos.'
   },
 };
 

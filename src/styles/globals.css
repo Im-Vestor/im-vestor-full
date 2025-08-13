@@ -28,6 +28,7 @@
 }
 
 @layer utilities {
+
   /* Primary Color Utilities */
   .bg-primary {
     @apply bg-primary-gradient;
@@ -117,6 +118,7 @@
 
 /* Additional print styles */
 @media print {
+
   /* Reset the page margins and background */
   @page {
     size: 8.5in 11in;
@@ -340,4 +342,33 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: #3f3f5a #1e1e2e;
+}
+
+/* Marquee animations */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
 }

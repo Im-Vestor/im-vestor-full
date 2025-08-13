@@ -7,6 +7,31 @@ import { sendEmail } from '~/utils/email';
 import { createReferralLink, generateCode } from '~/utils/referral';
 
 export const partnerRouter = createTRPCRouter({
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.partner.findMany({
+      where: {
+        user: {
+          status: 'ACTIVE',
+        },
+        companyName: {
+          not: null,
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        companyName: true,
+        companyLogoUrl: true,
+      },
+      orderBy: {
+        user: {
+          createdAt: 'desc',
+        },
+      },
+    });
+  }),
+
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.partner.findUnique({
       where: { userId: ctx.auth.userId },

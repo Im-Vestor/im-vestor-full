@@ -28,6 +28,8 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useTranslation } from '~/hooks/use-translation';
 import StarField from '~/components/ui/StarField';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
+import { Marquee } from '~/components/ui/marquee';
+import { api } from '~/utils/api';
 
 const fadeIn = {
   initial: {
@@ -127,6 +129,9 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const { isLoaded, signIn, setActive } = useSignIn();
+
+  // Fetch partners data for the marquee
+  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
 
   const handleLogin = async () => {
     if (!isLoaded) return;
@@ -872,6 +877,100 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
+            </motion.div>
+          </StarField>
+
+          <StarField>
+            <motion.div
+              variants={fadeIn}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="relative w-full py-16"
+            >
+              <div className="absolute inset-0" />
+              <div className="relative z-10">
+                <h2 className="font-['Segoe UI'] text-[66px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent text-center mb-12">
+                  {t('trustedByPartners')}
+                </h2>
+                <motion.p
+                  variants={fadeIn}
+                  className="mb-16 text-center text-lg text-white/60 max-w-2xl mx-auto px-4"
+                >
+                  {t('partnersDescription')}
+                </motion.p>
+
+                <motion.div
+                  variants={fadeIn}
+                  className="w-full max-w-7xl mx-auto px-4"
+                >
+                  {/* Marquee container with fade masks */}
+                  <div className="relative overflow-hidden">
+                    {/* Left fade mask */}
+                    <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+
+                    {/* Right fade mask */}
+                    <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+
+                    <Marquee
+                      className="py-8"
+                      pauseOnHover={true}
+                      repeat={6}
+                    >
+                      {isLoadingPartners ? (
+                        // Loading skeleton
+                        Array.from({ length: 8 }).map((_, index) => (
+                          <div key={index} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse">
+                            <div className="w-24 h-4 bg-white/20 rounded"></div>
+                          </div>
+                        ))
+                      ) : partners && partners.length > 0 ? (
+                        // Real partner data
+                        partners.map((partner) => (
+                          <div key={partner.id} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group">
+                            {'companyLogoUrl' in partner && (partner as any).companyLogoUrl ? (
+                              // Show company logo if available
+                              <div className="relative w-32 h-12">
+                                <Image
+                                  src={(partner as any).companyLogoUrl}
+                                  alt={partner.companyName || `${partner.firstName} ${partner.lastName}`}
+                                  fill
+                                  className="object-contain"
+                                  sizes="128px"
+                                />
+                              </div>
+                            ) : (
+                              // Fallback to company name
+                              <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
+                                {partner.companyName || `${partner.firstName} ${partner.lastName}`}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        // Fallback to default partners if no data
+                        [
+                          { name: 'SEQUOIA' },
+                          { name: 'ANDREESSEN' },
+                          { name: 'Y COMBINATOR' },
+                          { name: 'ACCEL' },
+                          { name: 'KLEINER PERKINS' },
+                          { name: 'GREYLOCK' },
+                          { name: 'INDEX VENTURES' },
+                          { name: 'FIRST ROUND' },
+                        ].map((partner, index) => (
+                          <div key={index} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group">
+                            <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
+                              {partner.name}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </Marquee>
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           </StarField>
 
