@@ -929,12 +929,12 @@ export default function Home() {
                         // Real partner data
                         partners.map((partner) => (
                           <div key={partner.id} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group">
-                            {'companyLogoUrl' in partner && (partner as any).companyLogoUrl ? (
+                            {partner.companyLogoUrl ? (
                               // Show company logo if available
                               <div className="relative w-32 h-12">
                                 <Image
-                                  src={(partner as any).companyLogoUrl}
-                                  alt={partner.companyName || `${partner.firstName} ${partner.lastName}`}
+                                  src={partner.companyLogoUrl}
+                                  alt={partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
                                   fill
                                   className="object-contain"
                                   sizes="128px"
@@ -943,7 +943,7 @@ export default function Home() {
                             ) : (
                               // Fallback to company name
                               <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
-                                {partner.companyName || `${partner.firstName} ${partner.lastName}`}
+                                {partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
                               </div>
                             )}
                           </div>
