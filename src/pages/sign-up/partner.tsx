@@ -10,7 +10,9 @@ import { Button } from '~/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { PhoneInput } from '~/components/ui/phone-input';
+import { useTranslation } from '~/hooks/use-translation';
 import { api } from '~/utils/api';
 
 const formSchema = z
@@ -32,6 +34,7 @@ const formSchema = z
 export default function SignupPartner() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const t = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,11 +53,11 @@ export default function SignupPartner() {
   const { mutateAsync: registerPartner, isPending: isRegistering } = api.partner.create.useMutation(
     {
       onSuccess: () => {
-        toast.success('Account created successfully!');
+        toast.success(t('accountCreatedSuccessfully'));
         void router.push('/login');
       },
       onError: error => {
-        toast.error('Failed to create account. ' + error.message);
+        toast.error(t('failedToCreateAccount') + ' ' + error.message);
         console.error('Registration error:', error);
       },
     }
@@ -65,24 +68,30 @@ export default function SignupPartner() {
       <div className="mt-4 w-[80%]">
         <Header />
       </div>
+
       <div
         className={`rounded-2xl backdrop-blur-md border-4 border-white/10 bg-background bg-opacity-30 p-6 md:max-w-[40rem]`}
       >
-        <button
-          type="button"
-          className="flex items-center gap-2 hover:opacity-75"
-          onClick={() => (step > 1 ? setStep(step - 1) : router.back())}
-        >
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
+        <div className="flex justify-between items-center">
+          <button
+            type="button"
+            className="flex items-center gap-2 hover:opacity-75"
+            onClick={() => (step > 1 ? setStep(step - 1) : router.back())}
+          >
+            <ArrowLeft className="h-4 w-4" /> {t('back')}
+          </button>
 
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+          </div>
+        </div>
         <Form {...form}>
           <form className="mt-8">
             {step === 1 && (
               <div className="md:min-w-[30rem] md:max-w-[30rem]">
                 <h2 className="my-8 text-center text-4xl font-semibold">
-                  Your account as <br />
-                  <span className="text-[#E5CD82]">Partner</span>
+                  {t('yourAccountAs')} <br />
+                  <span className="text-[#E5CD82]">{t('partner')}</span>
                 </h2>
 
                 <div className="space-y-4">
@@ -91,7 +100,7 @@ export default function SignupPartner() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">First Name*</Label>
+                        <Label className="font-normal text-neutral-200">{t('firstName')}*</Label>
                         <FormControl>
                           <Input {...field} placeholder="John" disabled={isRegistering} />
                         </FormControl>
@@ -105,7 +114,7 @@ export default function SignupPartner() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Last Name*</Label>
+                        <Label className="font-normal text-neutral-200">{t('lastName')}*</Label>
                         <FormControl>
                           <Input {...field} placeholder="Doe" disabled={isRegistering} />
                         </FormControl>
@@ -119,7 +128,7 @@ export default function SignupPartner() {
                     name="mobileFone"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Mobile Phone*</Label>
+                        <Label className="font-normal text-neutral-200">{t('mobilePhone')}*</Label>
                         <FormControl>
                           <PhoneInput
                             {...field}
@@ -137,7 +146,7 @@ export default function SignupPartner() {
                     name="companyName"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Company Name*</Label>
+                        <Label className="font-normal text-neutral-200">{t('companyName')}*</Label>
                         <FormControl>
                           <Input {...field} placeholder="Company Name" disabled={isRegistering} />
                         </FormControl>
@@ -151,7 +160,7 @@ export default function SignupPartner() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Email*</Label>
+                        <Label className="font-normal text-neutral-200">{t('email')}*</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -170,7 +179,7 @@ export default function SignupPartner() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Password*</Label>
+                        <Label className="font-normal text-neutral-200">{t('password')}*</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -189,7 +198,9 @@ export default function SignupPartner() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Confirm Password*</Label>
+                        <Label className="font-normal text-neutral-200">
+                          {t('confirmPassword')}*
+                        </Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -209,8 +220,8 @@ export default function SignupPartner() {
             {step === 2 && (
               <div className="min-w-[20rem] md:min-w-[30rem] md:max-w-[30rem]">
                 <h2 className="my-8 text-center text-4xl font-semibold">
-                  Were you <br />
-                  <span className="text-[#E5CD82]">referred?</span>
+                  {t('wereYouReferred')} <br />
+                  <span className="text-[#E5CD82]">{t('referralToken')}</span>
                 </h2>
                 <div className="space-y-4">
                   <FormField
@@ -219,7 +230,7 @@ export default function SignupPartner() {
                     render={({ field }) => (
                       <FormItem>
                         <Label className="font-normal text-neutral-200">
-                          Referral Token (optional)
+                          {t('referralTokenOptional')}
                         </Label>
                         <FormControl>
                           <Input {...field} placeholder="6U5T4V00" disabled={isRegistering} />
@@ -245,10 +256,10 @@ export default function SignupPartner() {
               }}
             >
               {step === 3
-                ? 'Take your pass'
+                ? t('takeYourPass')
                 : form.formState.isValid
-                  ? 'Continue'
-                  : 'Please fill all the fields'}{' '}
+                  ? t('continue')
+                  : t('pleaseFieldFields')}{' '}
               <ArrowRight className="ml-2" />
             </Button>
           </form>

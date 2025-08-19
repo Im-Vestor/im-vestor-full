@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { BoostDialog } from '~/components/boosts/boost-dialog';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
 import { NextStepDialog } from '~/components/next-step/dialog';
@@ -41,7 +42,6 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
-import { BoostDialog } from '~/components/boosts/boost-dialog';
 
 const availableHours = [
   '07:00',
@@ -85,6 +85,7 @@ export default function CompanyDetails() {
   const { companyId } = router.query;
 
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
+  const isVc = user?.publicMetadata.userType === 'VC_GROUP';
   const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
 
   const tomorrow = startOfTomorrow();
@@ -111,10 +112,15 @@ export default function CompanyDetails() {
     enabled: !!isInvestor,
   });
 
-  const { data: negotiation } = api.negotiation.getNegotiationByProjectIdAndInvestorId.useQuery(
-    { projectId: companyId as string },
-    { enabled: !!companyId }
-  );
+  const { data: vcGroup } = api.vcGroup.getByUserId.useQuery(undefined, {
+    enabled: !!isVc,
+  });
+
+  const { data: negotiation } =
+    api.negotiation.getNegotiationByProjectIdAndInvestorIdOrVcGroupId.useQuery(
+      { projectId: companyId as string },
+      { enabled: !!companyId }
+    );
 
   const addInvestorViewMutation = api.project.addView.useMutation();
   const schedulePitchMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
@@ -149,13 +155,17 @@ export default function CompanyDetails() {
     });
 
   const isFavorite = useMemo(() => {
-    if (!investor?.favoriteProjects || !companyId) return false;
-    return investor.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId);
-  }, [investor?.favoriteProjects, companyId]);
+    if (!companyId) return false;
+    return (
+      investor?.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId) ??
+      vcGroup?.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId) ??
+      false
+    );
+  }, [investor?.favoriteProjects, vcGroup?.favoriteProjects, companyId]);
 
-  const favoriteOrUnfavoriteMutation = api.investor.favoriteOrUnfavorite.useMutation({
+  const favoriteOrUnfavoriteMutation = api.project.favoriteOrUnfavorite.useMutation({
     onSuccess: async () => {
-      await utils.investor.getByUserId.invalidate();
+      await utils.project.getById.invalidate();
       toast.success(`${isFavorite ? 'Removed from' : 'Added to'} favorites!`);
     },
     onError: () => {
@@ -179,6 +189,7 @@ export default function CompanyDetails() {
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: meetingDateTime,
           investorId: investor?.id ?? '',
+          vcGroupId: vcGroup?.id ?? '',
           projectId: companyId as string,
         });
       } else {
@@ -186,6 +197,7 @@ export default function CompanyDetails() {
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: meetingDateTime,
           investorId: investor?.id ?? '',
+          vcGroupId: vcGroup?.id ?? '',
           projectId: companyId as string,
         });
       }
@@ -193,13 +205,14 @@ export default function CompanyDetails() {
   };
 
   const handleScheduleMeetingNow = async () => {
-    if (companyId && project?.Entrepreneur?.id && investor?.id) {
+    if (companyId && project?.Entrepreneur?.id && (investor?.id || vcGroup?.id)) {
       const now = new Date();
       if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: now,
           investorId: investor?.id ?? '',
+          vcGroupId: vcGroup?.id ?? '',
           projectId: companyId as string,
         });
       } else {
@@ -207,6 +220,7 @@ export default function CompanyDetails() {
           entrepreneurId: project?.Entrepreneur?.id ?? '',
           date: now,
           investorId: investor?.id ?? '',
+          vcGroupId: vcGroup?.id ?? '',
           projectId: companyId as string,
         });
       }
@@ -275,22 +289,23 @@ export default function CompanyDetails() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-semibold sm:text-3xl">{project.name}</h1>
-                  {isInvestor && (
-                    <button
-                      onClick={handleFavoriteClick}
-                      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
-                      aria-label={
-                        isFavorite
-                          ? `Remove ${project.name} from favorites`
-                          : `Add ${project.name} to favorites`
-                      }
-                      disabled={favoriteOrUnfavoriteMutation.isPending}
-                    >
-                      <Heart
-                        className={`h-5 w-5 transition-all ${favoriteOrUnfavoriteMutation.isPending ? 'opacity-50' : ''} duration-300 ${isFavorite ? 'fill-[#EFD687] text-[#EFD687]' : 'fill-transparent'}`}
-                      />
-                    </button>
-                  )}
+                  {isInvestor ||
+                    (isVc && (
+                      <button
+                        onClick={handleFavoriteClick}
+                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${project.name} from favorites`
+                            : `Add ${project.name} to favorites`
+                        }
+                        disabled={favoriteOrUnfavoriteMutation.isPending}
+                      >
+                        <Heart
+                          className={`h-5 w-5 transition-all ${favoriteOrUnfavoriteMutation.isPending ? 'opacity-50' : ''} duration-300 ${isFavorite ? 'fill-[#EFD687] text-[#EFD687]' : 'fill-transparent'}`}
+                        />
+                      </button>
+                    ))}
                 </div>
                 <p className="text-sm text-white/60 sm:text-base">
                   {project.quickSolution ?? 'No description available'}
@@ -339,7 +354,7 @@ export default function CompanyDetails() {
                     availableBoosts={project.Entrepreneur?.user.availableBoosts ?? 0}
                   />
                 )}
-                {isInvestor &&
+                {(isInvestor || isVc) &&
                   negotiation?.stage !== NegotiationStage.CLOSED &&
                   negotiation?.stage !== NegotiationStage.CANCELLED && (
                     <>
@@ -494,7 +509,7 @@ export default function CompanyDetails() {
 
         <hr className="my-6 border-white/10 sm:my-8" />
 
-        {isInvestor && negotiation?.investorActionNeeded && (
+        {(isInvestor || isVc) && negotiation?.investorActionNeeded && (
           <NextStepDialog negotiationId={negotiation.id} />
         )}
 

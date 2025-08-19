@@ -8,7 +8,7 @@ import { createNotifications } from './notifications';
 import { sendEmail } from '~/utils/email';
 
 export const negotiationRouter = createTRPCRouter({
-  getNegotiationByProjectIdAndInvestorId: protectedProcedure
+  getNegotiationByProjectIdAndInvestorIdOrVcGroupId: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.db.user.findUnique({
@@ -19,11 +19,12 @@ export const negotiationRouter = createTRPCRouter({
           userType: true,
           entrepreneur: true,
           investor: true,
+          vcGroup: true,
         },
       });
 
       if (user?.userType === UserType.ENTREPRENEUR) {
-        return await ctx.db.negotiation.findUnique({
+        return await ctx.db.negotiation.findFirst({
           where: {
             projectId: input.projectId,
             project: {
@@ -32,10 +33,11 @@ export const negotiationRouter = createTRPCRouter({
           },
         });
       } else {
-        return await ctx.db.negotiation.findUnique({
+        return await ctx.db.negotiation.findFirst({
           where: {
             projectId: input.projectId,
-            investorId: user?.investor?.id,
+            ...(user?.investor && { investorId: user.investor.id }),
+            ...(user?.vcGroup && { vcGroupId: user.vcGroup.id }),
           },
         });
       }
@@ -45,7 +47,8 @@ export const negotiationRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         date: z.date(),
-        investorId: z.string(),
+        investorId: z.string().optional(),
+        vcGroupId: z.string().optional(),
         entrepreneurId: z.string(),
       })
     )
@@ -54,7 +57,8 @@ export const negotiationRouter = createTRPCRouter({
       const existingNegotiation = await ctx.db.negotiation.findFirst({
         where: {
           projectId: input.projectId,
-          investorId: input.investorId,
+          ...(input.investorId && { investorId: input.investorId }),
+          ...(input.vcGroupId && { vcGroupId: input.vcGroupId }),
         },
       });
 
@@ -69,22 +73,29 @@ export const negotiationRouter = createTRPCRouter({
         data: {
           projectId: input.projectId,
           stage: NegotiationStage.PITCH,
-          investorId: input.investorId,
+          ...(input.investorId && { investorId: input.investorId }),
+          ...(input.vcGroupId && { vcGroupId: input.vcGroupId }),
           entrepreneurActionNeeded: true,
           investorActionNeeded: true,
         },
       });
 
-      await scheduleMeeting(
+      void scheduleMeeting(
         ctx.db,
         input.date,
         input.entrepreneurId,
-        [input.investorId],
+        input.investorId ? [input.investorId] : [],
+        input.vcGroupId ? [input.vcGroupId] : [],
         negotiation.id
       );
 
       const investor = await ctx.db.investor.findUnique({
         where: { id: input.investorId },
+        select: { userId: true },
+      });
+
+      const vcGroup = await ctx.db.vcGroup.findUnique({
+        where: { id: input.vcGroupId },
         select: { userId: true },
       });
 
@@ -101,7 +112,7 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      await sendEmail(
+      void sendEmail(
         entrepreneur?.firstName ?? '',
         'New pitch meeting request',
         'An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.',
@@ -109,9 +120,9 @@ export const negotiationRouter = createTRPCRouter({
         'New pitch meeting request'
       );
 
-      await createNotifications(
+      void createNotifications(
         ctx.db,
-        [investor?.userId ?? '', entrepreneur?.userId ?? ''],
+        [investor?.userId ?? vcGroup?.userId ?? '', entrepreneur?.userId ?? ''],
         NotificationType.NEGOTIATION_CREATED
       );
 
@@ -122,7 +133,8 @@ export const negotiationRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         date: z.date(),
-        investorId: z.string(),
+        investorId: z.string().optional(),
+        vcGroupId: z.string().optional(),
         entrepreneurId: z.string(),
       })
     )
@@ -131,7 +143,8 @@ export const negotiationRouter = createTRPCRouter({
       const existingNegotiation = await ctx.db.negotiation.findFirst({
         where: {
           projectId: input.projectId,
-          investorId: input.investorId,
+          ...(input.investorId && { investorId: input.investorId }),
+          ...(input.vcGroupId && { vcGroupId: input.vcGroupId }),
         },
       });
 
@@ -142,7 +155,7 @@ export const negotiationRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.negotiation.update({
+      void ctx.db.negotiation.update({
         where: { id: existingNegotiation.id },
         data: {
           entrepreneurActionNeeded: true,
@@ -150,11 +163,12 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      await scheduleMeeting(
+      void scheduleMeeting(
         ctx.db,
         input.date,
         input.entrepreneurId,
-        [input.investorId],
+        input.investorId ? [input.investorId] : [],
+        input.vcGroupId ? [input.vcGroupId] : [],
         existingNegotiation.id
       );
 
@@ -171,7 +185,7 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      await sendEmail(
+      void sendEmail(
         entrepreneur?.firstName ?? '',
         'New meeting request',
         'An investor has requested a new meeting. Please check your dashboard to accept or reject the request.',
@@ -210,12 +224,16 @@ export const negotiationRouter = createTRPCRouter({
             },
           },
           investor: true,
+          VcGroup: true,
         },
       });
 
       await createNotifications(
         ctx.db,
-        [negotiation.investor?.userId ?? '', negotiation.project.Entrepreneur?.userId ?? ''],
+        [
+          negotiation.investor?.userId ?? negotiation.VcGroup?.userId ?? '',
+          negotiation.project.Entrepreneur?.userId ?? '',
+        ],
         NotificationType.NEGOTIATION_CANCELLED
       );
 
@@ -240,6 +258,7 @@ export const negotiationRouter = createTRPCRouter({
           userType: true,
           entrepreneur: true,
           investor: true,
+          vcGroup: true,
         },
       });
 
@@ -276,6 +295,7 @@ export const negotiationRouter = createTRPCRouter({
               },
             },
           },
+          VcGroup: true,
         },
       });
 
@@ -308,7 +328,10 @@ export const negotiationRouter = createTRPCRouter({
 
       await createNotifications(
         ctx.db,
-        [negotiation?.investor?.userId ?? '', negotiation?.project.Entrepreneur?.userId ?? ''],
+        [
+          negotiation?.investor?.userId ?? negotiation?.VcGroup?.userId ?? '',
+          negotiation?.project.Entrepreneur?.userId ?? '',
+        ],
         NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE
       );
 
@@ -321,6 +344,7 @@ async function scheduleMeeting(
   date: Date,
   entrepreneurId: string,
   investorIds: string[],
+  vcGroupIds: string[],
   negotiationId: string
 ) {
   const now = new Date();
@@ -345,9 +369,16 @@ async function scheduleMeeting(
       startDate: date,
       endDate: addHours(date, 1),
       entrepreneurId: entrepreneurId,
-      investors: {
-        connect: investorIds.map(id => ({ id })),
-      },
+      ...(investorIds.length > 0 && {
+        investors: {
+          connect: investorIds.map(id => ({ id })),
+        },
+      }),
+      ...(vcGroupIds.length > 0 && {
+        vcGroups: {
+          connect: vcGroupIds.map(id => ({ id })),
+        },
+      }),
       negotiationId: negotiationId,
     },
   });

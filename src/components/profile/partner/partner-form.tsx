@@ -1,11 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type Partner } from '@prisma/client';
-import { Building2, Loader2, Plus } from 'lucide-react';
+import { Building2, Loader2, Plus, Trash2Icon } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
@@ -43,6 +54,18 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
     onError: error => {
       toast.error('Failed to update profile. Please try again.');
       console.error('Update error:', error);
+    },
+  });
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: () => {
+      toast.success(
+        'Confirmation email sent! Please check your email to complete account deletion.'
+      );
+    },
+    onError: error => {
+      toast.error('Failed to send confirmation email. Please try again.');
+      console.error('Delete user error:', error);
     },
   });
 
@@ -148,13 +171,44 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
           />
         </div>
 
-        <div className="mx-6 flex justify-end gap-4 pb-8 pt-8">
-          <Button variant="secondary" disabled={isUpdatingPartner} onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isUpdatingPartner}>
-            {isUpdatingPartner ? 'Saving...' : 'Save Changes'}
-          </Button>
+        <div className="mx-6 flex justify-between items-center pb-8 pt-8">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="flex items-center gap-2">
+                <Trash2Icon className="h-4 w-4" />
+                Delete Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove
+                  all your data from our servers. You will lose access to all your partnerships and
+                  connections. An email will be sent to you with a link to delete your account. This
+                  link will expire in 24 hours.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    await deleteUser();
+                  }}
+                >
+                  Send Deletion Link
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <div className="flex gap-4">
+            <Button variant="secondary" disabled={isUpdatingPartner} onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isUpdatingPartner}>
+              {isUpdatingPartner ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

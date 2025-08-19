@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 // Define the supported languages
-export type Language = 'en-US' | 'pt-PT' | 'pt-BR';
+export type Language = 'en-US' | 'pt-PT';
 
 // Define the language context type
 type LanguageContextType = {

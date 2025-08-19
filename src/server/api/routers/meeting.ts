@@ -18,6 +18,7 @@ export const meetingRouter = createTRPCRouter({
           userType: true,
           entrepreneur: true,
           investor: true,
+          vcGroup: true,
         },
       });
 
@@ -29,11 +30,20 @@ export const meetingRouter = createTRPCRouter({
               entrepreneurId: user?.entrepreneur?.id,
             }
           : {
-              investors: {
-                some: {
-                  id: user?.investor?.id,
+              ...(user?.investor && {
+                investors: {
+                  some: {
+                    id: user?.investor?.id,
+                  },
                 },
-              },
+              }),
+              ...(user?.vcGroup && {
+                vcGroups: {
+                  some: {
+                    id: user?.vcGroup?.id,
+                  },
+                },
+              }),
             };
 
       const meetings = await ctx.db.meeting.findMany({

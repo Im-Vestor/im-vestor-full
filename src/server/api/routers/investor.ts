@@ -80,22 +80,22 @@ export const investorRouter = createTRPCRouter({
         where: {
           ...(input.searchQuery
             ? {
-              OR: [
-                { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-              ],
-            }
+                OR: [
+                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+                ],
+              }
             : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
           ...(input.areaIds && input.areaIds.length > 0
             ? {
-              areas: {
-                some: {
-                  id: { in: input.areaIds },
+                areas: {
+                  some: {
+                    id: { in: input.areaIds },
+                  },
                 },
-              },
-            }
+              }
             : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
@@ -106,22 +106,22 @@ export const investorRouter = createTRPCRouter({
         where: {
           ...(input.searchQuery
             ? {
-              OR: [
-                { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-              ],
-            }
+                OR: [
+                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
+                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
+                ],
+              }
             : {}),
           ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
           ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
           ...(input.areaIds && input.areaIds.length > 0
             ? {
-              areas: {
-                some: {
-                  id: { in: input.areaIds },
+                areas: {
+                  some: {
+                    id: { in: input.areaIds },
+                  },
                 },
-              },
-            }
+              }
             : {}),
           ...(input.countryId ? { countryId: input.countryId } : {}),
           ...(input.stateId ? { stateId: input.stateId } : {}),
@@ -268,35 +268,5 @@ export const investorRouter = createTRPCRouter({
           },
         },
       });
-    }),
-  favoriteOrUnfavorite: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const investor = await ctx.db.investor.findUniqueOrThrow({
-        where: { userId: ctx.auth.userId },
-        include: {
-          favoriteProjects: true,
-        },
-      });
-
-      const favorite = investor.favoriteProjects.find(favorite => favorite.id === input.projectId);
-
-      if (favorite) {
-        await ctx.db.investor.update({
-          where: { id: investor.id },
-          data: {
-            favoriteProjects: {
-              disconnect: { id: input.projectId },
-            },
-          },
-        });
-      } else {
-        await ctx.db.investor.update({
-          where: { id: investor.id },
-          data: {
-            favoriteProjects: { connect: { id: input.projectId } },
-          },
-        });
-      }
     }),
 });

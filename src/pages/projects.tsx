@@ -255,7 +255,7 @@ export default function Companies() {
             <div className="flex items-center rounded-md bg-white/10 border-2 border-white/10">
               <SearchIcon className="ml-3 h-5 w-5 text-white" />
               <Input
-                placeholder="Search investors by name"
+                placeholder="Search projects by name"
                 className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}

@@ -57,6 +57,29 @@ const INVESTOR_MENUS = [
   },
 ];
 
+const VC_MENUS = [
+  {
+    label: 'Projects',
+    href: '/projects',
+  },
+  {
+    label: 'Meetings',
+    href: '/meetings',
+  },
+  {
+    label: 'Pitch of the Week',
+    href: '/pitch-of-the-week',
+  },
+  {
+    label: 'News',
+    href: '/news?type=vc',
+  },
+  {
+    label: 'Shop',
+    href: '/shop',
+  },
+];
+
 const PARTNER_MENUS = [
   {
     label: 'Dashboard',
@@ -105,6 +128,7 @@ export const Header = () => {
     if (userType === 'INVESTOR') return INVESTOR_MENUS;
     if (userType === 'ENTREPRENEUR') return ENTREPRENEUR_MENUS;
     if (userType === 'PARTNER') return PARTNER_MENUS;
+    if (userType === 'VC_GROUP') return VC_MENUS;
     return [];
   };
 
@@ -204,7 +228,7 @@ export const Header = () => {
                   <Book className="h-4 w-4 mr-2" />
                   Terms
                 </DropdownMenuItem>
-                {userMetadata?.userIsAdmin && (
+                {userMetadata && userMetadata.userIsAdmin && (
                   <DropdownMenuItem
                     onClick={() => void handleNavigation('/admin/dashboard')}
                     className="hover:cursor-pointer"

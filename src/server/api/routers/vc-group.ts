@@ -14,6 +14,7 @@ export const vcGroupRouter = createTRPCRouter({
         country: true,
         state: true,
         interestedAreas: true,
+        favoriteProjects: true,
       },
     });
   }),

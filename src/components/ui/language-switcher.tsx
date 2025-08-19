@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 const languages = [
   { code: 'en-US', name: 'English (US)', flag: 'US' },
   { code: 'pt-PT', name: 'Português (PT)', flag: 'PT' },
-  { code: 'pt-BR', name: 'Português (BR)', flag: 'BR' },
 ] as const;
 
 // Language flag component

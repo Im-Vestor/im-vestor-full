@@ -6,25 +6,13 @@ import {
   DollarSign,
   MapPin,
   Pencil,
-  Trash2Icon,
   User,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '~/components/ui/alert-dialog';
+
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
@@ -39,18 +27,6 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const { data: entrepreneur, isPending: isLoading } = userId
     ? api.entrepreneur.getByUserIdForAdmin.useQuery({ userId })
     : api.entrepreneur.getByUserId.useQuery();
-
-  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
-    onSuccess: () => {
-      toast.success(
-        'Confirmation email sent! Please check your email to complete account deletion.'
-      );
-    },
-    onError: error => {
-      toast.error('Failed to send confirmation email. Please try again.');
-      console.error('Delete user error:', error);
-    },
-  });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;
@@ -104,45 +80,14 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
             {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
           </h2>
           {canEdit && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Pencil className="h-2 w-2" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="flex items-center gap-2">
-                    <Trash2Icon className="h-2 w-2" />
-                    Delete Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your account and
-                      remove all your data from our servers. You will lose access to all your
-                      projects and connections. An email will be sent to you with a link to delete
-                      your account. This link will expire in 24 hours.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        await deleteUser();
-                      }}
-                    >
-                      Send Deletion Link
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <Pencil className="h-2 w-2" />
+              {isEditing ? 'Cancel' : 'Edit'}
+            </Button>
           )}
         </div>
         <p className="mt-3 text-lg text-gray-400">

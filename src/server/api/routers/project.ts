@@ -59,7 +59,16 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where: Prisma.ProjectWhereInput = {};
 
-      const investor = await ctx.db.investor.findUniqueOrThrow({
+      const investor = await ctx.db.investor.findUnique({
+        where: {
+          userId: ctx.auth.userId,
+        },
+        include: {
+          favoriteProjects: true,
+        },
+      });
+
+      const vc = await ctx.db.vcGroup.findUnique({
         where: {
           userId: ctx.auth.userId,
         },
@@ -122,7 +131,9 @@ export const projectRouter = createTRPCRouter({
 
       if (input.favorites) {
         where.id = {
-          in: investor.favoriteProjects.map(project => project.id),
+          in: investor
+            ? investor.favoriteProjects.map(project => project.id)
+            : (vc?.favoriteProjects.map(project => project.id) ?? []),
         };
       }
 
@@ -158,7 +169,10 @@ export const projectRouter = createTRPCRouter({
       return {
         projects: projects.map(project => ({
           ...project,
-          isFavorite: investor.favoriteProjects.some(favorite => favorite.id === project.id),
+          isFavorite:
+            investor?.favoriteProjects.some(favorite => favorite.id === project.id) ??
+            vc?.favoriteProjects.some(favorite => favorite.id === project.id) ??
+            false,
         })),
         total,
       };
@@ -564,5 +578,68 @@ export const projectRouter = createTRPCRouter({
       });
 
       return project;
+    }),
+  favoriteOrUnfavorite: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.auth.userId;
+
+      const user = await ctx.db.user.findUniqueOrThrow({
+        where: { id: userId },
+      });
+
+      if (user.userType === 'INVESTOR') {
+        const investor = await ctx.db.investor.findUniqueOrThrow({
+          where: { userId: userId },
+          include: {
+            favoriteProjects: true,
+          },
+        });
+
+        const existingFavorite =
+          investor.favoriteProjects.find(favorite => favorite.id === input.projectId) ?? null;
+
+        if (existingFavorite) {
+          await ctx.db.investor.update({
+            where: { id: investor.id },
+            data: {
+              favoriteProjects: {
+                disconnect: { id: input.projectId },
+              },
+            },
+          });
+        } else {
+          await ctx.db.investor.update({
+            where: { id: investor.id },
+            data: {
+              favoriteProjects: { connect: { id: input.projectId } },
+            },
+          });
+        }
+      }
+
+      if (user.userType === 'VC_GROUP') {
+        const vc = await ctx.db.vcGroup.findUniqueOrThrow({
+          where: { userId: userId },
+          include: {
+            favoriteProjects: true,
+          },
+        });
+
+        const existingFavorite =
+          vc.favoriteProjects.find(favorite => favorite.id === input.projectId) ?? null;
+
+        if (existingFavorite) {
+          await ctx.db.vcGroup.update({
+            where: { id: vc.id },
+            data: { favoriteProjects: { disconnect: { id: input.projectId } } },
+          });
+        } else {
+          await ctx.db.vcGroup.update({
+            where: { id: vc.id },
+            data: { favoriteProjects: { connect: { id: input.projectId } } },
+          });
+        }
+      }
     }),
 });

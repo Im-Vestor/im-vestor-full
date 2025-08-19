@@ -1,11 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type Entrepreneur } from '@prisma/client';
-import { ImageIcon, Plus, PlusIcon, Loader2 } from 'lucide-react';
+import { ImageIcon, Plus, PlusIcon, Loader2, Trash2Icon } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
@@ -88,6 +99,18 @@ export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormPro
         console.error('Update error:', error);
       },
     });
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: () => {
+      toast.success(
+        'Confirmation email sent! Please check your email to complete account deletion.'
+      );
+    },
+    onError: error => {
+      toast.error('Failed to send confirmation email. Please try again.');
+      console.error('Delete user error:', error);
+    },
+  });
 
   const form = useForm<z.infer<typeof entrepreneurFormSchema>>({
     resolver: zodResolver(entrepreneurFormSchema),
@@ -403,13 +426,44 @@ export const EntrepreneurForm = ({ entrepreneur, onCancel }: EntrepreneurFormPro
           />
         </div>
 
-        <div className="mx-6 flex justify-end gap-4 pb-8 pt-8">
-          <Button variant="secondary" disabled={isUpdatingEntrepreneur} onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isUpdatingEntrepreneur}>
-            {isUpdatingEntrepreneur ? 'Saving...' : 'Save Changes'}
-          </Button>
+        <div className="mx-6 flex justify-between items-center pb-8 pt-8">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="flex items-center gap-2">
+                <Trash2Icon className="h-4 w-4" />
+                Delete Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove
+                  all your data from our servers. You will lose access to all your projects and
+                  connections. An email will be sent to you with a link to delete your account. This
+                  link will expire in 24 hours.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    await deleteUser();
+                  }}
+                >
+                  Send Deletion Link
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <div className="flex gap-4">
+            <Button variant="secondary" disabled={isUpdatingEntrepreneur} onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isUpdatingEntrepreneur}>
+              {isUpdatingEntrepreneur ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

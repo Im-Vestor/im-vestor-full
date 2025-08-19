@@ -42,7 +42,8 @@ const NotificationTextMap: Record<string, string> = {
   [NotificationType.SUPPORT_TICKET_REPLY]: 'Click here to view support ticket reply',
   [NotificationType.SUPPORT_TICKET_STATUS_UPDATED]: 'Your support ticket status has been updated',
   [NotificationType.SUPPORT_TICKET_CREATED]: 'A new support ticket requires your attention',
-  [NotificationType.SUPPORT_TICKET_RECEIVED]: 'Your support ticket has been received and will be reviewed soon',
+  [NotificationType.SUPPORT_TICKET_RECEIVED]:
+    'Your support ticket has been received and will be reviewed soon',
 };
 
 type UserDetails = {
@@ -73,10 +74,13 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
   const { mutateAsync: readAllNotifications } = api.notifications.readAllNotifications.useMutation({
     onMutate: () => {
       // Don't clear support ticket notifications when marking all as read
-      setNotifications(notifications.filter(n =>
-        n.type === NotificationType.SUPPORT_TICKET_REPLY ||
-        n.type === NotificationType.SUPPORT_TICKET_STATUS_UPDATED
-      ));
+      setNotifications(
+        notifications.filter(
+          n =>
+            n.type === NotificationType.SUPPORT_TICKET_REPLY ||
+            n.type === NotificationType.SUPPORT_TICKET_STATUS_UPDATED
+        )
+      );
     },
   });
 
@@ -102,14 +106,22 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     }
   };
 
+  // Calculate total notification count
+  const totalNotifications = notifications.length + userDetails.openNegotiations.length;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="relative">
           {noNotifications && noNegotiations ? (
             <Bell fill="none" className="size-4" />
           ) : (
             <Bell fill="currentColor" className="size-4" />
+          )}
+          {totalNotifications > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-5 flex items-center justify-center font-medium">
+              {totalNotifications > 99 ? '99+' : totalNotifications}
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -159,7 +171,11 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="flex-1 cursor-pointer">
-                <span className={notification.type.includes('SUPPORT_TICKET') ? 'text-primary font-medium' : ''}>
+                <span
+                  className={
+                    notification.type.includes('SUPPORT_TICKET') ? 'text-primary font-medium' : ''
+                  }
+                >
                   {NotificationTextMap[notification.type] ?? 'You have a new notification'}
                 </span>
                 <span className="text-sm text-muted-foreground ml-2">
@@ -169,11 +185,7 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
               {notification.type.includes('SUPPORT_TICKET') ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={e => e.stopPropagation()}
-                    >
+                    <Button variant="ghost" size="icon" onClick={e => e.stopPropagation()}>
                       <Trash2 className="size-4" />
                     </Button>
                   </AlertDialogTrigger>
@@ -181,7 +193,8 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Support Notification</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this support ticket notification? This action cannot be undone.
+                        Are you sure you want to delete this support ticket notification? This
+                        action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

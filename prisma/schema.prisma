@@ -301,7 +301,7 @@ model Project {
   photo4Caption             String?
   files                     File[]
   knowYourNumbers           KnowYourNumbers?
-  negotiation               Negotiation?
+  negotiations              Negotiation[]
   country                   Country?          @relation(fields: [countryId], references: [id])
   Entrepreneur              Entrepreneur?     @relation(fields: [entrepreneurId], references: [id])
   Incubator                 Incubator?        @relation(fields: [incubatorId], references: [id])
@@ -325,7 +325,7 @@ model Negotiation {
   investorAgreedToGoToNextStage     Boolean          @default(false)
   entrepreneurAgreedToGoToNextStage Boolean          @default(false)
   investorId                        String?
-  projectId                         String           @unique
+  projectId                         String
   vcGroupId                         String?
   meetings                          Meeting[]
   investor                          Investor?        @relation(fields: [investorId], references: [id])
