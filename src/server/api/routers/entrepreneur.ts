@@ -113,6 +113,7 @@ export const entrepreneurRouter = createTRPCRouter({
         referralToken: z.string().optional(),
         email: z.string().email(),
         password: z.string().min(8),
+        linkedinUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -168,6 +169,7 @@ export const entrepreneurRouter = createTRPCRouter({
           lastName: input.lastName,
           mobileFone: input.mobileFone,
           birthDate: input.birthDate,
+          linkedinUrl: input.linkedinUrl,
         },
       });
     }),

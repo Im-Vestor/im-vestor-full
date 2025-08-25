@@ -36,6 +36,7 @@ const formSchema = z
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
     }),
+    linkedinUrl: z.string().optional(),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -58,6 +59,7 @@ export default function SignupEntrepreneur() {
       birthDate: new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
       referralToken: (router.query.referralToken as string) ?? '',
       acceptTerms: true,
+      linkedinUrl: '',
     },
     mode: 'onBlur',
   });
@@ -195,6 +197,25 @@ export default function SignupEntrepreneur() {
                             {...field}
                             type="email"
                             placeholder="example@email.com"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">
+                          LinkedIn URL (optional)
+                        </Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://www.linkedin.com/in/your-profile"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -349,6 +370,7 @@ export default function SignupEntrepreneur() {
                         'confirmPassword',
                         'mobileFone',
                         'birthDate',
+                        'linkedinUrl',
                       ]);
                       break;
                     case 2:

@@ -64,6 +64,7 @@ export const incubatorRouter = createTRPCRouter({
         ownerPhone: z.string().optional(),
         ownerEmail: z.string().email(),
         referralToken: z.string().optional(),
+        linkedinUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -121,6 +122,7 @@ export const incubatorRouter = createTRPCRouter({
           ownerRole: input.ownerRole,
           ownerPhone: input.ownerPhone,
           ownerEmail: input.ownerEmail,
+          linkedinUrl: input.linkedinUrl,
         },
       });
     }),

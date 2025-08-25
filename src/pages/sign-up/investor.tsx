@@ -54,6 +54,7 @@ const formSchema = z
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
     }),
+    linkedinUrl: z.string().optional(),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -82,6 +83,7 @@ export default function SignupInvestor() {
       areas: [],
       referralToken: (router.query.referralToken as string) ?? '',
       acceptTerms: false,
+      linkedinUrl: '',
     },
     mode: 'onBlur',
   });
@@ -271,6 +273,26 @@ export default function SignupInvestor() {
                             />
                           </PopoverContent>
                         </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">
+                          LinkedIn URL (optional)
+                        </Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://www.linkedin.com/in/your-profile"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -503,10 +525,7 @@ export default function SignupInvestor() {
               <Button
                 type="button"
                 className="mt-12 w-full"
-                disabled={
-                  isRegistering ||
-                  (step === 5 && !form.getValues('acceptTerms'))
-                }
+                disabled={isRegistering || (step === 5 && !form.getValues('acceptTerms'))}
                 onClick={async () => {
                   let isValid = false;
 
@@ -519,6 +538,7 @@ export default function SignupInvestor() {
                         'password',
                         'mobileFone',
                         'birthDate',
+                        'linkedinUrl',
                       ]);
                       break;
                     case 2:

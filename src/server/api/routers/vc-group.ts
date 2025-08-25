@@ -63,6 +63,7 @@ export const vcGroupRouter = createTRPCRouter({
         ownerEmail: z.string().email(),
         ownerPhone: z.string().optional(),
         referralToken: z.string().optional(),
+        linkedinUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -116,6 +117,7 @@ export const vcGroupRouter = createTRPCRouter({
           email: input.email,
           stateId: input.stateId,
           countryId: input.countryId,
+          linkedinUrl: input.linkedinUrl,
           members: {
             create: {
               name: input.ownerName,

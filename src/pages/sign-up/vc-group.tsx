@@ -34,6 +34,7 @@ const vcGroupSchema = z.object({
   ownerRole: z.string().min(1, 'Owner role is required'),
   ownerEmail: z.string().email('Invalid owner email'),
   ownerPhone: z.string().optional(),
+  linkedinUrl: z.string().optional(),
 });
 
 type VcGroupFormData = z.infer<typeof vcGroupSchema>;
@@ -252,6 +253,25 @@ const VcGroupSignUp: NextPage = () => {
                             {...field}
                             onChange={value => onChange(value)}
                             placeholder="+1 650-123-4567"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">
+                          LinkedIn URL (optional)
+                        </Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://www.linkedin.com/in/your-profile"
                           />
                         </FormControl>
                         <FormMessage />

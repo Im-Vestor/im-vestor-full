@@ -197,6 +197,7 @@ model Investor {
   stateId            Int?
   countryId          Int?
   personalPitchUrl   String?
+  linkedinUrl        String?
   country            Country?      @relation(fields: [countryId], references: [id])
   state              State?        @relation(fields: [stateId], references: [id])
   user               User          @relation(fields: [userId], references: [id])
@@ -241,6 +242,7 @@ model Entrepreneur {
   stateId          Int?
   countryId        Int?
   personalPitchUrl String?
+  linkedinUrl      String?
   country          Country?         @relation(fields: [countryId], references: [id])
   state            State?           @relation(fields: [stateId], references: [id])
   user             User             @relation(fields: [userId], references: [id])

@@ -151,6 +151,7 @@ export const investorRouter = createTRPCRouter({
         password: z.string().min(8),
         currency: z.nativeEnum(Currency),
         areas: z.array(z.string()),
+        linkedinUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -215,6 +216,7 @@ export const investorRouter = createTRPCRouter({
               id: area,
             })),
           },
+          linkedinUrl: input.linkedinUrl,
         },
       });
     }),

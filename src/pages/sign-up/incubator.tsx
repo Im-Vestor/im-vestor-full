@@ -34,6 +34,7 @@ const incubatorSchema = z.object({
   ownerRole: z.string().min(1, 'Owner role is required'),
   ownerPhone: z.string().optional(),
   ownerEmail: z.string().email('Invalid owner email'),
+  linkedinUrl: z.string().optional(),
 });
 
 type IncubatorFormData = z.infer<typeof incubatorSchema>;
@@ -248,6 +249,25 @@ const IncubatorSignUp: NextPage = () => {
                             {...field}
                             onChange={value => onChange(value)}
                             placeholder="+1 415-123-4567"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">
+                          LinkedIn URL (optional)
+                        </Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://www.linkedin.com/in/your-profile"
                           />
                         </FormControl>
                         <FormMessage />
