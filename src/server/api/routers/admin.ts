@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { ProjectViewWithRelations } from "~/types/admin";
-import { NotificationType } from "@prisma/client";
+import type { NotificationType } from "@prisma/client";
 
 // Helper function to check admin authorization
 const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionClaims?: { publicMetadata?: { userIsAdmin?: boolean } } } }) => {
