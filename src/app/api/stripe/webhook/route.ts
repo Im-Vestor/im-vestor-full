@@ -115,6 +115,28 @@ async function processEvent(event: Stripe.Event) {
         });
       }
 
+      if (userType === 'VC_GROUP') {
+        const user = await db.user.findUnique({
+          where: { id: userId },
+          include: {
+            vcGroup: true,
+          },
+        });
+
+        // Create a new hypertrain item
+        await db.hyperTrainItem.create({
+          data: {
+            externalId: String(user?.vcGroup?.id),
+            type: 'INVESTOR',
+            name: `${user?.vcGroup?.name}`,
+            link: `/vc-group/${user?.vcGroup?.id}`,
+            description: user?.vcGroup?.description,
+            image: user?.imageUrl,
+            liveUntil: addDays(new Date(), 7),
+          },
+        });
+      }
+
       if (userType === 'ENTREPRENEUR') {
         const project = await db.project.findUnique({
           where: { id: projectId },

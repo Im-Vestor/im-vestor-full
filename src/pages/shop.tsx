@@ -51,7 +51,7 @@ const products = [
     name: 'Hyper Train Ticket',
     description: 'Expose yourself as a potential investor to other entrepreneurs.',
     value: 35,
-    availableUserTypes: ['INVESTOR'],
+    availableUserTypes: ['INVESTOR', 'VC_GROUP'],
   },
 ];
 
