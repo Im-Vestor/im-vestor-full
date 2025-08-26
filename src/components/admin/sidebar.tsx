@@ -54,6 +54,7 @@ const routes = [
     color: 'text-emerald-500',
     disabled: false,
   },
+
 ];
 
 // Mobile Dock Component

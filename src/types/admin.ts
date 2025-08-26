@@ -19,3 +19,37 @@ export type ProjectViewWithRelations = {
     };
   } | null;
 };
+
+import type { UserType, NotificationType } from '@prisma/client';
+
+export type NotificationLog = {
+  id: string;
+  createdAt: Date;
+  type: NotificationType;
+  read: boolean;
+  userId: string;
+  user: {
+    email: string;
+    userType: UserType;
+  };
+};
+
+export type PlatformActivitySummary = {
+  notificationCounts: Array<{
+    type: NotificationType;
+    _count: {
+      type: number;
+    };
+  }>;
+  projectViewsCount: number;
+  newUsersCount: number;
+  newProjectsCount: number;
+  meetingsCount: number;
+  supportTicketsCount: number;
+  negotiationsCount: number;
+  period: {
+    from: Date;
+    to: Date;
+    days: number;
+  };
+};

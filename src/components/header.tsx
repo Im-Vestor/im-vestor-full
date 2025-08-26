@@ -1,6 +1,6 @@
 import { useClerk, useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Book, HelpCircle, LogOut, Mail, Menu, Settings, User, Users, X } from 'lucide-react';
+import { Book, HelpCircle, LogOut, Mail, Menu, Settings, User, Users, X, Bell, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { FloatingSupportButton } from './FloatingSupportButton';
+
 const ENTREPRENEUR_MENUS = [
   {
     label: 'Investors',
@@ -98,7 +99,7 @@ const PARTNER_MENUS = [
 export const Header = () => {
   const router = useRouter();
   const path = usePathname();
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const userMetadata = user?.publicMetadata as {
     userType: UserType;
     userIsAdmin?: boolean;
@@ -106,8 +107,8 @@ export const Header = () => {
 
   const isSignUpRoute = path?.startsWith('/sign-up');
 
-  const { data: userDetails } = api.user.getUser.useQuery(undefined, {
-    enabled: !isSignUpRoute && !!isSignedIn,
+  const { data: userDetails, isLoading: isLoadingUserDetails } = api.user.getUser.useQuery(undefined, {
+    enabled: !isSignUpRoute && !!isSignedIn && isLoaded,
     staleTime: 600000, // 10 minutes in milliseconds
     refetchInterval: 600000, // 10 minutes in milliseconds
   });
@@ -118,10 +119,10 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && isLoaded) {
       setUserType(user.publicMetadata.userType as UserType);
     }
-  }, [user]);
+  }, [user, isLoaded]);
 
   // Get correct menu based on user type
   const getMenus = () => {
@@ -153,7 +154,7 @@ export const Header = () => {
         </div>
 
         {/* Desktop Navigation */}
-        {isSignedIn && (
+        {isLoaded && isSignedIn && (
           <div className="hidden md:flex items-center justify-center gap-1 lg:gap-3">
             {getMenus().map(menu => (
               <Button
@@ -170,7 +171,7 @@ export const Header = () => {
         )}
 
         {/* User Profile / Login */}
-        {isSignedIn ? (
+        {isLoaded && isSignedIn ? (
           <div className="flex items-center">
             <Notifications userDetails={userDetails ?? { openNegotiations: [] }} />
             <FloatingSupportButton />
@@ -179,9 +180,11 @@ export const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 md:gap-4">
                   <span className="hidden md:inline">{user?.firstName}</span>
-                  {userDetails?.imageUrl ? (
+                  {isLoadingUserDetails ? (
+                    <div className="w-6 h-6 bg-gray-600 rounded-full animate-pulse"></div>
+                  ) : userDetails?.imageUrl ? (
                     <Image
-                      src={userDetails?.imageUrl ?? ''}
+                      src={userDetails.imageUrl}
                       alt="Profile"
                       width={24}
                       height={24}
@@ -263,7 +266,7 @@ export const Header = () => {
       </div>
 
       {/* Mobile Navigation Menu */}
-      {isSignedIn && isMobileMenuOpen && (
+      {isLoaded && isSignedIn && isMobileMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 md:hidden">
           {userMetadata?.userIsAdmin && (
             <Button
