@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 // Admin Page Header Component
@@ -74,7 +74,7 @@ interface AdminContentCardProps {
 export function AdminContentCard({ title, description, icon: Icon, children, className = "" }: AdminContentCardProps) {
   return (
     <Card className={`bg-card/50 backdrop-blur-sm border-white/10 overflow-hidden ${className}`}>
-      {(title || description) && (
+      {(title ?? description) && (
         <CardHeader>
           <CardTitle className={Icon ? "flex items-center gap-2 text-primary" : "text-primary"}>
             {Icon && <Icon className="h-5 w-5" />}

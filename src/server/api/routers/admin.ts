@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { ProjectViewWithRelations } from "~/types/admin";
+import { NotificationType } from "@prisma/client";
 
 // Helper function to check admin authorization
-const checkAdminAuthorization = async (ctx: any) => {
+const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionClaims?: { publicMetadata?: { userIsAdmin?: boolean } } } }) => {
   // For development, you can temporarily bypass admin check
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_ADMIN_CHECK === 'true') {
     console.log('Development mode: Bypassing admin check');
@@ -133,10 +134,16 @@ export const adminRouter = createTRPCRouter({
 
       const skip = (input.page - 1) * input.perPage;
 
-      const where: any = {};
+      const where: {
+        type?: NotificationType;
+        createdAt?: {
+          gte?: Date;
+          lte?: Date;
+        };
+      } = {};
 
       if (input.type) {
-        where.type = input.type;
+        where.type = input.type as NotificationType;
       }
 
       if (input.dateFrom || input.dateTo) {

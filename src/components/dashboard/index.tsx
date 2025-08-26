@@ -174,7 +174,7 @@ export default function Dashboard() {
                 <span>No recent updates</span>
               </div>
               <h4 className="text-lg font-medium text-white mb-2">Check back later</h4>
-              <p className="text-white/60 mb-4">We'll have fresh content for you soon</p>
+              <p className="text-white/60 mb-4">We&apos;ll have fresh content for you soon</p>
             </div>
           </div>
         )}

@@ -12,14 +12,14 @@ import { Button } from "~/components/ui/button";
 import { useState } from 'react';
 import { Skeleton } from "~/components/ui/skeleton";
 import { Input } from "~/components/ui/input";
-import { Search, Eye, Bell, Activity, TrendingUp, Users, FileText, Calendar, MessageSquare, BarChart3, Filter } from "lucide-react";
+import { Search, Eye, Bell, Activity, FileText, Calendar, MessageSquare, Filter } from "lucide-react";
 import { useDebounce } from "~/hooks/use-debounce";
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import type { ProjectViewWithRelations, NotificationLog, PlatformActivitySummary } from '~/types/admin';
+import type { ProjectViewWithRelations, NotificationLog } from '~/types/admin';
 
 function ActivitySummary({ days = 30 }: { days?: number }) {
   const { data: summary, isLoading } = api.admin.getPlatformActivitySummary.useQuery({ days });
@@ -236,8 +236,8 @@ function NotificationLogsList() {
     page,
     perPage: 20,
     type: type === 'all' ? undefined : type,
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
+    dateFrom: dateFrom ?? undefined,
+    dateTo: dateTo ?? undefined,
   });
 
   const getNotificationTypeLabel = (type: string) => {
@@ -255,7 +255,7 @@ function NotificationLogsList() {
       SUPPORT_TICKET_RECEIVED: 'Ticket Recebido',
       TOTAL_NOTIFICATIONS: 'Total de Notificações',
     };
-    return labels[type] || type;
+    return labels[type] ?? type;
   };
 
   const getNotificationTypeColor = (type: string) => {
@@ -272,7 +272,7 @@ function NotificationLogsList() {
       SUPPORT_TICKET_CREATED: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
       SUPPORT_TICKET_RECEIVED: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
     };
-    return colors[type] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    return colors[type] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30';
   };
 
   if (isLoading) {
