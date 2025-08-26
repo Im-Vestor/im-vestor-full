@@ -8,11 +8,15 @@ import type { ReactNode } from 'react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-dark text-text-primary">
+    <div className="flex min-h-screen bg-gradient-to-br from-background to-background-gradient-to">
       <SidebarProvider>
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto mx-64 my-20">{children}</main>
+          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 md:ml-64">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
+          </main>
         </div>
       </SidebarProvider>
     </div>

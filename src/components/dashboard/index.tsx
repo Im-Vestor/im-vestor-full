@@ -1,24 +1,20 @@
 import { useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
 import {
+  ArrowRight,
+  Bell,
   BookOpen,
+  Calendar,
+  HelpCircle,
   Plus,
   Search,
   Share2,
   Users,
-  Eye,
-  Calendar,
-  Briefcase,
-  ArrowRight,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { api } from '~/utils/api';
+import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
-import { cn } from '~/lib/utils';
-import { ActivityPanel } from './activity-panel';
-import { RecommendationsPanel } from './recommendations-panel';
-import { NewsPanel } from './news-panel';
+import { api } from '~/utils/api';
 import { Hypertrain } from '../hypertrain/hypertrain';
 
 interface QuickAction {
@@ -127,20 +123,35 @@ const quickActionsByUserType: Record<UserType, QuickAction[]> = {
 };
 
 export default function Dashboard() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const userType = user?.publicMetadata.userType as UserType;
 
-  const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery();
-  api.news.getUserTypeNews.useQuery(
+  const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery(undefined, {
+    enabled: isLoaded && !!user,
+  });
+  const { data: news, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
     {},
     {
+      enabled: isLoaded && !!user,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
-  const { data: recommendations } = api.recommendations.getRecommendations.useQuery();
 
-  const quickActions = quickActionsByUserType[userType] ?? [];
+  // Don't render until authentication is loaded
+  if (!isLoaded) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center gap-6">
+          <div className="h-16 w-16 bg-card rounded-full border-2 border-white/10 animate-pulse"></div>
+          <div className="space-y-2">
+            <div className="h-8 w-64 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+            <div className="h-4 w-32 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get the user's name based on their type
   const getUserName = () => {
@@ -166,9 +177,14 @@ export default function Dashboard() {
     }
   };
 
+  // Get the first news article for the featured section
+  const firstNewsArticle = news?.blocks?.[0];
+  const hasNews =
+    firstNewsArticle && 'type' in firstNewsArticle && firstNewsArticle.type === 'child_page';
+
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
+      {/* User Greeting Section */}
       <div className="flex items-center gap-6">
         {isLoadingUser ? (
           <>
@@ -180,105 +196,131 @@ export default function Dashboard() {
           </>
         ) : (
           <>
-            <Image
-              src={user?.imageUrl ?? '/images/male-avatar.svg'}
-              alt="Profile"
-              width={64}
-              height={64}
-              className="rounded-full ring-2 ring-border"
-            />
+            <div className="w-16 h-16 bg-card rounded-full border-2 border-white/10 flex items-center justify-center">
+              <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+            </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">
-                Welcome back, {getUserName()}
-              </h1>
-              <p className="text-lg text-muted-foreground">{userType.replace('_', ' ')}</p>
+              <h1 className="text-3xl font-bold text-white">Welcome back, {getUserName()}</h1>
+              <p className="text-lg text-white/70 uppercase">{userType.replace('_', ' ')}</p>
             </div>
           </>
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {quickActions.map(action => (
-          <Link key={action.label} href={action.href}>
-            <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={cn('rounded-full bg-card/30 p-3', `text-${action.color}`)}>
-                    <action.icon className="h-5 w-5" />
-                  </div>
-                  <span className="text-lg font-medium text-white">{action.label}</span>
-                </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+      {/* Main Action Cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Link href="/projects">
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Search className="w-6 h-6 text-white" />
+                <span className="text-lg font-medium text-white">Search Projects</span>
               </div>
+              <ArrowRight className="w-5 h-5 text-white/70" />
             </div>
-          </Link>
-        ))}
+          </div>
+        </Link>
+
+        <Link href="/pitch-of-the-week">
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <BookOpen className="w-6 h-6 text-white" />
+                <span className="text-lg font-medium text-white">Pitch of the Week</span>
+              </div>
+              <ArrowRight className="w-5 h-5 text-white/70" />
+            </div>
+          </div>
+        </Link>
       </div>
 
+      {/* Hypertrain Area */}
       <Hypertrain />
 
-      {/* Metrics Overview */}
-      {recommendations?.metrics && (
-        <div className="grid gap-4 md:grid-cols-3">
-          {'totalViews' in recommendations.metrics && (
-            <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">Total Views</h3>
-                  <Eye className="h-4 w-4 text-blue-500" />
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {recommendations.metrics.totalViews}
-                </p>
-              </div>
-            </div>
-          )}
-          {'totalMeetings' in recommendations.metrics && (
-            <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">Total Meetings</h3>
-                  <Calendar className="h-4 w-4 text-green-500" />
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {recommendations.metrics.totalMeetings}
-                </p>
-              </div>
-            </div>
-          )}
-          {'totalProjects' in recommendations.metrics && (
-            <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">Total Projects</h3>
-                  <Briefcase className="h-4 w-4 text-amber-500" />
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {recommendations.metrics.totalProjects}
-                </p>
-              </div>
-            </div>
-          )}
+      {/* Latest News Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold text-white">Latest News</h3>
+          <Link
+            href="/news"
+            className="flex items-center gap-2 text-white/70 hover:text-[#EFD687] transition-colors"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
-      )}
 
-      {/* Latest News - Full Width */}
-      <div className="w-full">
-        <NewsPanel />
+        {isLoadingNews ? (
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+        ) : hasNews ? (
+          <div className="w-full">
+            <NewsGrid blocks={news.blocks.slice(0, 1)} title="" description="" />
+          </div>
+        ) : (
+          <div className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">
+            <div className="w-full h-24 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
+              <div className="text-center text-white">
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+                </div>
+                <p className="text-sm">No news available</p>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-2 text-white/50 text-sm mb-2">
+                <Calendar className="w-4 h-4" />
+                <span>No recent updates</span>
+              </div>
+              <h4 className="text-lg font-medium text-white mb-2">Check back later</h4>
+              <p className="text-white/60 mb-4">We&apos;ll have fresh content for you soon</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Activity Overview - Full Width */}
-      <div className="w-full">
-        <ActivityPanel />
-      </div>
+      {/* Footer Utility Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/referral/share">
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Share2 className="w-6 h-6 text-white" />
+                <span className="text-white">Invite Partners</span>
+              </div>
+            </div>
+          </div>
+        </Link>
 
-      {/* Recommendations */}
-      <RecommendationsPanel />
+        <Link href="/meetings">
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Bell className="w-6 h-6 text-white" />
+                <span className="text-white">0 negotiations ongoing</span>
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/support">
+          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <HelpCircle className="w-6 h-6 text-white" />
+              <div>
+                <div className="text-white">
+                  Need Help? <span className="text-sm text-white/60">help@im-vestor.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }

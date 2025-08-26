@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { api } from '~/utils/api';
+import { Skeleton } from '../ui/skeleton';
 
 const getTypeColor = (type: string) => {
   switch (type) {
@@ -33,7 +34,8 @@ const weeklyPitchLinkHypertrainItem = {
 export function Hypertrain() {
   const [isPaused, setIsPaused] = useState(false);
 
-  const { data: hypertrainItems } = api.hypertrain.getHyperTrainItems.useQuery();
+  const { data: hypertrainItems, isPending: isHypertrainItemsPending } =
+    api.hypertrain.getHyperTrainItems.useQuery();
 
   const duplicatedHypertrainItems = hypertrainItems
     ? [...hypertrainItems, weeklyPitchLinkHypertrainItem, ...hypertrainItems]
@@ -43,6 +45,24 @@ export function Hypertrain() {
   const totalItems =
     hypertrainItems?.length && hypertrainItems.length > 2 ? hypertrainItems.length : 0;
   const scrollDistance = itemWidth * totalItems;
+
+  if (isHypertrainItemsPending) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
+        </div>
+
+        <div className="rounded-xl bg-card/30 p-6">
+          <div className={`flex gap-6`}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={index} className="w-[408px] h-20 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
