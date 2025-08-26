@@ -42,6 +42,7 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
+import { ProjectDialog } from '~/components/hypertrain/project-dialog';
 
 const availableHours = [
   '07:00',
@@ -104,6 +105,11 @@ export default function CompanyDetails() {
   const { data: preferredHours } = api.preferredHours.getPreferredHoursByEntrepreneurId.useQuery(
     { entrepreneurId: project?.Entrepreneur?.id ?? '' },
     { enabled: !!project?.Entrepreneur?.id }
+  );
+
+  const { data: hypertrainItem } = api.hypertrain.getHyperTrainItemByExternalId.useQuery(
+    project?.id ?? '',
+    { enabled: !!project?.id }
   );
 
   const isProjectOwner = user?.id === project?.Entrepreneur?.userId;
@@ -353,6 +359,9 @@ export default function CompanyDetails() {
                     project={project}
                     availableBoosts={project.Entrepreneur?.user.availableBoosts ?? 0}
                   />
+                )}
+                {isProjectOwner && (
+                  <ProjectDialog project={project} hypertrainItem={hypertrainItem} />
                 )}
                 {(isInvestor || isVc) &&
                   negotiation?.stage !== NegotiationStage.CLOSED &&

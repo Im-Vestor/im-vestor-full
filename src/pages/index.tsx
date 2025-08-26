@@ -133,6 +133,8 @@ export default function Home() {
   // Fetch partners data for the marquee
   const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
 
+  console.log(partners);
+
   const handleLogin = async () => {
     if (!isLoaded) return;
 
@@ -179,9 +181,7 @@ export default function Home() {
       <div className="w-full fixed top-0 left-0 py-2 bg-card border-b border-white/10 z-50 backdrop-blur-sm">
         <div className="flex items-center justify-center text-sm gap-2">
           <Flag className="w-3 h-3 text-yellow-500" />
-          <p className="text-white tracking-wider opacity-70">
-            {t('freeYearPromo')}
-          </p>
+          <p className="text-white tracking-wider opacity-70">{t('freeYearPromo')}</p>
         </div>
       </div>
       <main className="min-h-screen pt-32">
@@ -901,10 +901,7 @@ export default function Home() {
                   {t('partnersDescription')}
                 </motion.p>
 
-                <motion.div
-                  variants={fadeIn}
-                  className="w-full max-w-7xl mx-auto px-4"
-                >
+                <motion.div variants={fadeIn} className="w-full max-w-7xl mx-auto px-4">
                   {/* Marquee container with fade masks */}
                   <div className="relative overflow-hidden">
                     {/* Left fade mask */}
@@ -913,60 +910,67 @@ export default function Home() {
                     {/* Right fade mask */}
                     <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-                    <Marquee
-                      className="py-8"
-                      pauseOnHover={true}
-                      repeat={6}
-                    >
-                      {isLoadingPartners ? (
-                        // Loading skeleton
-                        Array.from({ length: 8 }).map((_, index) => (
-                          <div key={index} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse">
-                            <div className="w-24 h-4 bg-white/20 rounded"></div>
-                          </div>
-                        ))
-                      ) : partners && partners.length > 0 ? (
-                        // Real partner data
-                        partners.map((partner) => (
-                          <div key={partner.id} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group">
-                            {partner.companyLogoUrl ? (
-                              // Show company logo if available
-                              <div className="relative w-32 h-12">
-                                <Image
-                                  src={partner.companyLogoUrl}
-                                  alt={partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
-                                  fill
-                                  className="object-contain"
-                                  sizes="128px"
-                                />
-                              </div>
-                            ) : (
-                              // Fallback to company name
-                              <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
-                                {partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        // Fallback to default partners if no data
-                        [
-                          { name: 'SEQUOIA' },
-                          { name: 'ANDREESSEN' },
-                          { name: 'Y COMBINATOR' },
-                          { name: 'ACCEL' },
-                          { name: 'KLEINER PERKINS' },
-                          { name: 'GREYLOCK' },
-                          { name: 'INDEX VENTURES' },
-                          { name: 'FIRST ROUND' },
-                        ].map((partner, index) => (
-                          <div key={index} className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group">
-                            <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
-                              {partner.name}
+                    <Marquee className="py-8" pauseOnHover={true} repeat={6}>
+                      {isLoadingPartners
+                        ? // Loading skeleton
+                          Array.from({ length: 8 }).map((_, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
+                            >
+                              <div className="w-24 h-4 bg-white/20 rounded"></div>
                             </div>
-                          </div>
-                        ))
-                      )}
+                          ))
+                        : partners && partners.length > 0
+                          ? // Real partner data
+                            partners.map(partner => (
+                              <div
+                                key={partner.id}
+                                className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                              >
+                                {partner.companyLogoUrl ? (
+                                  // Show company logo if available
+                                  <div className="relative w-32 h-12">
+                                    <Image
+                                      src={partner.companyLogoUrl}
+                                      alt={
+                                        partner.companyName ??
+                                        `${partner.firstName} ${partner.lastName}`
+                                      }
+                                      fill
+                                      className="object-contain"
+                                      sizes="128px"
+                                    />
+                                  </div>
+                                ) : (
+                                  // Fallback to company name
+                                  <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
+                                    {partner.companyName ??
+                                      `${partner.firstName} ${partner.lastName}`}
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          : // Fallback to default partners if no data
+                            [
+                              { name: 'SEQUOIA' },
+                              { name: 'ANDREESSEN' },
+                              { name: 'Y COMBINATOR' },
+                              { name: 'ACCEL' },
+                              { name: 'KLEINER PERKINS' },
+                              { name: 'GREYLOCK' },
+                              { name: 'INDEX VENTURES' },
+                              { name: 'FIRST ROUND' },
+                            ].map((partner, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                              >
+                                <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
+                                  {partner.name}
+                                </div>
+                              </div>
+                            ))}
                     </Marquee>
                   </div>
                 </motion.div>

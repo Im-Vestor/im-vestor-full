@@ -430,10 +430,29 @@ model PotentialUser {
   event     String?
 }
 
+model HyperTrainItem {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  image       String?
+  link        String
+  type        HyperTrainItemType
+  externalId  String             @unique
+  createdAt   DateTime           @default(now())
+  liveUntil   DateTime
+  updatedAt   DateTime           @updatedAt
+}
+
 enum Currency {
   EUR
   USD
   BRL
+}
+
+enum HyperTrainItemType {
+  PROJECT
+  INVESTOR
+  NEWS
 }
 
 enum ProjectStatus {

@@ -6,10 +6,27 @@ import { Button } from '~/components/ui/button';
 import { extractPageTitle, getPageIcon, getPageDescription } from '~/utils/notion';
 import { api } from '~/utils/api';
 import { Header } from '~/components/header';
+import { useUser } from '@clerk/nextjs';
+import { type UserType } from '@prisma/client';
+import { toast } from 'sonner';
+import { addDays } from 'date-fns';
 
 export default function NotionPageView() {
   const router = useRouter();
+  const { user } = useUser();
   const { pageId } = router.query;
+
+  const { mutate: createHyperTrainItem, isPending } =
+    api.hypertrain.createHyperTrainItem.useMutation({
+      onSuccess: () => {
+        toast.success('Item added to HyperTrain! 🚀', {
+          description: 'The item will be available for 7 days.',
+        });
+      },
+      onError: () => {
+        toast.error("Item's already in HyperTrain");
+      },
+    });
 
   const {
     data: pageData,
@@ -72,9 +89,20 @@ export default function NotionPageView() {
     );
   }
 
-  const pageTitle = pageData?.page ? extractPageTitle(pageData.page as Parameters<typeof extractPageTitle>[0]) : 'Untitled Page';
-  const pageIcon = pageData?.page ? getPageIcon(pageData.page as Parameters<typeof getPageIcon>[0]) : '📄';
-  const pageDescription = pageData?.page ? getPageDescription(pageData.page as Parameters<typeof getPageDescription>[0]) : '';
+  const pageTitle = pageData?.page
+    ? extractPageTitle(pageData.page as Parameters<typeof extractPageTitle>[0])
+    : 'Untitled Page';
+  const pageIcon = pageData?.page
+    ? getPageIcon(pageData.page as Parameters<typeof getPageIcon>[0])
+    : '📄';
+  const pageDescription = pageData?.page
+    ? getPageDescription(pageData.page as Parameters<typeof getPageDescription>[0])
+    : '';
+
+  const userMetadata = user?.publicMetadata as {
+    userType: UserType;
+    userIsAdmin?: boolean;
+  };
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
@@ -82,7 +110,10 @@ export default function NotionPageView() {
 
       {/* Navigation */}
       <nav className="mb-8">
-        <Link href="/news" className="inline-flex items-center gap-2 text-gray-300 hover:text-white dark:hover:text-gray-100 transition-colors">
+        <Link
+          href="/news"
+          className="inline-flex items-center gap-2 text-gray-300 hover:text-white dark:hover:text-gray-100 transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm font-medium">Back to News</span>
         </Link>
@@ -103,12 +134,30 @@ export default function NotionPageView() {
                 <h1 className="text-4xl font-bold text-white mb-2 leading-tight break-words">
                   {pageTitle}
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  {pageDescription}
-                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">{pageDescription}</p>
               </div>
             </div>
           </div>
+
+          {userMetadata?.userIsAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                createHyperTrainItem({
+                  name: pageTitle,
+                  description: pageDescription,
+                  type: 'NEWS',
+                  link: `/news/page/${pageId as string}`,
+                  liveUntil: addDays(new Date(), 7),
+                  externalId: pageId as string,
+                })
+              }
+              disabled={isPending}
+            >
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add to HyperTrain'}
+            </Button>
+          )}
         </div>
       </header>
 

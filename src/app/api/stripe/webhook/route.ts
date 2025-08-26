@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { db } from '~/server/db';
 import { waitUntil } from '@vercel/functions';
+import { addDays } from 'date-fns';
 
 const allowedEvents: Stripe.Event.Type[] = [
   'checkout.session.completed',
@@ -59,13 +60,13 @@ async function processEvent(event: Stripe.Event) {
   // Skip processing if the event isn't one I'm tracking (list of all events below)
   if (!allowedEvents.includes(event.type)) return;
 
-  console.log('event', event);
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
     const userId = session.metadata?.userId;
+    const userType = session.metadata?.userType;
     const productType = session.metadata?.productType;
+    const projectId = session.metadata?.projectId;
 
     if (userId && productType === 'poke') {
       // Increment user's available pokes
@@ -77,8 +78,6 @@ async function processEvent(event: Stripe.Event) {
           },
         },
       });
-
-      console.log(`Added 1 poke to user ${userId}`);
     }
 
     if (userId && productType === 'boost') {
@@ -91,6 +90,49 @@ async function processEvent(event: Stripe.Event) {
           },
         },
       });
+    }
+
+    if (userId && productType === 'hyper-train-ticket') {
+      if (userType === 'INVESTOR') {
+        const user = await db.user.findUnique({
+          where: { id: userId },
+          include: {
+            investor: true,
+          },
+        });
+
+        // Create a new hypertrain item
+        await db.hyperTrainItem.create({
+          data: {
+            externalId: String(user?.investor?.id),
+            type: 'INVESTOR',
+            name: `${user?.investor?.firstName} ${user?.investor?.lastName}`,
+            link: `/investor/${user?.investor?.id}`,
+            description: user?.investor?.about,
+            image: user?.imageUrl,
+            liveUntil: addDays(new Date(), 7),
+          },
+        });
+      }
+
+      if (userType === 'ENTREPRENEUR') {
+        const project = await db.project.findUnique({
+          where: { id: projectId },
+        });
+
+        // Create a new hypertrain item
+        await db.hyperTrainItem.create({
+          data: {
+            externalId: String(project?.id),
+            type: 'PROJECT',
+            name: project?.name ?? 'Untitled Project',
+            link: `/companies/${project?.id}`,
+            description: project?.about ?? 'No description',
+            image: project?.logo ?? null,
+            liveUntil: addDays(new Date(), 7),
+          },
+        });
+      }
     }
   }
 }

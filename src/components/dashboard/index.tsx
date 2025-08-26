@@ -9,7 +9,7 @@ import {
   Eye,
   Calendar,
   Briefcase,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import { cn } from '~/lib/utils';
 import { ActivityPanel } from './activity-panel';
 import { RecommendationsPanel } from './recommendations-panel';
 import { NewsPanel } from './news-panel';
+import { Hypertrain } from '../hypertrain/hypertrain';
 
 interface QuickAction {
   icon: React.ElementType;
@@ -147,9 +148,13 @@ export default function Dashboard() {
 
     switch (userType) {
       case 'ENTREPRENEUR':
-        return userData.entrepreneur ? `${userData.entrepreneur.firstName} ${userData.entrepreneur.lastName}` : '';
+        return userData.entrepreneur
+          ? `${userData.entrepreneur.firstName} ${userData.entrepreneur.lastName}`
+          : '';
       case 'INVESTOR':
-        return userData.investor ? `${userData.investor.firstName} ${userData.investor.lastName}` : '';
+        return userData.investor
+          ? `${userData.investor.firstName} ${userData.investor.lastName}`
+          : '';
       case 'PARTNER':
         return userData.partner ? `${userData.partner.firstName} ${userData.partner.lastName}` : '';
       case 'INCUBATOR':
@@ -183,7 +188,9 @@ export default function Dashboard() {
               className="rounded-full ring-2 ring-border"
             />
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back, {getUserName()}</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-white">
+                Welcome back, {getUserName()}
+              </h1>
               <p className="text-lg text-muted-foreground">{userType.replace('_', ' ')}</p>
             </div>
           </>
@@ -192,13 +199,13 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-3">
-        {quickActions.map((action) => (
+        {quickActions.map(action => (
           <Link key={action.label} href={action.href}>
             <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={cn("rounded-full bg-card/30 p-3", `text-${action.color}`)}>
+                  <div className={cn('rounded-full bg-card/30 p-3', `text-${action.color}`)}>
                     <action.icon className="h-5 w-5" />
                   </div>
                   <span className="text-lg font-medium text-white">{action.label}</span>
@@ -209,6 +216,8 @@ export default function Dashboard() {
           </Link>
         ))}
       </div>
+
+      <Hypertrain />
 
       {/* Metrics Overview */}
       {recommendations?.metrics && (
@@ -221,7 +230,9 @@ export default function Dashboard() {
                   <h3 className="text-sm font-medium text-muted-foreground">Total Views</h3>
                   <Eye className="h-4 w-4 text-blue-500" />
                 </div>
-                <p className="text-2xl font-bold text-white">{recommendations.metrics.totalViews}</p>
+                <p className="text-2xl font-bold text-white">
+                  {recommendations.metrics.totalViews}
+                </p>
               </div>
             </div>
           )}
@@ -233,7 +244,9 @@ export default function Dashboard() {
                   <h3 className="text-sm font-medium text-muted-foreground">Total Meetings</h3>
                   <Calendar className="h-4 w-4 text-green-500" />
                 </div>
-                <p className="text-2xl font-bold text-white">{recommendations.metrics.totalMeetings}</p>
+                <p className="text-2xl font-bold text-white">
+                  {recommendations.metrics.totalMeetings}
+                </p>
               </div>
             </div>
           )}
@@ -245,7 +258,9 @@ export default function Dashboard() {
                   <h3 className="text-sm font-medium text-muted-foreground">Total Projects</h3>
                   <Briefcase className="h-4 w-4 text-amber-500" />
                 </div>
-                <p className="text-2xl font-bold text-white">{recommendations.metrics.totalProjects}</p>
+                <p className="text-2xl font-bold text-white">
+                  {recommendations.metrics.totalProjects}
+                </p>
               </div>
             </div>
           )}

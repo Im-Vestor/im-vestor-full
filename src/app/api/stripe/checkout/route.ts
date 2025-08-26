@@ -54,6 +54,9 @@ export async function POST(req: Request) {
     // Get user from database
     const user = await db.user.findUnique({
       where: { id: userId },
+      include: {
+        investor: true,
+      },
     });
 
     if (!user) {
@@ -80,7 +83,10 @@ export async function POST(req: Request) {
       });
     }
 
-    const { productId } = (await req.json()) as { productId: string };
+    const { productId, projectId } = (await req.json()) as {
+      productId: string;
+      projectId?: string;
+    };
 
     const product = products.find(p => p.id === productId);
 
@@ -103,7 +109,9 @@ export async function POST(req: Request) {
       cancel_url: `${req.headers.get('origin')}/shop`,
       metadata: {
         userId: user.id,
+        userType: user.userType,
         productType: product.id,
+        projectId: projectId ?? null,
       },
     });
 

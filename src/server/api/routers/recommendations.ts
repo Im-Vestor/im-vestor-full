@@ -40,7 +40,7 @@ export const recommendationsRouter = createTRPCRouter({
     }
 
     // Get projects with high traction (views, meetings, negotiations)
-    const projectsWithCounts = await ctx.db.$transaction(async (tx) => {
+    const projectsWithCounts = await ctx.db.$transaction(async tx => {
       const projects = await tx.project.findMany({
         where: {
           visibility: 'PUBLIC',
@@ -69,32 +69,20 @@ export const recommendationsRouter = createTRPCRouter({
         GROUP BY "projectId"
       `;
 
-      // Get match counts using raw SQL
-      const matchCountsRaw = await tx.$queryRaw<Array<{ project_id: string; count: number }>>`
-        SELECT "projectId" as project_id, COUNT(*) as count
-        FROM "Match"
-        WHERE "projectId" IN (${projectIds.join(',')})
-        GROUP BY "projectId"
-      `;
-
       const viewCountMap = new Map(viewCountsRaw.map(v => [v.project_id, v.count]));
-      const matchCountMap = new Map(matchCountsRaw.map(m => [m.project_id, m.count]));
 
       return projects.map(project => ({
         ...project,
         viewCount: viewCountMap.get(project.id) ?? 0,
-        matchCount: matchCountMap.get(project.id) ?? 0,
       }));
     });
 
     // Calculate traction score (0-100) based on views and matches
     const hyperTrainProjects = projectsWithCounts.map(project => {
       const maxViews = Math.max(...projectsWithCounts.map(p => p.viewCount));
-      const maxMatches = Math.max(...projectsWithCounts.map(p => p.matchCount));
 
       const viewsScore = maxViews > 0 ? (project.viewCount / maxViews) * 50 : 0;
-      const matchesScore = maxMatches > 0 ? (project.matchCount / maxMatches) * 50 : 0;
-      const traction = Math.round(viewsScore + matchesScore);
+      const traction = Math.round(viewsScore);
 
       return {
         ...project,
@@ -106,9 +94,10 @@ export const recommendationsRouter = createTRPCRouter({
       case UserType.INVESTOR:
       case UserType.VC_GROUP: {
         // For investors and VC groups, recommend projects in their interested areas
-        const interestedAreas = user.userType === UserType.INVESTOR
-          ? user.investor?.areas.map(a => a.id)
-          : user.vcGroup?.interestedAreas.map(a => a.id);
+        const interestedAreas =
+          user.userType === UserType.INVESTOR
+            ? user.investor?.areas.map(a => a.id)
+            : user.vcGroup?.interestedAreas.map(a => a.id);
 
         const recommendedProjects = await ctx.db.project.findMany({
           where: {
@@ -159,10 +148,7 @@ export const recommendationsRouter = createTRPCRouter({
             }),
             totalConnections: await ctx.db.connection.count({
               where: {
-                OR: [
-                  { followerId: user.id },
-                  { followingId: user.id },
-                ],
+                OR: [{ followerId: user.id }, { followingId: user.id }],
               },
             }),
           },
@@ -209,10 +195,7 @@ export const recommendationsRouter = createTRPCRouter({
             }),
             totalConnections: await ctx.db.connection.count({
               where: {
-                OR: [
-                  { followerId: user.id },
-                  { followingId: user.id },
-                ],
+                OR: [{ followerId: user.id }, { followingId: user.id }],
               },
             }),
           },
@@ -258,10 +241,7 @@ export const recommendationsRouter = createTRPCRouter({
             }),
             totalConnections: await ctx.db.connection.count({
               where: {
-                OR: [
-                  { followerId: user.id },
-                  { followingId: user.id },
-                ],
+                OR: [{ followerId: user.id }, { followingId: user.id }],
               },
             }),
           },
@@ -294,10 +274,7 @@ export const recommendationsRouter = createTRPCRouter({
             }),
             totalConnections: await ctx.db.connection.count({
               where: {
-                OR: [
-                  { followerId: user.id },
-                  { followingId: user.id },
-                ],
+                OR: [{ followerId: user.id }, { followingId: user.id }],
               },
             }),
           },
@@ -310,10 +287,7 @@ export const recommendationsRouter = createTRPCRouter({
           metrics: {
             totalConnections: await ctx.db.connection.count({
               where: {
-                OR: [
-                  { followerId: user.id },
-                  { followingId: user.id },
-                ],
+                OR: [{ followerId: user.id }, { followingId: user.id }],
               },
             }),
           },

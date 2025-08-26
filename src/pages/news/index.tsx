@@ -4,17 +4,16 @@ import { Loader2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Header } from '~/components/header';
 import { NewsGrid } from '~/components/news/NewsCard';
-import {
-  getNewsDescription,
-  type NewsUserType
-} from '~/types/news';
+import { getNewsDescription, type NewsUserType } from '~/types/news';
 
 export default function NewsPage() {
   const { user } = useUser();
 
-  const userMetadata = user?.publicMetadata as {
-    userType: UserType;
-  } | undefined;
+  const userMetadata = user?.publicMetadata as
+    | {
+        userType: UserType;
+      }
+    | undefined;
 
   const {
     data: newsData,

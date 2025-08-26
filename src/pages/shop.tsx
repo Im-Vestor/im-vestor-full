@@ -28,6 +28,7 @@ const products = [
     description:
       'Sends an personalized introduction note to other user about your profile, helping you make that crucial first connection.',
     value: 25,
+    availableUserTypes: ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
   },
   {
     id: 'boost',
@@ -35,6 +36,7 @@ const products = [
     description:
       'Places your project at the top of business sector searches, increasing visibility to potential investors.',
     value: 20,
+    availableUserTypes: ['ENTREPRENEUR'],
   },
   {
     id: 'pitch-of-the-week-ticket',
@@ -42,13 +44,14 @@ const products = [
     description:
       'Access to 2 public weekly pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
     value: 20,
+    availableUserTypes: ['ENTREPRENEUR'],
   },
   {
     id: 'hyper-train-ticket',
     name: 'Hyper Train Ticket',
-    description:
-      "Makes your project appear in the investors' hyper train feed, exposing your venture to a targeted audience.",
+    description: 'Expose yourself as a potential investor to other entrepreneurs.',
     value: 35,
+    availableUserTypes: ['INVESTOR'],
   },
 ];
 
@@ -81,15 +84,25 @@ export default function Shop() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useUser();
   const userType = user?.publicMetadata.userType as string;
-  const isEntrepreneur = userType === 'ENTREPRENEUR';
 
   // Get user data including available pokes
-  const { data: userData } = api.user.getUser.useQuery();
+  const { data: userData, isPending: isUserDataPending } = api.user.getUser.useQuery();
+
+  const { data: existingHypertrainItem, isPending: isExistingHypertrainItemPending } =
+    api.hypertrain.getHyperTrainItemByExternalId.useQuery(userData?.investor?.id ?? '', {
+      enabled: !!userData?.investor?.id,
+    });
 
   const handlePurchase = async (productId: string) => {
-    if (isProcessing) return;
+    if (isProcessing || isUserDataPending || isExistingHypertrainItemPending) return;
 
     setIsProcessing(true);
+
+    if (productId === 'hyper-train-ticket' && existingHypertrainItem) {
+      toast.error("You're currently in the hypertrain");
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/stripe/checkout`, {
@@ -135,24 +148,10 @@ export default function Shop() {
           )}
         </div>
 
-        {!isEntrepreneur ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {products
-              .filter(product => product.id === 'poke')
-              .map(product => (
-                <Product
-                  key={product.id}
-                  title={product.name}
-                  description={product.description}
-                  onBuy={() => handlePurchase(product.id)}
-                  isLoading={isProcessing}
-                  value={product.value}
-                />
-              ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {products.map(product => (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {products
+            .filter(product => product.availableUserTypes.includes(userType))
+            .map(product => (
               <Product
                 key={product.id}
                 title={product.name}
@@ -162,8 +161,7 @@ export default function Shop() {
                 value={product.value}
               />
             ))}
-          </div>
-        )}
+        </div>
       </div>
     </main>
   );
