@@ -11,6 +11,7 @@ import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { api } from '~/utils/api';
+import { isProfileCompleted } from '~/utils/profile-completion';
 
 export default function Login() {
   const user = useUser();
@@ -23,12 +24,20 @@ export default function Login() {
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const { mutateAsync: checkUserStatus } = api.user.checkUserStatus.useMutation();
+  const { data: userData } = api.user.getUser.useQuery(undefined, {
+    enabled: user.isLoaded && user.isSignedIn,
+  });
 
   useEffect(() => {
-    if (user.isLoaded && user.isSignedIn) {
-      router.push('/profile');
+    if (user.isLoaded && user.isSignedIn && userData) {
+      const profileCompleted = isProfileCompleted(userData);
+      if (profileCompleted) {
+        router.push('/dashboard');
+      } else {
+        router.push('/profile');
+      }
     }
-  }, [user.isLoaded, user.isSignedIn, router]);
+  }, [user.isLoaded, user.isSignedIn, userData, router]);
 
   useEffect(() => {
     // Check if user was redirected after account deletion
@@ -65,7 +74,7 @@ export default function Login() {
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        await router.push('/profile');
+        // We'll let the useEffect handle the redirect based on profile completion
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }

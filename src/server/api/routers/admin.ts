@@ -7,27 +7,17 @@ import type { NotificationType } from "@prisma/client";
 const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionClaims?: { publicMetadata?: { userIsAdmin?: boolean } } } }) => {
   // For development, you can temporarily bypass admin check
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_ADMIN_CHECK === 'true') {
-    console.log('Development mode: Bypassing admin check');
     return true;
   }
-
-  // Debug logging
-  console.log('Checking admin authorization...');
-  console.log('User ID:', ctx.auth.userId);
-  console.log('Session claims:', ctx.auth.sessionClaims);
-  console.log('Public metadata:', ctx.auth.sessionClaims?.publicMetadata);
 
   // Check specifically for userIsAdmin: true in Clerk public metadata
   const publicMetadata = ctx.auth.sessionClaims?.publicMetadata;
   const isAdminFromClerk = publicMetadata && typeof publicMetadata === 'object' && 'userIsAdmin' in publicMetadata && publicMetadata.userIsAdmin === true;
 
   if (isAdminFromClerk) {
-    console.log('Admin access granted via Clerk public metadata (userIsAdmin: true)');
     return true;
   }
 
-  console.log('Admin access denied. userIsAdmin not found or not true in public metadata');
-  console.log('Public metadata content:', JSON.stringify(publicMetadata, null, 2));
   throw new Error("Unauthorized - Admin access required. userIsAdmin must be true in Clerk public metadata.");
 };
 
@@ -41,7 +31,6 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      // Ensure user is admin
       await checkAdminAuthorization(ctx);
 
       const skip = (input.page - 1) * input.perPage;

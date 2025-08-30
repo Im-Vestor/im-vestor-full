@@ -18,6 +18,10 @@ import { FloatingSupportButton } from './FloatingSupportButton';
 
 const ENTREPRENEUR_MENUS = [
   {
+    label: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
     label: 'Investors',
     href: '/investors',
   },
@@ -36,6 +40,10 @@ const ENTREPRENEUR_MENUS = [
 ];
 
 const INVESTOR_MENUS = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+  },
   {
     label: 'Projects',
     href: '/projects',
@@ -59,6 +67,10 @@ const INVESTOR_MENUS = [
 ];
 
 const VC_MENUS = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+  },
   {
     label: 'Projects',
     href: '/projects',
@@ -96,6 +108,25 @@ const PARTNER_MENUS = [
   },
 ];
 
+const INCUBATOR_MENUS = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    label: 'Projects',
+    href: '/projects',
+  },
+  {
+    label: 'Meetings',
+    href: '/meetings',
+  },
+  {
+    label: 'News',
+    href: '/news?type=incubator',
+  },
+];
+
 export const Header = () => {
   const router = useRouter();
   const path = usePathname();
@@ -130,6 +161,7 @@ export const Header = () => {
     if (userType === 'ENTREPRENEUR') return ENTREPRENEUR_MENUS;
     if (userType === 'PARTNER') return PARTNER_MENUS;
     if (userType === 'VC_GROUP') return VC_MENUS;
+    if (userType === 'INCUBATOR') return INCUBATOR_MENUS;
     return [];
   };
 

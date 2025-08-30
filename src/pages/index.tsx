@@ -17,12 +17,11 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import router from 'next/router';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSignIn } from '@clerk/nextjs';
+import { useSignIn, useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useTranslation } from '~/hooks/use-translation';
@@ -30,6 +29,8 @@ import StarField from '~/components/ui/StarField';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { Marquee } from '~/components/ui/marquee';
 import { api } from '~/utils/api';
+import { useRouter } from 'next/router';
+import { isProfileCompleted } from '~/utils/profile-completion';
 
 const fadeIn = {
   initial: {
@@ -127,11 +128,16 @@ export default function Home() {
   const [isPending, setIsPending] = useState(false);
   const t = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const router = useRouter();
 
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { user, isLoaded: isUserLoaded } = useUser();
 
   // Fetch partners data for the marquee
   const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
+  const { data: userData } = api.user.getUser.useQuery(undefined, {
+    enabled: isUserLoaded && !!user,
+  });
 
   console.log(partners);
 
@@ -148,7 +154,7 @@ export default function Home() {
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        await router.push('/profile');
+        // We'll let the useEffect handle the redirect based on profile completion
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
@@ -175,6 +181,16 @@ export default function Home() {
       document.body.style.overflow = 'unset';
     };
   }, [isVideoPlaying]);
+
+  // Redirect logged-in users with completed profiles to dashboard
+  useEffect(() => {
+    if (isUserLoaded && user && userData) {
+      const profileCompleted = isProfileCompleted(userData);
+      if (profileCompleted) {
+        void router.push('/dashboard');
+      }
+    }
+  }, [isUserLoaded, user, userData, router]);
 
   return (
     <div className="w-full">
