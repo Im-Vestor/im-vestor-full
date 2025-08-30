@@ -11,8 +11,9 @@ export interface UserData {
     country?: { id: number } | null;
   } | null;
   partner?: {
-    countryId?: number | null;
-    country?: { id: number } | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    companyName?: string | null;
   } | null;
   incubator?: {
     countryId?: number | null;
@@ -23,7 +24,7 @@ export interface UserData {
 }
 
 export function isProfileCompleted(userData: UserData | null | undefined): boolean {
-  if (!userData || !userData.userType) return false;
+  if (!userData?.userType) return false;
 
   switch (userData.userType) {
     case 'ENTREPRENEUR':
@@ -31,7 +32,7 @@ export function isProfileCompleted(userData: UserData | null | undefined): boole
     case 'INVESTOR':
       return !!userData.investor?.countryId;
     case 'PARTNER':
-      return !!userData.partner?.countryId;
+      return !!(userData.partner?.firstName && userData.partner?.lastName);
     case 'INCUBATOR':
       return !!userData.incubator?.countryId;
     case 'VC_GROUP':

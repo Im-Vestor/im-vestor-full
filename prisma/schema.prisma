@@ -173,10 +173,10 @@ model Partner {
   firstName      String
   lastName       String
   companyName    String?
-  companyLogoUrl String?
-  photo          String?
   mobileFone     String?
   userId         String  @unique
+  companyLogoUrl String?
+  photo          String?
   user           User    @relation(fields: [userId], references: [id])
 }
 
@@ -437,10 +437,10 @@ model HyperTrainItem {
   image       String?
   link        String
   type        HyperTrainItemType
-  externalId  String             @unique
   createdAt   DateTime           @default(now())
   liveUntil   DateTime
   updatedAt   DateTime           @updatedAt
+  externalId  String             @unique
 }
 
 enum Currency {

@@ -6,10 +6,8 @@ import {
   BookOpen,
   Calendar,
   HelpCircle,
-  Plus,
   Search,
   Share2,
-  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { NewsGrid } from '~/components/news/NewsCard';
@@ -17,110 +15,9 @@ import { Skeleton } from '~/components/ui/skeleton';
 import { api } from '~/utils/api';
 import { Hypertrain } from '../hypertrain/hypertrain';
 
-interface QuickAction {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  color: string;
-}
 
-const quickActionsByUserType: Record<UserType, QuickAction[]> = {
-  ENTREPRENEUR: [
-    {
-      icon: Plus,
-      label: 'Create Project',
-      href: '/companies/create',
-      color: 'text-emerald-500',
-    },
-    {
-      icon: Users,
-      label: 'Find Investors',
-      href: '/investors',
-      color: 'text-blue-500',
-    },
-    {
-      icon: Share2,
-      label: 'Invite Partners',
-      href: '/referral/share',
-      color: 'text-purple-500',
-    },
-  ],
-  INVESTOR: [
-    {
-      icon: Search,
-      label: 'Search Projects',
-      href: '/projects',
-      color: 'text-blue-500',
-    },
-    {
-      icon: BookOpen,
-      label: 'Pitch of the Week',
-      href: '/pitch-of-the-week',
-      color: 'text-amber-500',
-    },
-    {
-      icon: Share2,
-      label: 'Invite Partners',
-      href: '/referral/share',
-      color: 'text-purple-500',
-    },
-  ],
-  VC_GROUP: [
-    {
-      icon: Plus,
-      label: 'Share Investment',
-      href: '/companies/create',
-      color: 'text-emerald-500',
-    },
-    {
-      icon: Search,
-      label: 'Search Projects',
-      href: '/projects',
-      color: 'text-blue-500',
-    },
-    {
-      icon: Share2,
-      label: 'Invite Partners',
-      href: '/referral/share',
-      color: 'text-purple-500',
-    },
-  ],
-  PARTNER: [
-    {
-      icon: Share2,
-      label: 'Share Referral',
-      href: '/referral/share',
-      color: 'text-purple-500',
-    },
-    {
-      icon: Users,
-      label: 'My Network',
-      href: '/referral/list',
-      color: 'text-blue-500',
-    },
-  ],
-  INCUBATOR: [
-    {
-      icon: Plus,
-      label: 'Add Project',
-      href: '/companies/create',
-      color: 'text-emerald-500',
-    },
-    {
-      icon: Users,
-      label: 'My Network',
-      href: '/connections',
-      color: 'text-blue-500',
-    },
-    {
-      icon: Share2,
-      label: 'Invite Partners',
-      href: '/referral/share',
-      color: 'text-purple-500',
-    },
-  ],
-  ADMIN: [],
-};
+
+
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
