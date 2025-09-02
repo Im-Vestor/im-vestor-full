@@ -1,15 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type Area, type ProjectStage, type VcGroup, type VcGroupMember } from '@prisma/client';
+import { type Area, type ProjectStage, type VcGroup } from '@prisma/client';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus, PlusIcon, Trash2Icon } from 'lucide-react';
-import Image from 'next/image';
+import { CalendarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
-import { Checkbox } from '~/components/ui/checkbox';
+
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -27,7 +26,6 @@ import { Textarea } from '~/components/ui/textarea';
 import { PROJECT_STAGES } from '~/data/project-stages';
 import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
-import { sendImageToBackend } from '~/utils/file';
 import { renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
 
 const optionSchema = z.object({
@@ -59,22 +57,10 @@ const vcGroupFormSchema = z.object({
   principalExits: z.string().optional(),
   countryId: z.string().optional(),
   stateId: z.string().optional(),
-  members: z
-    .array(
-      z.object({
-        name: z.string().min(2, 'Name must be at least 2 characters'),
-        photo: z.string().optional(),
-        role: z.string().min(2, 'Role must be at least 2 characters'),
-        email: z.string().email('Invalid email address'),
-        phone: z.string().optional(),
-        owner: z.boolean().optional(),
-      })
-    )
-    .optional(),
 });
 
 interface VcGroupFormProps {
-  vcGroup: (VcGroup & { members: VcGroupMember[]; interestedAreas: Area[] }) | null | undefined;
+  vcGroup: (VcGroup & { interestedAreas: Area[] }) | null | undefined;
   onCancel: () => void;
 }
 
@@ -142,14 +128,6 @@ export const VcGroupForm = ({ vcGroup, onCancel }: VcGroupFormProps) => {
       twitter: vcGroup?.twitter ?? '',
       principalStartups: vcGroup?.principalStartups ?? '',
       principalExits: vcGroup?.principalExits ?? '',
-      members: vcGroup?.members.map(member => ({
-        name: member.name,
-        photo: member.photo ?? '',
-        role: member.role,
-        email: member.email,
-        phone: member.phone ?? '',
-        owner: member.owner,
-      })),
     },
   });
 
@@ -176,7 +154,6 @@ export const VcGroupForm = ({ vcGroup, onCancel }: VcGroupFormProps) => {
             ...data,
             interestedAreas: data.interestedAreas?.map(area => Number(area.value)) ?? [],
             stages: (data.stages?.map(stage => stage.value) as ProjectStage[]) ?? [],
-            members: data.members ?? [],
             countryId: Number(data.countryId) ?? '',
             stateId: Number(data.stateId) ?? '',
           })
@@ -655,37 +632,6 @@ export const VcGroupForm = ({ vcGroup, onCancel }: VcGroupFormProps) => {
           />
         </div>
 
-        <hr className="mx-6  border-neutral-700" />
-
-        <h2 className="mx-6 text-lg font-medium text-neutral-200">Members</h2>
-
-        <div className="mx-6 space-y-4 pt-4">
-          {form
-            .watch('members')
-            ?.map((member, index) => (
-              <MemberForm
-                key={index}
-                member={member as VcGroupMember}
-                index={index}
-                isUpdatingVcGroup={isUpdatingVcGroup}
-                form={form}
-              />
-            ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              const currentMembers = form.getValues('members') ?? [];
-              form.setValue('members', [
-                ...currentMembers,
-                { name: '', role: '', email: '', phone: '', photo: '', owner: false },
-              ]);
-            }}
-          >
-            <PlusIcon className="h-4 w-4" /> Add Member
-          </Button>
-        </div>
-
         <div className="mx-6 flex justify-end gap-4 pb-8 pt-8">
           <Button variant="secondary" disabled={isUpdatingVcGroup} onClick={onCancel}>
             Cancel
@@ -696,181 +642,5 @@ export const VcGroupForm = ({ vcGroup, onCancel }: VcGroupFormProps) => {
         </div>
       </form>
     </Form>
-  );
-};
-
-const MemberForm = ({
-  member,
-  index,
-  isUpdatingVcGroup,
-  form,
-}: {
-  member: VcGroupMember;
-  index: number;
-  isUpdatingVcGroup: boolean;
-  form: UseFormReturn<z.infer<typeof vcGroupFormSchema>>;
-}) => {
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const isOnlyMember = form.getValues('members')?.length === 1;
-
-  return (
-    <div key={index} className="relative rounded-md border border-neutral-700 p-4">
-      <div className="space-y-2">
-        {renderMemberPhotoUpload(
-          `member-${index}-${member.id}`,
-          member.photo ?? null,
-          photo,
-          isUploadingPhoto,
-          setIsUploadingPhoto,
-          (photo: string) => {
-            form.setValue(`members.${index}.photo`, photo);
-            setPhoto(photo);
-          }
-        )}
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className={cn(
-            'absolute right-4 top-2 rounded-md border border-neutral-700 p-2',
-            isOnlyMember && 'hidden'
-          )}
-          onClick={() => {
-            const currentMembers = form.getValues('members') ?? [];
-            form.setValue(
-              'members',
-              currentMembers.filter((_, i) => i !== index)
-            );
-          }}
-        >
-          <Trash2Icon className="h-4 w-4" />
-        </Button>
-
-        <FormField
-          control={form.control}
-          name={`members.${index}.name`}
-          render={({ field }) => (
-            <FormItem className="w-11/12">
-              <FormControl>
-                <Input placeholder={`Name ${index + 1}`} {...field} disabled={isUpdatingVcGroup} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex items-center gap-4">
-          <FormField
-            control={form.control}
-            name={`members.${index}.role`}
-            render={({ field }) => (
-              <FormItem className="w-11/12">
-                <FormControl>
-                  <Input
-                    placeholder={`Role ${index + 1}`}
-                    {...field}
-                    disabled={isUpdatingVcGroup}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name={`members.${index}.owner`}
-            render={({ field }) => (
-              <FormItem className="w-11/12">
-                <FormControl>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    <Label className="font-normal text-neutral-200">Owner</Label>
-                  </div>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name={`members.${index}.email`}
-          render={({ field }) => (
-            <FormItem className="w-11/12">
-              <FormControl>
-                <Input placeholder={`Email ${index + 1}`} {...field} disabled={isUpdatingVcGroup} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name={`members.${index}.phone`}
-          render={({ field }) => (
-            <FormItem className="w-11/12">
-              <FormControl>
-                <PhoneInput
-                  placeholder={`Phone ${index + 1}`}
-                  {...field}
-                  disabled={isUpdatingVcGroup}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
-  );
-};
-
-const renderMemberPhotoUpload = (
-  userId: string,
-  currentPhoto: string | null,
-  photoUploaded: string | null,
-  isUploadingPhoto: boolean,
-  setIsUploadingPhoto: (isUploading: boolean) => void,
-  setPhoto: (photo: string) => void
-) => {
-  return (
-    <div className="relative">
-      <label htmlFor={`photo-upload-${userId}`}>
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] hover:cursor-pointer hover:opacity-75">
-          {(photoUploaded ?? currentPhoto) ? (
-            <Image
-              src={photoUploaded ?? currentPhoto ?? ''}
-              alt="Profile"
-              width={96}
-              height={96}
-              className="h-24 w-24 rounded-full object-cover"
-            />
-          ) : (
-            <Plus className="h-8 w-8 text-black" />
-          )}
-        </div>
-
-        <input
-          id={`photo-upload-${userId}`}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={async e => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-
-            setIsUploadingPhoto(true);
-
-            const imageUrl = await sendImageToBackend(file, userId);
-
-            setPhoto(imageUrl ?? '');
-
-            setIsUploadingPhoto(false);
-          }}
-          disabled={isUploadingPhoto}
-        />
-      </label>
-    </div>
   );
 };

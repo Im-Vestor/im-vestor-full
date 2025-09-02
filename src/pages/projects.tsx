@@ -27,7 +27,7 @@ type InvestmentRange = {
 
 // Define revenue and investment ranges
 const REVENUE_RANGES: RevenueRange[] = [
-  { id: '1', label: 'Less than $100k', max: 100000 },
+  { id: '1', label: 'Less than $100k', min: 0, max: 99999 },
   { id: '2', label: '$100k - $500k', min: 100000, max: 500000 },
   { id: '3', label: '$500k - $1M', min: 500000, max: 1000000 },
   { id: '4', label: '$1M - $5M', min: 1000000, max: 5000000 },
@@ -35,7 +35,7 @@ const REVENUE_RANGES: RevenueRange[] = [
 ];
 
 const INVESTMENT_RANGES: InvestmentRange[] = [
-  { id: '1', label: 'Less than $100k', max: 100000 },
+  { id: '1', label: 'Less than $100k', min: 0, max: 99999 },
   { id: '2', label: '$100k - $500k', min: 100000, max: 500000 },
   { id: '3', label: '$500k - $1M', min: 500000, max: 1000000 },
   { id: '4', label: '$1M - $5M', min: 1000000, max: 5000000 },
@@ -59,10 +59,30 @@ export default function Companies() {
     min?: number;
     max?: number;
   }>({});
-  const [investmentFilters, setInvestmentFilters] = useState<{
-    min?: number;
-    max?: number;
-  }>({});
+  const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
+
+  // Calculate combined investment range from selected ranges
+  const getInvestmentRange = () => {
+    if (selectedInvestmentRanges.length === 0) return { min: undefined, max: undefined };
+
+    const selectedRanges = INVESTMENT_RANGES.filter(range =>
+      selectedInvestmentRanges.includes(range.id)
+    );
+
+    const mins = selectedRanges
+      .map(range => range.min)
+      .filter((min): min is number => min !== undefined);
+    const maxs = selectedRanges
+      .map(range => range.max)
+      .filter((max): max is number => max !== undefined);
+
+    return {
+      min: mins.length > 0 ? Math.min(...mins) : undefined,
+      max: maxs.length > 0 ? Math.max(...maxs) : undefined,
+    };
+  };
+
+  const investmentRange = getInvestmentRange();
 
   // Prepare filter parameters for the API call
   const filterParams = {
@@ -71,8 +91,8 @@ export default function Companies() {
     oneToFiveSlots: oneToFiveSlots,
     minRevenue: revenueFilters.min,
     maxRevenue: revenueFilters.max,
-    minInitialInvestment: investmentFilters.min,
-    maxInitialInvestment: investmentFilters.max,
+    minInitialInvestment: investmentRange.min,
+    maxInitialInvestment: investmentRange.max,
     searchQuery: searchQuery,
     page: page,
     favorites: favorites,
@@ -110,14 +130,10 @@ export default function Companies() {
   };
 
   const handleInvestmentFilterChange = (id: string, checked: boolean) => {
-    if (!checked) {
-      setInvestmentFilters({});
-      return;
-    }
-
-    const range = INVESTMENT_RANGES.find(r => r.id === id);
-    if (range) {
-      setInvestmentFilters({ min: range.min, max: range.max });
+    if (checked) {
+      setSelectedInvestmentRanges([...selectedInvestmentRanges, id]);
+    } else {
+      setSelectedInvestmentRanges(selectedInvestmentRanges.filter(rangeId => rangeId !== id));
     }
   };
 
@@ -229,9 +245,7 @@ export default function Companies() {
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
                       id={range.id}
-                      checked={
-                        investmentFilters.min === range.min && investmentFilters.max === range.max
-                      }
+                      checked={selectedInvestmentRanges.includes(range.id)}
                       onCheckedChange={checked =>
                         handleInvestmentFilterChange(range.id, checked === true)
                       }
@@ -318,15 +332,6 @@ function CompanyCard({
           : 'border-white/10 hover:border-white/20'
       }`}
     >
-      {/* Stage Badge - Top Right */}
-      {project.stage && (
-        <div className="absolute right-4 top-4">
-          <span className="rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors group-hover:bg-white/10">
-            {PROJECT_STAGES.find(s => s.value === project.stage)?.label ?? project.stage}
-          </span>
-        </div>
-      )}
-
       <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (
           <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg ring-2 ring-white/10 transition-all group-hover:ring-white/20">

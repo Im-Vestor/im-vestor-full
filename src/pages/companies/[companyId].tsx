@@ -15,6 +15,7 @@ import {
   Loader2,
   MapPin,
   Presentation,
+  Share,
   User,
   Video,
   X,
@@ -27,8 +28,20 @@ import { toast } from 'sonner';
 import { BoostDialog } from '~/components/boosts/boost-dialog';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
+import { ProjectDialog } from '~/components/hypertrain/project-dialog';
 import { NextStepDialog } from '~/components/next-step/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +55,6 @@ import { Stepper } from '~/components/ui/stepper';
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
-import { ProjectDialog } from '~/components/hypertrain/project-dialog';
 
 const availableHours = [
   '07:00',
@@ -96,6 +108,7 @@ export default function CompanyDetails() {
   const [selectedDate, setSelectedDate] = useState<Date>(tomorrow);
   const [time, setTime] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const { data: project, isLoading } = api.project.getById.useQuery(
     { id: companyId as string },
@@ -127,6 +140,16 @@ export default function CompanyDetails() {
       { projectId: companyId as string },
       { enabled: !!companyId }
     );
+
+  const shareProjectMutation = api.vcGroup.shareProject.useMutation({
+    onSuccess: () => {
+      toast.success('Project shared successfully');
+      setIsShareDialogOpen(false);
+    },
+    onError: error => {
+      toast.error(error.message);
+    },
+  });
 
   const addInvestorViewMutation = api.project.addView.useMutation();
   const schedulePitchMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
@@ -351,6 +374,14 @@ export default function CompanyDetails() {
                   <span className="w-fit rounded-full bg-white/10 border border-white/10 px-2 py-0.5 text-sm text-primary sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}
                   </span>
+                  {isVc && (
+                    <div className="flex items-center gap-2 ml-2">
+                      <span className="text-white/70">•</span>
+                      <Button variant="ghost" size="sm" onClick={() => setIsShareDialogOpen(true)}>
+                        <Share className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex flex-row md:flex-col md:items-end gap-4 items-center mt-2 sm:mt-0">
@@ -802,6 +833,81 @@ export default function CompanyDetails() {
       </ConfirmationDialog>
 
       {isProjectOwner && <ProjectViews projectId={companyId as string} />}
+
+      {/* Share Project Confirmation Dialog */}
+      <AlertDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Share Project with VC Team</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to share this project with your VC team members?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {/* Project Preview Card */}
+          <Card className="bg-card/50 border-white/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                {project?.logo ? (
+                  <Image
+                    src={project.logo}
+                    alt={`${project.name} Logo`}
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-lg object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <Building2 className="size-6 text-neutral-400" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-white truncate">{project?.name}</h3>
+                  <p className="text-sm text-gray-400 truncate">
+                    {project?.Entrepreneur?.firstName} {project?.Entrepreneur?.lastName}
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-white/10 border border-white/10 px-2 py-1">
+                  {project?.sector?.name ?? 'Uncategorized'}
+                </span>
+                <span className="rounded-full bg-white/10 border border-white/10 px-2 py-1">
+                  {formatStage(project?.stage)}
+                </span>
+                {project?.country && (
+                  <span className="rounded-full bg-white/10 border border-white/10 px-2 py-1">
+                    {project.country.name}
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsShareDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                shareProjectMutation.mutate({
+                  projectId: companyId as string,
+                  currentUserEmail: user?.primaryEmailAddress?.emailAddress ?? '',
+                })
+              }
+              disabled={shareProjectMutation.isPending}
+              className={cn(
+                'bg-primary text-primary-foreground hover:bg-primary/90',
+                shareProjectMutation.isPending && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {shareProjectMutation.isPending ? 'Sharing...' : 'Share Project'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

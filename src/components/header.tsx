@@ -1,11 +1,23 @@
 import { useClerk, useUser } from '@clerk/nextjs';
 import { type UserType } from '@prisma/client';
-import { Book, HelpCircle, LogOut, Mail, Menu, Settings, User, Users, X } from 'lucide-react';
+import {
+  Book,
+  HelpCircle,
+  LogOut,
+  Mail,
+  Menu,
+  Settings,
+  SquareUser,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { api } from '~/utils/api';
+import { FloatingSupportButton } from './FloatingSupportButton';
 import { Notifications } from './notifications';
 import { Button } from './ui/button';
 import {
@@ -14,12 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { FloatingSupportButton } from './FloatingSupportButton';
 
 const ENTREPRENEUR_MENUS = [
   {
     label: 'Dashboard',
     href: '/dashboard',
+  },
+  {
+    label: 'My Projects',
+    href: '/entrepreneur/projects',
   },
   {
     label: 'Investors',
@@ -138,11 +153,14 @@ export const Header = () => {
 
   const isSignUpRoute = path?.startsWith('/sign-up');
 
-  const { data: userDetails, isLoading: isLoadingUserDetails } = api.user.getUser.useQuery(undefined, {
-    enabled: !isSignUpRoute && !!isSignedIn && isLoaded,
-    staleTime: 600000, // 10 minutes in milliseconds
-    refetchInterval: 600000, // 10 minutes in milliseconds
-  });
+  const { data: userDetails, isLoading: isLoadingUserDetails } = api.user.getUser.useQuery(
+    undefined,
+    {
+      enabled: !isSignUpRoute && !!isSignedIn && isLoaded,
+      staleTime: 600000, // 10 minutes in milliseconds
+      refetchInterval: 600000, // 10 minutes in milliseconds
+    }
+  );
 
   const { signOut } = useClerk();
 
@@ -235,6 +253,15 @@ export const Header = () => {
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
+                {userMetadata?.userType === 'VC_GROUP' && (
+                  <DropdownMenuItem
+                    onClick={() => void handleNavigation('/vc-group/members')}
+                    className="hover:cursor-pointer"
+                  >
+                    <SquareUser className="h-4 w-4 mr-2" />
+                    Members
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => void handleNavigation('/connections')}
                   className="hover:cursor-pointer"

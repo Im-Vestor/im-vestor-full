@@ -63,7 +63,7 @@ export const investorRouter = createTRPCRouter({
         },
       });
     }),
-  getInvestorsRelatedToEntrepreneur: protectedProcedure
+  getInvestorsAndVcGroupsRelatedToEntrepreneur: protectedProcedure
     .input(
       z.object({
         page: z.number().optional(),
@@ -76,66 +76,114 @@ export const investorRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const totalInvestors = await ctx.db.investor.count({
-        where: {
-          ...(input.searchQuery
-            ? {
-                OR: [
-                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-                ],
-              }
-            : {}),
-          ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
-          ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
-          ...(input.areaIds && input.areaIds.length > 0
-            ? {
-                areas: {
-                  some: {
-                    id: { in: input.areaIds },
-                  },
-                },
-              }
-            : {}),
-          ...(input.countryId ? { countryId: input.countryId } : {}),
-          ...(input.stateId ? { stateId: input.stateId } : {}),
-        },
-      });
+      const { page, searchQuery, minInvestment, maxInvestment, areaIds, countryId, stateId } =
+        input;
 
-      const investors = await ctx.db.investor.findMany({
+      const users = await ctx.db.user.findMany({
         where: {
-          ...(input.searchQuery
-            ? {
-                OR: [
-                  { firstName: { contains: input.searchQuery, mode: 'insensitive' } },
-                  { lastName: { contains: input.searchQuery, mode: 'insensitive' } },
-                ],
-              }
-            : {}),
-          ...(input.minInvestment ? { investmentMinValue: { gte: input.minInvestment } } : {}),
-          ...(input.maxInvestment ? { investmentMaxValue: { lte: input.maxInvestment } } : {}),
-          ...(input.areaIds && input.areaIds.length > 0
-            ? {
-                areas: {
-                  some: {
-                    id: { in: input.areaIds },
-                  },
-                },
-              }
-            : {}),
-          ...(input.countryId ? { countryId: input.countryId } : {}),
-          ...(input.stateId ? { stateId: input.stateId } : {}),
+          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
         },
         include: {
-          country: true,
-          state: true,
-          areas: true,
+          investor: {
+            where: {
+              ...(searchQuery
+                ? {
+                    OR: [
+                      { firstName: { contains: searchQuery, mode: 'insensitive' } },
+                      { lastName: { contains: searchQuery, mode: 'insensitive' } },
+                    ],
+                  }
+                : {}),
+              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
+              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
+              ...(areaIds && areaIds.length > 0
+                ? { areas: { some: { id: { in: areaIds } } } }
+                : {}),
+              ...(countryId ? { countryId: countryId } : {}),
+              ...(stateId ? { stateId: stateId } : {}),
+            },
+            include: {
+              state: true,
+              country: true,
+              areas: true,
+            },
+          },
+          vcGroup: {
+            where: {
+              ...(searchQuery
+                ? {
+                    OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+                  }
+                : {}),
+              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
+              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
+              ...(areaIds && areaIds.length > 0
+                ? { interestedAreas: { some: { id: { in: areaIds } } } }
+                : {}),
+              ...(countryId ? { countryId: countryId } : {}),
+              ...(stateId ? { stateId: stateId } : {}),
+            },
+            include: {
+              state: true,
+              country: true,
+              interestedAreas: true,
+            },
+          },
         },
-        skip: input.page ? input.page * 10 : 0,
+        skip: page ? page * 10 : 0,
         take: 10,
       });
 
-      return { investors, total: totalInvestors };
+      const totalUsers = await ctx.db.user.findMany({
+        where: {
+          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
+        },
+        include: {
+          investor: {
+            select: {
+              id: true,
+            },
+            where: {
+              ...(searchQuery
+                ? {
+                    OR: [
+                      { firstName: { contains: searchQuery, mode: 'insensitive' } },
+                      { lastName: { contains: searchQuery, mode: 'insensitive' } },
+                    ],
+                  }
+                : {}),
+              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
+              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
+              ...(areaIds && areaIds.length > 0
+                ? { areas: { some: { id: { in: areaIds } } } }
+                : {}),
+              ...(countryId ? { countryId: countryId } : {}),
+              ...(stateId ? { stateId: stateId } : {}),
+            },
+          },
+          vcGroup: {
+            select: {
+              id: true,
+            },
+            where: {
+              ...(searchQuery
+                ? {
+                    OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+                  }
+                : {}),
+              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
+              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
+              ...(areaIds && areaIds.length > 0
+                ? { interestedAreas: { some: { id: { in: areaIds } } } }
+                : {}),
+              ...(countryId ? { countryId: countryId } : {}),
+              ...(stateId ? { stateId: stateId } : {}),
+            },
+          },
+        },
+      });
+
+      return { users, total: totalUsers.length };
     }),
   create: publicProcedure
     .input(

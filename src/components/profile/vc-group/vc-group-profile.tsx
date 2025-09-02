@@ -1,10 +1,11 @@
-import { Building2, MapPin, Pencil } from 'lucide-react';
+import { Building2, MapPin, Pencil, User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { VcGroupForm } from './vc-group-form';
+import Link from 'next/link';
 
 export const VcGroupProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -64,8 +65,66 @@ export const VcGroupProfile = ({ userId }: { userId?: string }) => {
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
         <p className="mt-3 text-gray-400">{vcGroup?.bio ?? 'No description'}</p>
+        <h3 className="mt-12 font-semibold">Members</h3>
+        <div className="mt-3 flex flex-col gap-4">
+          {vcGroup?.members.map(member => (
+            <div key={member.id} className="flex gap-3 items-start">
+              {member.photo ? (
+                <Image
+                  src={member.photo}
+                  alt={`${member.name}`}
+                  width={48}
+                  height={48}
+                  className="size-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex size-12 items-center justify-center rounded-full bg-white/10">
+                  <User className="size-10 text-neutral-200 sm:size-12" />
+                </div>
+              )}
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold sm:text-xl">{member.name}</h3>
+                <p className=" whitespace-pre-wrap text-sm text-white/80 sm:text-base">
+                  {member.role}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
         <h3 className="mt-12 font-semibold">Portfolio</h3>
-        <p>TODO</p>
+        <div className="mt-3">
+          {vcGroup?.investedProjects.length === 0 && (
+            <p className="text-sm text-white/80">No projects invested in yet</p>
+          )}
+          {vcGroup?.investedProjects.length > 0 &&
+            vcGroup?.investedProjects.map(project => (
+              <Link
+                key={project.id}
+                href={`/companies/${project.id}`}
+                className="flex gap-3 items-start"
+              >
+                {project.logo ? (
+                  <Image
+                    src={project.logo}
+                    alt={`${project.name}`}
+                    width={48}
+                    height={48}
+                    className="size-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex size-12 items-center justify-center rounded-full bg-white/10">
+                    <User className="size-10 text-neutral-200 sm:size-12" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-lg font-semibold sm:text-xl">{project.name}</h3>
+                  <p className=" whitespace-pre-wrap text-sm text-white/80 sm:text-base">
+                    {project.stage}
+                  </p>
+                </div>
+              </Link>
+            ))}
+        </div>
       </div>
     </div>
   );

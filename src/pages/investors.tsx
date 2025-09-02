@@ -1,10 +1,17 @@
-import { type Area, type Country, type Investor, type State } from '@prisma/client';
-import { Loader2, MessageCircle, SearchIcon, UserRound } from 'lucide-react';
+import {
+  type Area,
+  type Country,
+  type Investor,
+  type State,
+  type User,
+  type VcGroup,
+} from '@prisma/client';
+import { Building2, Loader2, SearchIcon, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Header } from '~/components/header';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
@@ -26,10 +33,11 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
   { id: '5', label: '$5M+', min: 5000000 },
 ];
 
-type InvestorWithRelations = Investor & {
-  state: State | null;
-  country: Country | null;
-  areas: Area[];
+type UserWithRelations = User & {
+  investor: (Investor & { state: State | null; country: Country | null; areas: Area[] }) | null;
+  vcGroup:
+    | (VcGroup & { state: State | null; country: Country | null; interestedAreas: Area[] })
+    | null;
 };
 
 export default function Investors() {
@@ -54,7 +62,8 @@ export default function Investors() {
     page: page,
   };
 
-  const { data, isLoading } = api.investor.getInvestorsRelatedToEntrepreneur.useQuery(filterParams);
+  const { data, isLoading } =
+    api.investor.getInvestorsAndVcGroupsRelatedToEntrepreneur.useQuery(filterParams);
 
   const visibleAreas = areas?.slice(0, visibleAreasCount);
 
@@ -159,10 +168,17 @@ export default function Investors() {
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
-                {data?.investors && data.investors.length > 0 ? (
-                  data.investors.map((investor: InvestorWithRelations) => (
-                    <InvestorCard key={investor.id} investor={investor} />
-                  ))
+                {data?.users && data.users.length > 0 ? (
+                  data.users.map((investorOrVcGroup: UserWithRelations) =>
+                    investorOrVcGroup.investor ? (
+                      <InvestorCard
+                        key={investorOrVcGroup.id}
+                        investor={investorOrVcGroup.investor}
+                      />
+                    ) : investorOrVcGroup.vcGroup ? (
+                      <VcGroupCard key={investorOrVcGroup.id} vcGroup={investorOrVcGroup.vcGroup} />
+                    ) : null
+                  )
                 ) : isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="size-8 animate-spin text-white" />
@@ -177,7 +193,7 @@ export default function Investors() {
                 <p className="text-sm text-white/50">
                   {isLoading
                     ? 'Loading investors...'
-                    : `Showing ${data?.investors?.length ?? 0} of ${data?.total ?? 0} investors`}
+                    : `Showing ${data?.users?.length ?? 0} of ${data?.total ?? 0} investors`}
                 </p>
                 <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
                   Previous
@@ -198,7 +214,11 @@ export default function Investors() {
   );
 }
 
-function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
+function InvestorCard({
+  investor,
+}: {
+  investor: Investor & { state: State | null; country: Country | null; areas: Area[] };
+}) {
   return (
     <Link
       href={`/investor/${investor.id}`}
@@ -245,7 +265,8 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
                 <span className="text-sm text-white/70">Investimento: </span>
                 <span className="text-sm font-medium">
                   {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
-                  {investor.investmentMinValue.toLocaleString()} - {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
+                  {investor.investmentMinValue.toLocaleString()} -{' '}
+                  {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
                   {investor.investmentMaxValue.toLocaleString()}
                 </span>
               </div>
@@ -273,18 +294,94 @@ function InvestorCard({ investor }: { investor: InvestorWithRelations }) {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <Button
-              onClick={e => {
-                e.preventDefault();
-                toast.success('Poke not implemented yet!');
-              }}
-              className="gap-2 self-start md:self-auto"
-              size="sm"
-            >
-              <MessageCircle className="size-4" strokeWidth={2.5} />
-              <span>Poke</span>
-            </Button>
+          <div className="flex flex-col gap-2">
+            <Badge>INVESTOR</Badge>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function VcGroupCard({
+  vcGroup,
+}: {
+  vcGroup: VcGroup & { state: State | null; country: Country | null; interestedAreas: Area[] };
+}) {
+  return (
+    <Link
+      href={`/vc-group/${vcGroup.id}`}
+      key={vcGroup.id}
+      className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
+    >
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:gap-6">
+        {vcGroup.logo ? (
+          <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
+            <Image
+              src={vcGroup.logo}
+              alt={`${vcGroup.name} Logo`}
+              width={72}
+              height={72}
+              className="h-full w-full rounded-md object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
+            <Building2 className="size-8 text-neutral-500" />
+          </div>
+        )}
+
+        <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
+          <div className="flex flex-col flex-1">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-semibold">{vcGroup.name}</h3>
+              </div>
+              {vcGroup.state?.name && vcGroup.country?.name && (
+                <span className="text-white/70">
+                  {vcGroup.state.name}, {vcGroup.country.name}
+                </span>
+              )}
+
+              <p className="mt-2 line-clamp-2">{vcGroup.description}</p>
+            </div>
+
+            {/* Investment Information */}
+            <div className="mt-4 space-y-2">
+              {vcGroup.averageInvestmentSize && (
+                <div>
+                  <span className="text-sm text-white/70">Investimento: </span>
+                  <span className="text-sm font-medium">
+                    €{vcGroup.averageInvestmentSize.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {vcGroup.interestedAreas && vcGroup.interestedAreas.length > 0 && (
+                <div>
+                  <span className="text-sm text-white/70">Setores: </span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {vcGroup.interestedAreas.slice(0, 3).map(area => (
+                      <span
+                        key={area.id}
+                        className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light"
+                      >
+                        {area.name}
+                      </span>
+                    ))}
+                    {vcGroup.interestedAreas.length > 3 && (
+                      <span className="rounded-full bg-[#323645] px-2 py-1 text-xs font-light">
+                        +{vcGroup.interestedAreas.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Badge>VC GROUP</Badge>
           </div>
         </div>
       </div>

@@ -60,23 +60,6 @@ export const userRouter = createTRPCRouter({
   getUserById: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Only allow admins to query other users' data, or users to query their own data
-      const isOwnProfile = ctx.auth.userId === input.userId;
-
-      if (!isOwnProfile) {
-        // Check if current user is admin using Clerk metadata
-        const { clerkClient } = await import('@clerk/nextjs/server');
-        const clerk = await clerkClient();
-        const currentUser = await clerk.users.getUser(ctx.auth.userId);
-        const userMetadata = currentUser.publicMetadata as {
-          userIsAdmin?: boolean;
-        };
-
-        if (!userMetadata?.userIsAdmin) {
-          throw new Error('Unauthorized: You can only view your own profile');
-        }
-      }
-
       const user = await ctx.db.user.findUnique({
         where: {
           id: input.userId,

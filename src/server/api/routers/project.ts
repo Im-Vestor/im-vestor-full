@@ -98,10 +98,16 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-      if (input.minRevenue) {
-        where.annualRevenue = {
-          gte: input.minRevenue,
-        };
+      if (input.minRevenue || input.maxRevenue) {
+        where.annualRevenue = {};
+
+        if (input.minRevenue) {
+          where.annualRevenue.gte = input.minRevenue;
+        }
+
+        if (input.maxRevenue) {
+          where.annualRevenue.lte = input.maxRevenue;
+        }
       }
 
       if (input.maxRevenue) {
@@ -110,16 +116,16 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-      if (input.minInitialInvestment) {
-        where.startInvestment = {
-          gte: input.minInitialInvestment,
-        };
-      }
+      if (input.minInitialInvestment || input.maxInitialInvestment) {
+        where.startInvestment = {};
 
-      if (input.maxInitialInvestment) {
-        where.startInvestment = {
-          lte: input.maxInitialInvestment,
-        };
+        if (input.minInitialInvestment) {
+          where.startInvestment.gte = input.minInitialInvestment;
+        }
+
+        if (input.maxInitialInvestment) {
+          where.startInvestment.lte = input.maxInitialInvestment;
+        }
       }
 
       if (input.searchQuery) {
@@ -165,6 +171,8 @@ export const projectRouter = createTRPCRouter({
         skip: (input.page ?? 1) * 20,
         take: 20,
       });
+
+      console.log('projects', projects);
 
       return {
         projects: projects.map(project => ({

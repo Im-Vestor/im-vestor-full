@@ -15,6 +15,20 @@ export const vcGroupRouter = createTRPCRouter({
         state: true,
         interestedAreas: true,
         favoriteProjects: true,
+        investedProjects: true,
+      },
+    });
+  }),
+
+  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    return await ctx.db.vcGroup.findUnique({
+      where: { id: input.id },
+      include: {
+        members: true,
+        country: true,
+        state: true,
+        interestedAreas: true,
+        favoriteProjects: true,
       },
     });
   }),
@@ -44,6 +58,7 @@ export const vcGroupRouter = createTRPCRouter({
           country: true,
           state: true,
           interestedAreas: true,
+          investedProjects: true,
         },
       });
     }),
@@ -156,17 +171,6 @@ export const vcGroupRouter = createTRPCRouter({
 
         interestedAreas: z.array(z.number()),
         stages: z.array(z.nativeEnum(ProjectStage)),
-
-        members: z.array(
-          z.object({
-            name: z.string().min(1),
-            photo: z.string().optional(),
-            role: z.string().min(1),
-            email: z.string().email(),
-            phone: z.string().optional(),
-            owner: z.boolean().optional(),
-          })
-        ),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -181,7 +185,7 @@ export const vcGroupRouter = createTRPCRouter({
         });
       }
 
-      const vcGroup = await ctx.db.vcGroup.update({
+      await ctx.db.vcGroup.update({
         where: { userId: ctx.auth.userId },
         data: {
           name: input.name,
@@ -220,16 +224,160 @@ export const vcGroupRouter = createTRPCRouter({
           stages: input.stages,
         },
       });
+    }),
 
-      await ctx.db.vcGroupMember.deleteMany({
-        where: { vcGroupId: vcGroup.id },
+  // Member CRUD operations
+  getMembers: protectedProcedure.query(async ({ ctx }) => {
+    const vcGroup = await ctx.db.vcGroup.findUnique({
+      where: { userId: ctx.auth.userId },
+      include: { members: true },
+    });
+
+    if (!vcGroup) {
+      throw new Error('VC Group not found');
+    }
+
+    return vcGroup.members;
+  }),
+
+  createMember: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        photo: z.string().optional(),
+        role: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().optional(),
+        owner: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const vcGroup = await ctx.db.vcGroup.findUnique({
+        where: { userId: ctx.auth.userId },
       });
 
-      await ctx.db.vcGroupMember.createMany({
-        data: input.members.map(member => ({
-          ...member,
+      if (!vcGroup) {
+        throw new Error('VC Group not found');
+      }
+
+      return await ctx.db.vcGroupMember.create({
+        data: {
+          ...input,
           vcGroupId: vcGroup.id,
-        })),
+        },
       });
+    }),
+
+  updateMember: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1),
+        photo: z.string().optional(),
+        role: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().optional(),
+        owner: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updateData } = input;
+
+      // Verify the member belongs to the user's VC group
+      const member = await ctx.db.vcGroupMember.findFirst({
+        where: {
+          id,
+          vcGroup: { userId: ctx.auth.userId },
+        },
+      });
+
+      if (!member) {
+        throw new Error('Member not found or access denied');
+      }
+
+      return await ctx.db.vcGroupMember.update({
+        where: { id },
+        data: updateData,
+      });
+    }),
+
+  deleteMember: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify the member belongs to the user's VC group
+      const member = await ctx.db.vcGroupMember.findFirst({
+        where: {
+          id: input.id,
+          vcGroup: { userId: ctx.auth.userId },
+        },
+      });
+
+      if (!member) {
+        throw new Error('Member not found or access denied');
+      }
+
+      // Prevent deleting the only owner
+      if (member.owner) {
+        const ownerCount = await ctx.db.vcGroupMember.count({
+          where: {
+            vcGroup: { userId: ctx.auth.userId },
+            owner: true,
+          },
+        });
+
+        if (ownerCount <= 1) {
+          throw new Error(
+            'Cannot delete the only owner. Please assign another member as owner first.'
+          );
+        }
+      }
+
+      return await ctx.db.vcGroupMember.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  shareProject: protectedProcedure
+    .input(z.object({ projectId: z.string(), currentUserEmail: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const vcGroup = await ctx.db.vcGroup.findUnique({
+        where: { userId: ctx.auth.userId },
+        include: {
+          members: true,
+        },
+      });
+
+      if (!vcGroup) {
+        throw new Error('VC Group not found');
+      }
+
+      const vcMembersWithoutCurrentUser = vcGroup.members.filter(
+        member => member.email !== input.currentUserEmail
+      );
+
+      const memberThatSharedTheProject = vcGroup.members.find(
+        member => member.email === input.currentUserEmail
+      );
+
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+      });
+
+      console.log('vcMembersWithoutCurrentUser', vcMembersWithoutCurrentUser);
+      console.log('memberThatSharedTheProject', memberThatSharedTheProject);
+      console.log('project', project);
+      console.log('currentUserEmail', input.currentUserEmail);
+
+      for (const member of vcMembersWithoutCurrentUser) {
+        await sendEmail(
+          member.name,
+          `See ${project?.name} on Im-Vestor.`,
+          `${memberThatSharedTheProject?.name} has shared a project with you.`,
+          member.email,
+          `See ${project?.name} on Im-Vestor.`,
+          `https://www.im-vestor.com/companies/${input.projectId}`,
+          'See Project'
+        );
+      }
     }),
 });
