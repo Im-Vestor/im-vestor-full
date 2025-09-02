@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog';
-import { MemberForm } from '~/pages/vc-group/member-form';
+import { MemberForm } from '~/components/vc-group/member-form';
 import { api } from '~/utils/api';
 
 export default function VcGroupMembers() {
