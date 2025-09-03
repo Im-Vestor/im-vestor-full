@@ -37,6 +37,10 @@ const ENTREPRENEUR_MENUS = [
     href: '/entrepreneur/projects',
   },
   {
+    label: 'Negotiations',
+    href: '/entrepreneur/negotiations',
+  },
+  {
     label: 'Investors',
     href: '/investors',
   },
@@ -205,7 +209,7 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         {isLoaded && isSignedIn && (
-          <div className="hidden md:flex items-center justify-center gap-1 lg:gap-3">
+          <div className="hidden md:flex items-center justify-center gap-1">
             {getMenus().map(menu => (
               <Button
                 key={menu.href}

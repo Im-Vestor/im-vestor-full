@@ -33,6 +33,24 @@ export const entrepreneurRouter = createTRPCRouter({
       },
     });
   }),
+  getNegotiationsByUserId: protectedProcedure.query(async ({ ctx }) => {
+    const negotiations = await ctx.db.negotiation.findMany({
+      where: { project: { Entrepreneur: { userId: ctx.auth.userId } } },
+      include: {
+        project: {
+          include: {
+            state: true,
+            country: true,
+            Entrepreneur: true,
+          },
+        },
+        investor: true,
+        VcGroup: true,
+      },
+    });
+
+    return negotiations;
+  }),
   getByUserIdForAdmin: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {

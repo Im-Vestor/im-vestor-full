@@ -31,19 +31,42 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-const NotificationTextMap: Record<string, string> = {
-  [NotificationType.PROJECT_VIEW]: 'An investor viewed your project',
-  [NotificationType.MEETING_CANCELLED]: 'A meeting has been cancelled',
-  [NotificationType.MEETING_CREATED]: 'A meeting has been created',
-  [NotificationType.NEGOTIATION_CANCELLED]: 'A negotiation has been cancelled',
-  [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: 'A negotiation has been updated',
-  [NotificationType.NEGOTIATION_CREATED]: 'You have a new negotiation',
-  [NotificationType.POKE]: 'You have a new poke!',
-  [NotificationType.SUPPORT_TICKET_REPLY]: 'Click here to view support ticket reply',
-  [NotificationType.SUPPORT_TICKET_STATUS_UPDATED]: 'Your support ticket status has been updated',
-  [NotificationType.SUPPORT_TICKET_CREATED]: 'A new support ticket requires your attention',
-  [NotificationType.SUPPORT_TICKET_RECEIVED]:
-    'Your support ticket has been received and will be reviewed soon',
+const NotificationTextMap: Record<string, { text: string; link: string }> = {
+  [NotificationType.PROJECT_VIEW]: {
+    text: 'An investor viewed your project',
+    link: '/entrepreneur/projects',
+  },
+  [NotificationType.MEETING_CANCELLED]: { text: 'A meeting has been cancelled', link: '/meetings' },
+  [NotificationType.MEETING_CREATED]: { text: 'A meeting has been created', link: '/meetings' },
+  [NotificationType.NEGOTIATION_CANCELLED]: {
+    text: 'A negotiation has been cancelled',
+    link: '/entrepreneur/negotiations',
+  },
+  [NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE]: {
+    text: 'A negotiation has been updated',
+    link: '/entrepreneur/negotiations',
+  },
+  [NotificationType.NEGOTIATION_CREATED]: {
+    text: 'You have a new negotiation',
+    link: '/entrepreneur/negotiations',
+  },
+  [NotificationType.POKE]: { text: 'You have a new poke!', link: '#' },
+  [NotificationType.SUPPORT_TICKET_REPLY]: {
+    text: 'Click here to view support ticket reply',
+    link: '/support-tickets',
+  },
+  [NotificationType.SUPPORT_TICKET_STATUS_UPDATED]: {
+    text: 'Your support ticket status has been updated',
+    link: '/support-tickets',
+  },
+  [NotificationType.SUPPORT_TICKET_CREATED]: {
+    text: 'A new support ticket requires your attention',
+    link: '/support-tickets',
+  },
+  [NotificationType.SUPPORT_TICKET_RECEIVED]: {
+    text: 'Your support ticket has been received and will be reviewed soon',
+    link: '/support-tickets',
+  },
 };
 
 type UserDetails = {
@@ -101,9 +124,7 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
   }, [notificationsFromQuery]);
 
   const handleNotificationClick = (notification: Notification) => {
-    if (notification.type === NotificationType.SUPPORT_TICKET_REPLY) {
-      void router.push('/support-tickets');
-    }
+    void router.push(NotificationTextMap[notification.type]?.link ?? '#');
   };
 
   // Calculate total notification count
@@ -176,9 +197,9 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
                     notification.type.includes('SUPPORT_TICKET') ? 'text-primary font-medium' : ''
                   }
                 >
-                  {NotificationTextMap[notification.type] ?? 'You have a new notification'}
+                  {NotificationTextMap[notification.type]?.text ?? 'You have a new notification'}
                 </span>
-                <span className="text-sm text-muted-foreground ml-2">
+                <span className="text-xs text-neutral-500 ml-2">
                   {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
                 </span>
               </div>
