@@ -183,7 +183,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pleaseFieldFields: 'Please fill all the fields',
     takeYourPass: 'Take your pass',
     back: 'Back',
-    accountCreatedSuccessfully: 'Account created successfully!',
+    accountCreatedSuccessfully: 'Check your email to verify your account!',
     failedToCreateAccount: 'Failed to create account.',
   },
   'pt-PT': {
@@ -283,7 +283,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pleaseFieldFields: 'Por favor, preencha todos os campos',
     takeYourPass: 'Obtenha o seu passe',
     back: 'Voltar',
-    accountCreatedSuccessfully: 'Conta criada com sucesso!',
+    accountCreatedSuccessfully: 'Verifique o seu email para verificar a sua conta!',
     failedToCreateAccount: 'Falha ao criar conta.',
   },
 };

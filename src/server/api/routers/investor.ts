@@ -1,10 +1,14 @@
 import { clerkClient } from '@clerk/nextjs/server';
-import { UserType, Currency } from '@prisma/client';
+import { UserType, Currency, UserStatus } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
 import { sendEmail } from '~/utils/email';
 import { createReferralLink, generateCode } from '~/utils/referral';
+import {
+  generateEmailVerificationToken,
+  generateVerificationLink,
+} from '~/utils/email-verification';
 
 export const investorRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -234,6 +238,7 @@ export const investorRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.INVESTOR,
+          status: UserStatus.PENDING_EMAIL_VERIFICATION,
         },
       });
 
@@ -241,12 +246,18 @@ export const investorRouter = createTRPCRouter({
         await createReferralLink(input.referralToken, user.id, input.firstName, input.lastName);
       }
 
+      // Generate verification token and send verification email
+      const verificationToken = generateEmailVerificationToken(user.id, user.email);
+      const verificationLink = generateVerificationLink(verificationToken);
+
       await sendEmail(
         input.firstName,
         'Welcome to Im-Vestor!',
-        'Thank you for signing up to Im-Vestor. We are excited to have you on board.',
+        'Thank you for signing up to Im-Vestor. Please verify your email address to activate your account.',
         input.email,
-        'Welcome to Im-Vestor!'
+        'Verify your email - Im-Vestor',
+        verificationLink,
+        'Verify Email'
       );
 
       return ctx.db.investor.create({

@@ -61,7 +61,7 @@ const IncubatorSignUp: NextPage = () => {
 
   const createIncubator = api.incubator.create.useMutation({
     onSuccess: () => {
-      toast.success('Your account has been created successfully.');
+      toast.success('Check your email to verify your account!');
       void router.push('/login');
     },
     onError: error => {

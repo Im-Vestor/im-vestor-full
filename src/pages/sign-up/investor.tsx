@@ -93,7 +93,7 @@ export default function SignupInvestor() {
   const { mutateAsync: registerInvestor, isPending: isRegistering } =
     api.investor.create.useMutation({
       onSuccess: () => {
-        toast.success('Account created successfully!');
+        toast.success('Check your email to verify your account!');
         setStep(step + 1);
       },
       onError: error => {

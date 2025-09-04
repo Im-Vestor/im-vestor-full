@@ -1,9 +1,13 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
-import { ProjectStage, UserType } from '@prisma/client';
+import { ProjectStage, UserType, UserStatus } from '@prisma/client';
 import { clerkClient } from '@clerk/nextjs/server';
 import { createReferralLink, generateCode } from '~/utils/referral';
 import { sendEmail } from '~/utils/email';
+import {
+  generateEmailVerificationToken,
+  generateVerificationLink,
+} from '~/utils/email-verification';
 
 export const vcGroupRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
@@ -108,6 +112,7 @@ export const vcGroupRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.VC_GROUP,
+          status: UserStatus.PENDING_EMAIL_VERIFICATION,
         },
       });
 
@@ -115,12 +120,18 @@ export const vcGroupRouter = createTRPCRouter({
         await createReferralLink(input.referralToken, user.id, input.name, '');
       }
 
+      // Generate verification token and send verification email
+      const verificationToken = generateEmailVerificationToken(user.id, user.email);
+      const verificationLink = generateVerificationLink(verificationToken);
+
       await sendEmail(
         input.name,
         'Welcome to Im-Vestor!',
-        'Thank you for signing up to Im-Vestor. We are excited to have you on board.',
+        'Thank you for signing up to Im-Vestor. Please verify your email address to activate your account.',
         input.email,
-        'Welcome to Im-Vestor!'
+        'Verify your email - Im-Vestor',
+        verificationLink,
+        'Verify Email'
       );
 
       return ctx.db.vcGroup.create({
@@ -362,11 +373,6 @@ export const vcGroupRouter = createTRPCRouter({
       const project = await ctx.db.project.findUnique({
         where: { id: input.projectId },
       });
-
-      console.log('vcMembersWithoutCurrentUser', vcMembersWithoutCurrentUser);
-      console.log('memberThatSharedTheProject', memberThatSharedTheProject);
-      console.log('project', project);
-      console.log('currentUserEmail', input.currentUserEmail);
 
       for (const member of vcMembersWithoutCurrentUser) {
         await sendEmail(

@@ -482,6 +482,7 @@ enum UserType {
 
 enum UserStatus {
   ACTIVE
+  PENDING_EMAIL_VERIFICATION
   INACTIVE
 }
 

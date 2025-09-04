@@ -44,7 +44,14 @@ export default function Login() {
     if (router.query.deleted === 'true') {
       toast.success('Your account has been successfully deleted. Thank you for using Im-Vestor.');
     }
-  }, [router.query.deleted]);
+
+    // Check email verification status messages
+    if (router.query.message === 'email-verified') {
+      toast.success('Email verified successfully! You can now log in.');
+    } else if (router.query.message === 'already-verified') {
+      toast.info('Your email is already verified. You can log in now.');
+    }
+  }, [router.query.deleted, router.query.message]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +71,11 @@ export default function Login() {
 
       if (userStatus === UserStatus.INACTIVE) {
         toast.error('Your account has been deactivated. Please contact support.');
+        return;
+      }
+
+      if (userStatus === UserStatus.PENDING_EMAIL_VERIFICATION) {
+        toast.warning('Please verify your email before logging in.');
         return;
       }
 

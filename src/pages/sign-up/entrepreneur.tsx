@@ -67,7 +67,7 @@ export default function SignupEntrepreneur() {
   const { mutateAsync: registerEntrepreneur, isPending: isRegistering } =
     api.entrepreneur.create.useMutation({
       onSuccess: () => {
-        toast.success('Account created successfully!');
+        toast.success('Check your email to verify your account!');
         void router.push('/login');
       },
       onError: error => {
