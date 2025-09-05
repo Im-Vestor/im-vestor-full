@@ -260,14 +260,14 @@ model PreferredHours {
 }
 
 model Project {
-  id                        String            @id @default(uuid())
+  id                        String                  @id @default(uuid())
   name                      String
   quickSolution             String?
   website                   String?
   foundationDate            DateTime?
   stage                     ProjectStage?
   about                     String?
-  status                    ProjectStatus     @default(ACTIVE)
+  status                    ProjectStatus           @default(ACTIVE)
   startInvestment           Float?
   investorSlots             Int?
   annualRevenue             Float?
@@ -275,14 +275,14 @@ model Project {
   equity                    Float?
   investmentGoal            Float
   logo                      String?
-  currency                  Currency          @default(USD)
+  currency                  Currency                @default(USD)
   photo1                    String?
   photo2                    String?
   photo3                    String?
   photo4                    String?
   videoUrl                  String?
-  createdAt                 DateTime          @default(now())
-  updatedAt                 DateTime          @updatedAt
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
   entrepreneurId            String?
   favoriteInvestorId        String?
   favoriteVcGroupId         String?
@@ -292,8 +292,8 @@ model Project {
   countryId                 Int?
   stateId                   Int?
   incubatorId               String?
-  isBoosted                 Boolean           @default(false)
-  visibility                ProjectVisibility @default(PRIVATE)
+  isBoosted                 Boolean                 @default(false)
+  visibility                ProjectVisibility       @default(PRIVATE)
   socialImpactBeneficiaries Int?
   socialImpactDescription   String?
   socialImpactMetrics       String?
@@ -304,17 +304,32 @@ model Project {
   files                     File[]
   knowYourNumbers           KnowYourNumbers?
   negotiations              Negotiation[]
-  country                   Country?          @relation(fields: [countryId], references: [id])
-  Entrepreneur              Entrepreneur?     @relation(fields: [entrepreneurId], references: [id])
-  Incubator                 Incubator?        @relation(fields: [incubatorId], references: [id])
-  sector                    Area              @relation(fields: [sectorId], references: [id])
-  state                     State?            @relation(fields: [stateId], references: [id])
+  country                   Country?                @relation(fields: [countryId], references: [id])
+  Entrepreneur              Entrepreneur?           @relation(fields: [entrepreneurId], references: [id])
+  Incubator                 Incubator?              @relation(fields: [incubatorId], references: [id])
+  sector                    Area                    @relation(fields: [sectorId], references: [id])
+  state                     State?                  @relation(fields: [stateId], references: [id])
   faqs                      ProjectFaq[]
   views                     ProjectView[]
-  favoriteInvestors         Investor[]        @relation("FavoriteInvestors")
-  favoriteVcGroups          VcGroup[]         @relation("FavoriteVcGroups")
-  investedInvestors         Investor[]        @relation("InvestedInvestors")
-  investedVcGroups          VcGroup[]         @relation("InvestedVcGroups")
+  favoriteInvestors         Investor[]              @relation("FavoriteInvestors")
+  favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
+  investedInvestors         Investor[]              @relation("InvestedInvestors")
+  investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
+  incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
+}
+
+model IncubatorEntrepreneur {
+  id          String    @id @default(uuid())
+  firstName   String
+  lastName    String
+  mobileFone  String?
+  companyRole String?
+  birthDate   DateTime?
+  photo       String?
+  about       String?
+  linkedinUrl String?
+  projectId   String
+  Project     Project   @relation("IncubatorEntrepreneurs", fields: [projectId], references: [id])
 }
 
 model Negotiation {

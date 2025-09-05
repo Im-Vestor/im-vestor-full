@@ -139,8 +139,6 @@ export default function Home() {
     enabled: isUserLoaded && !!user,
   });
 
-  console.log(partners);
-
   const handleLogin = async () => {
     if (!isLoaded) return;
 

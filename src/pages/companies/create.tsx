@@ -75,6 +75,21 @@ const companyFormSchema = z.object({
   socialImpactDescription: z.string().optional(),
   socialImpactBeneficiaries: z.number().optional(),
   socialImpactMetrics: z.string().optional(),
+  entrepreneur: z
+    .object({
+      firstName: z.string().min(2, 'First name must be at least 2 characters'),
+      lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+      mobileFone: z.string().min(1, 'Mobile phone is required'),
+      companyRole: z.string().min(1, 'Company role is required'),
+      birthDate: z.date(),
+      photo: z.string().optional(),
+      about: z
+        .string()
+        .min(10, 'About must be at least 10 characters')
+        .max(280, 'About must be at most 280 characters'),
+      linkedinUrl: z.string().optional(),
+    })
+    .optional(),
 });
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
@@ -82,6 +97,8 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
 export default function CreateCompany() {
   const router = useRouter();
   const { user } = useUser();
+
+  const isIncubator = user?.publicMetadata.userType === 'INCUBATOR';
 
   const [country, setCountry] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
@@ -166,7 +183,7 @@ export default function CreateCompany() {
 
   const handlePhotoUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    photoField: 'photo1' | 'photo2' | 'photo3' | 'photo4'
+    photoField: 'photo1' | 'photo2' | 'photo3' | 'photo4' | 'entrepreneur.photo'
   ) => {
     const file = event.target.files?.[0];
 
@@ -599,6 +616,221 @@ export default function CreateCompany() {
                   />
                 </div>
               </div>
+
+              {isIncubator && (
+                <>
+                  <h3 className="mt-2 text-lg">Entrepreneur Details</h3>
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.photo"
+                      render={({ field: { onChange, value, ...field } }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="space-y-2">
+                              <div className="relative h-24 w-24 hover:opacity-75">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={e => handlePhotoUpload(e, 'entrepreneur.photo')}
+                                  className="absolute inset-0 cursor-pointer opacity-0"
+                                  {...field}
+                                />
+                                <div className="flex h-full w-full items-center justify-center rounded-full bg-[#D1D5DC]">
+                                  {value ? (
+                                    <Image
+                                      src={value}
+                                      alt="Logo preview"
+                                      className="h-full w-full rounded-full object-cover"
+                                      width={100}
+                                      height={100}
+                                    />
+                                  ) : isUploading ? (
+                                    <Loader2 className="h-6 w-6 animate-spin text-black" />
+                                  ) : (
+                                    <PlusIcon className="h-6 w-6 text-black" />
+                                  )}
+                                </div>
+                              </div>
+                              {value && (
+                                <button
+                                  type="button"
+                                  onClick={() => onChange(undefined)}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  <Trash2Icon className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">First Name*</Label>
+                          <FormControl>
+                            <Input
+                              className="w-full"
+                              type="text"
+                              placeholder="Enter first name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">Last Name*</Label>
+                          <FormControl>
+                            <Input
+                              className="w-full"
+                              type="text"
+                              placeholder="Enter last name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.mobileFone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">Mobile Phone*</Label>
+                          <FormControl>
+                            <Input
+                              className="w-full"
+                              type="text"
+                              placeholder="Enter mobile phone"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.companyRole"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">Company Role*</Label>
+                          <FormControl>
+                            <Input
+                              className="w-full"
+                              type="text"
+                              placeholder="Enter company role"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.birthDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2">
+                          <Label className="font-normal text-neutral-200">Birth Date*</Label>
+                          <FormControl>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={'outline'}
+                                    className={cn(
+                                      'w-full border-none pl-3 text-left font-normal',
+                                      !field.value && 'text-muted-foreground'
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, 'PPP')
+                                    ) : (
+                                      <span>Select date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto border-none p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  captionLayout="dropdown"
+                                  showOutsideDays={false}
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  fromYear={1930}
+                                  toYear={2025}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.linkedinUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">
+                            Linkedin URL (optional)
+                          </Label>
+                          <FormControl>
+                            <Input placeholder="Enter linkedin url" {...field} type="url" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="entrepreneur.about"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Label className="font-normal text-neutral-200">
+                            About (max 280 chars)*
+                          </Label>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe your about"
+                              {...field}
+                              maxLength={280}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
+              )}
+
               <h3 className="mt-2 text-lg">Financial Requirements</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -749,6 +981,7 @@ export default function CreateCompany() {
                   )}
                 />
               </div>
+
               <h3 className="mt-2 text-lg">Company Photos</h3>
               <p className="text-sm text-white/60">
                 Upload up to 4 photos of your company (max 2MB each)

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
-import { UserType, UserStatus } from '@prisma/client';
+import { UserType, UserStatus, ProjectStatus } from '@prisma/client';
 import { clerkClient } from '@clerk/nextjs/server';
 import { createReferralLink, generateCode } from '~/utils/referral';
 import { sendEmail } from '~/utils/email';
@@ -16,7 +16,16 @@ export const incubatorRouter = createTRPCRouter({
       include: {
         country: true,
         state: true,
-        projects: true,
+        projects: {
+          where: {
+            status: ProjectStatus.ACTIVE,
+          },
+          include: {
+            state: true,
+            country: true,
+            incubatorEntrepreneurs: true,
+          },
+        },
         areas: true,
         offers: true,
       },
@@ -46,7 +55,16 @@ export const incubatorRouter = createTRPCRouter({
         include: {
           country: true,
           state: true,
-          projects: true,
+          projects: {
+            where: {
+              status: ProjectStatus.ACTIVE,
+            },
+            include: {
+              state: true,
+              country: true,
+              incubatorEntrepreneurs: true,
+            },
+          },
           areas: true,
           offers: true,
         },

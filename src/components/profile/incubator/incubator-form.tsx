@@ -26,6 +26,18 @@ import { Textarea } from '~/components/ui/textarea';
 import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { renderPhotoUpload } from '../entrepreneur/entrepreneur-form';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
+import { Trash2Icon } from 'lucide-react';
 
 const optionSchema = z.object({
   label: z.string(),
@@ -92,6 +104,18 @@ export const IncubatorForm = ({ incubator, onCancel }: IncubatorFormProps) => {
       enabled: !!country,
     }
   );
+
+  const { mutateAsync: deleteUser } = api.user.deleteUser.useMutation({
+    onSuccess: () => {
+      toast.success(
+        'Confirmation email sent! Please check your email to complete account deletion.'
+      );
+    },
+    onError: error => {
+      toast.error('Failed to send confirmation email. Please try again.');
+      console.error('Delete user error:', error);
+    },
+  });
 
   const { mutate: updateIncubator, isPending: isUpdatingIncubator } =
     api.incubator.update.useMutation({
@@ -672,6 +696,35 @@ export const IncubatorForm = ({ incubator, onCancel }: IncubatorFormProps) => {
         </div>
 
         <div className="mx-6 flex justify-end gap-4 pb-8 pt-8">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="flex items-center gap-2 mr-auto">
+                <Trash2Icon className="h-4 w-4" />
+                Delete Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove
+                  all your data from our servers. You will lose access to all your projects and
+                  connections. An email will be sent to you with a link to delete your account. This
+                  link will expire in 24 hours.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    await deleteUser();
+                  }}
+                >
+                  Send Deletion Link
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button variant="secondary" disabled={isUpdatingIncubator} onClick={onCancel}>
             Cancel
           </Button>

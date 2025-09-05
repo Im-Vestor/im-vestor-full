@@ -100,6 +100,7 @@ export default function CompanyDetails() {
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
   const isVc = user?.publicMetadata.userType === 'VC_GROUP';
   const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
+  const isIncubator = user?.publicMetadata.userType === 'INCUBATOR';
 
   const tomorrow = startOfTomorrow();
 
@@ -216,6 +217,7 @@ export default function CompanyDetails() {
       if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
+          incubatorId: project?.Incubator?.id ?? '',
           date: meetingDateTime,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
@@ -224,6 +226,7 @@ export default function CompanyDetails() {
       } else {
         scheduleOtherStageMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
+          incubatorId: project?.Incubator?.id ?? '',
           date: meetingDateTime,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
@@ -239,6 +242,7 @@ export default function CompanyDetails() {
       if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
+          incubatorId: project?.Incubator?.id ?? '',
           date: now,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
@@ -247,6 +251,7 @@ export default function CompanyDetails() {
       } else {
         scheduleOtherStageMeetingMutation.mutate({
           entrepreneurId: project?.Entrepreneur?.id ?? '',
+          incubatorId: project?.Incubator?.id ?? '',
           date: now,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
@@ -553,7 +558,7 @@ export default function CompanyDetails() {
           <NextStepDialog negotiationId={negotiation.id} />
         )}
 
-        {isEntrepreneur && negotiation?.entrepreneurActionNeeded && (
+        {(isEntrepreneur || isIncubator) && negotiation?.entrepreneurActionNeeded && (
           <NextStepDialog negotiationId={negotiation.id} />
         )}
 
@@ -659,11 +664,37 @@ export default function CompanyDetails() {
             )}
 
             <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Founder</h2>
-            <Link href={`/entrepreneur/${project.Entrepreneur?.id}`} className="hover:opacity-75">
+            {project.Entrepreneur ? (
+              <Link href={`/entrepreneur/${project.Entrepreneur?.id}`} className="hover:opacity-75">
+                <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
+                  {project.Entrepreneur?.photo ? (
+                    <Image
+                      src={project.Entrepreneur.photo}
+                      alt="Founder"
+                      width={64}
+                      height={64}
+                      className="h-12 w-12 rounded-full object-cover sm:h-16 sm:w-16"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 sm:h-16 sm:w-16">
+                      <User className="size-5 text-neutral-200 sm:size-6" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-[#EFD687] sm:text-base">
+                      {project.Entrepreneur?.firstName} {project.Entrepreneur?.lastName}
+                    </p>
+                    <p className="text-xs text-white/70 sm:text-sm">
+                      {project.Entrepreneur?.state?.name}, {project.Entrepreneur?.country?.name}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ) : (
               <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
-                {project.Entrepreneur?.photo ? (
+                {project.Incubator?.logo ? (
                   <Image
-                    src={project.Entrepreneur.photo}
+                    src={project.Incubator.logo}
                     alt="Founder"
                     width={64}
                     height={64}
@@ -676,14 +707,14 @@ export default function CompanyDetails() {
                 )}
                 <div>
                   <p className="text-sm font-medium text-[#EFD687] sm:text-base">
-                    {project.Entrepreneur?.firstName} {project.Entrepreneur?.lastName}
+                    {project.Incubator?.name} <span className="text-white/70">(Incubator)</span>
                   </p>
                   <p className="text-xs text-white/70 sm:text-sm">
-                    {project.Entrepreneur?.state?.name}, {project.Entrepreneur?.country?.name}
+                    {project.Incubator?.state?.name}, {project.Incubator?.country?.name}
                   </p>
                 </div>
               </div>
-            </Link>
+            )}
           </div>
 
           <div>

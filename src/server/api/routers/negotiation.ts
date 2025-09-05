@@ -49,7 +49,8 @@ export const negotiationRouter = createTRPCRouter({
         date: z.date(),
         investorId: z.string().optional(),
         vcGroupId: z.string().optional(),
-        entrepreneurId: z.string(),
+        entrepreneurId: z.string().optional(),
+        incubatorId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -83,7 +84,8 @@ export const negotiationRouter = createTRPCRouter({
       void scheduleMeeting(
         ctx.db,
         input.date,
-        input.entrepreneurId,
+        input.entrepreneurId ?? null,
+        input.incubatorId ?? null,
         input.investorId ? [input.investorId] : [],
         input.vcGroupId ? [input.vcGroupId] : [],
         negotiation.id
@@ -112,17 +114,29 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
+      const incubator = await ctx.db.incubator.findUnique({
+        where: { id: input.incubatorId },
+        select: {
+          userId: true,
+          name: true,
+          email: true,
+        },
+      });
+
       void sendEmail(
-        entrepreneur?.firstName ?? '',
+        entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? ''),
         'New pitch meeting request',
         'An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.',
-        entrepreneur?.user.email ?? '',
+        entrepreneur ? (entrepreneur?.user.email ?? '') : (incubator?.email ?? ''),
         'New pitch meeting request'
       );
 
       void createNotifications(
         ctx.db,
-        [investor?.userId ?? vcGroup?.userId ?? '', entrepreneur?.userId ?? ''],
+        [
+          investor?.userId ?? vcGroup?.userId ?? '',
+          entrepreneur?.userId ?? incubator?.userId ?? '',
+        ],
         NotificationType.NEGOTIATION_CREATED
       );
 
@@ -135,7 +149,8 @@ export const negotiationRouter = createTRPCRouter({
         date: z.date(),
         investorId: z.string().optional(),
         vcGroupId: z.string().optional(),
-        entrepreneurId: z.string(),
+        entrepreneurId: z.string().optional(),
+        incubatorId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -166,7 +181,8 @@ export const negotiationRouter = createTRPCRouter({
       void scheduleMeeting(
         ctx.db,
         input.date,
-        input.entrepreneurId,
+        input.entrepreneurId ?? null,
+        input.incubatorId ?? null,
         input.investorId ? [input.investorId] : [],
         input.vcGroupId ? [input.vcGroupId] : [],
         existingNegotiation.id
@@ -185,11 +201,20 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
+      const incubator = await ctx.db.incubator.findUnique({
+        where: { id: input.incubatorId },
+        select: {
+          userId: true,
+          name: true,
+          email: true,
+        },
+      });
+
       void sendEmail(
-        entrepreneur?.firstName ?? '',
+        entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? ''),
         'New meeting request',
         'An investor has requested a new meeting. Please check your dashboard to accept or reject the request.',
-        entrepreneur?.user.email ?? '',
+        entrepreneur ? (entrepreneur?.user.email ?? '') : (incubator?.email ?? ''),
         'New meeting request'
       );
 
@@ -221,6 +246,7 @@ export const negotiationRouter = createTRPCRouter({
                   },
                 },
               },
+              Incubator: true,
             },
           },
           investor: true,
@@ -232,16 +258,20 @@ export const negotiationRouter = createTRPCRouter({
         ctx.db,
         [
           negotiation.investor?.userId ?? negotiation.VcGroup?.userId ?? '',
-          negotiation.project.Entrepreneur?.userId ?? '',
+          negotiation.project.Entrepreneur?.userId ?? negotiation.project.Incubator?.userId ?? '',
         ],
         NotificationType.NEGOTIATION_CANCELLED
       );
 
       await sendEmail(
-        negotiation.project.Entrepreneur?.firstName ?? '',
+        negotiation.project.Entrepreneur
+          ? (negotiation.project.Entrepreneur?.firstName ?? '')
+          : (negotiation.project.Incubator?.name ?? ''),
         'Negotiation cancelled',
         'The negotiation has been cancelled. Please check your dashboard to see the details.',
-        negotiation.project.Entrepreneur?.user.email ?? '',
+        negotiation.project.Entrepreneur
+          ? (negotiation.project.Entrepreneur?.user.email ?? '')
+          : (negotiation.project.Incubator?.email ?? ''),
         'Negotiation cancelled'
       );
 
@@ -257,12 +287,13 @@ export const negotiationRouter = createTRPCRouter({
         select: {
           userType: true,
           entrepreneur: true,
+          incubator: true,
           investor: true,
           vcGroup: true,
         },
       });
 
-      if (user?.userType === UserType.ENTREPRENEUR) {
+      if (user?.userType === UserType.ENTREPRENEUR || user?.userType === UserType.INCUBATOR) {
         await ctx.db.negotiation.update({
           where: { id: input.negotiationId },
           data: { entrepreneurAgreedToGoToNextStage: true, entrepreneurActionNeeded: false },
@@ -293,6 +324,7 @@ export const negotiationRouter = createTRPCRouter({
                   },
                 },
               },
+              Incubator: true,
             },
           },
           VcGroup: true,
@@ -319,10 +351,14 @@ export const negotiationRouter = createTRPCRouter({
       }
 
       await sendEmail(
-        negotiation?.project.Entrepreneur?.firstName ?? '',
+        negotiation?.project.Entrepreneur
+          ? (negotiation?.project.Entrepreneur?.firstName ?? '')
+          : (negotiation?.project.Incubator?.name ?? ''),
         'Negotiation went to next stage',
         'The negotiation has gone to the next stage. Please check your dashboard to see the details.',
-        negotiation?.project.Entrepreneur?.user.email ?? '',
+        negotiation?.project.Entrepreneur
+          ? (negotiation?.project.Entrepreneur?.user.email ?? '')
+          : (negotiation?.project.Incubator?.email ?? ''),
         'Negotiation went to next stage'
       );
 
@@ -342,7 +378,8 @@ export const negotiationRouter = createTRPCRouter({
 async function scheduleMeeting(
   db: PrismaClient,
   date: Date,
-  entrepreneurId: string,
+  entrepreneurId: string | null,
+  incubatorId: string | null,
   investorIds: string[],
   vcGroupIds: string[],
   negotiationId: string
@@ -368,7 +405,8 @@ async function scheduleMeeting(
       url,
       startDate: date,
       endDate: addHours(date, 1),
-      entrepreneurId: entrepreneurId,
+      ...(entrepreneurId && { entrepreneurId: entrepreneurId }),
+      ...(incubatorId && { incubators: { connect: { id: incubatorId } } }),
       ...(investorIds.length > 0 && {
         investors: {
           connect: investorIds.map(id => ({ id })),
@@ -383,18 +421,29 @@ async function scheduleMeeting(
     },
   });
 
-  await db.notification.create({
-    data: {
-      userId:
-        (
-          await db.entrepreneur.findUnique({
-            where: { id: entrepreneurId },
-            select: { userId: true },
-          })
-        )?.userId ?? '',
-      type: NotificationType.MEETING_CREATED,
-    },
-  });
+  if (entrepreneurId) {
+    await db.notification.create({
+      data: {
+        userId:
+          (
+            await db.entrepreneur.findUnique({
+              where: { id: entrepreneurId },
+              select: { userId: true },
+            })
+          )?.userId ?? '',
+        type: NotificationType.MEETING_CREATED,
+      },
+    });
+  } else if (incubatorId) {
+    await db.notification.create({
+      data: {
+        userId:
+          (await db.incubator.findUnique({ where: { id: incubatorId }, select: { userId: true } }))
+            ?.userId ?? '',
+        type: NotificationType.MEETING_CREATED,
+      },
+    });
+  }
 
   return meeting;
 }

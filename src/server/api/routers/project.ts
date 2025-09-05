@@ -38,6 +38,13 @@ export const projectRouter = createTRPCRouter({
         faqs: true,
         state: true,
         country: true,
+        Incubator: {
+          include: {
+            state: true,
+            country: true,
+          },
+        },
+        incubatorEntrepreneurs: true,
       },
     });
   }),
@@ -247,64 +254,114 @@ export const projectRouter = createTRPCRouter({
         socialImpactDescription: z.string().optional(),
         socialImpactBeneficiaries: z.number().optional(),
         socialImpactMetrics: z.string().optional(),
+        entrepreneur: z
+          .object({
+            firstName: z.string().min(2, 'First name must be at least 2 characters'),
+            lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+            mobileFone: z.string().min(1, 'Mobile phone is required'),
+            companyRole: z.string().min(1, 'Company role is required'),
+            birthDate: z.date(),
+            photo: z.string().optional(),
+            about: z
+              .string()
+              .min(10, 'About must be at least 10 characters')
+              .max(280, 'About must be at most 280 characters'),
+            linkedinUrl: z.string().optional(),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const project = await ctx.db.project.create({
-        data: {
-          name: input.name,
-          quickSolution: input.quickSolution,
-          website: input.website,
-          foundationDate: input.foundationDate,
-          stage: input.stage,
-          country: {
-            connect: {
-              id: parseInt(input.country),
-            },
-          },
-          state: {
-            connect: {
-              id: parseInt(input.state),
-            },
-          },
-          about: input.about,
-          startInvestment: input.startInvestment,
-          investorSlots: input.investorSlots,
-          annualRevenue: input.annualRevenue,
-          visibility: input.visibility,
-          monthsToReturn: input.monthsToReturn,
-          equity: input.equity,
-          investmentGoal: input.investmentGoal,
-          logo: input.logo,
-          photo1: input.photo1,
-          photo1Caption: input.photo1Caption,
-          photo2: input.photo2,
-          photo2Caption: input.photo2Caption,
-          photo3: input.photo3,
-          photo3Caption: input.photo3Caption,
-          photo4: input.photo4,
-          photo4Caption: input.photo4Caption,
-          videoUrl: input.videoUrl,
-          currency: input.currency,
-          faqs: {
-            create: input.faqs,
-          },
-          sector: {
-            connect: {
-              id: input.sectorId,
-            },
-          },
-          Entrepreneur: {
-            connect: {
-              userId: ctx.auth.userId,
-            },
-          },
-          // Add social impact fields
-          socialImpactDescription: input.socialImpactDescription,
-          socialImpactBeneficiaries: input.socialImpactBeneficiaries,
-          socialImpactMetrics: input.socialImpactMetrics,
-        },
+      const loggedInUser = await ctx.db.user.findUniqueOrThrow({
+        where: { id: ctx.auth.userId },
       });
+
+      const projectData = {
+        name: input.name,
+        quickSolution: input.quickSolution,
+        website: input.website,
+        foundationDate: input.foundationDate,
+        stage: input.stage,
+        country: {
+          connect: {
+            id: parseInt(input.country),
+          },
+        },
+        state: {
+          connect: {
+            id: parseInt(input.state),
+          },
+        },
+        about: input.about,
+        startInvestment: input.startInvestment,
+        investorSlots: input.investorSlots,
+        annualRevenue: input.annualRevenue,
+        visibility: input.visibility,
+        monthsToReturn: input.monthsToReturn,
+        equity: input.equity,
+        investmentGoal: input.investmentGoal,
+        logo: input.logo,
+        photo1: input.photo1,
+        photo1Caption: input.photo1Caption,
+        photo2: input.photo2,
+        photo2Caption: input.photo2Caption,
+        photo3: input.photo3,
+        photo3Caption: input.photo3Caption,
+        photo4: input.photo4,
+        photo4Caption: input.photo4Caption,
+        videoUrl: input.videoUrl,
+        currency: input.currency,
+        faqs: {
+          create: input.faqs,
+        },
+        sector: {
+          connect: {
+            id: input.sectorId,
+          },
+        },
+
+        // Add social impact fields
+        socialImpactDescription: input.socialImpactDescription,
+        socialImpactBeneficiaries: input.socialImpactBeneficiaries,
+        socialImpactMetrics: input.socialImpactMetrics,
+      };
+
+      const project = await ctx.db.project.create({
+        data:
+          loggedInUser.userType === 'ENTREPRENEUR'
+            ? {
+                ...projectData,
+                Entrepreneur: {
+                  connect: {
+                    userId: ctx.auth.userId,
+                  },
+                },
+              }
+            : {
+                ...projectData,
+                Incubator: {
+                  connect: {
+                    userId: ctx.auth.userId,
+                  },
+                },
+              },
+      });
+
+      if (loggedInUser.userType === 'INCUBATOR') {
+        await ctx.db.incubatorEntrepreneur.create({
+          data: {
+            projectId: project.id,
+            firstName: input.entrepreneur?.firstName ?? '',
+            lastName: input.entrepreneur?.lastName ?? '',
+            about: input.entrepreneur?.about ?? '',
+            mobileFone: input.entrepreneur?.mobileFone ?? '',
+            companyRole: input.entrepreneur?.companyRole ?? '',
+            birthDate: input.entrepreneur?.birthDate ?? '',
+            photo: input.entrepreneur?.photo ?? '',
+            linkedinUrl: input.entrepreneur?.linkedinUrl ?? '',
+          },
+        });
+      }
 
       return project;
     }),
@@ -357,11 +414,27 @@ export const projectRouter = createTRPCRouter({
             answer: z.string(),
           })
         ),
+        entrepreneur: z
+          .object({
+            firstName: z.string().optional(),
+            lastName: z.string().optional(),
+            mobileFone: z.string().optional(),
+            companyRole: z.string().optional(),
+            birthDate: z.date().optional(),
+            photo: z.string().optional(),
+            about: z.string().optional(),
+            linkedinUrl: z.string().optional(),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       await ctx.db.projectFaq.deleteMany({
         where: { projectId: input.id },
+      });
+
+      const loggedInUser = await ctx.db.user.findUniqueOrThrow({
+        where: { id: ctx.auth.userId },
       });
 
       const updatedProject = await ctx.db.project.update({
@@ -404,6 +477,13 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
+
+      if (loggedInUser.userType === 'INCUBATOR') {
+        await ctx.db.incubatorEntrepreneur.updateMany({
+          where: { projectId: input.id },
+          data: input.entrepreneur ?? {},
+        });
+      }
 
       return updatedProject;
     }),
@@ -479,6 +559,7 @@ export const projectRouter = createTRPCRouter({
         },
         include: {
           Entrepreneur: true,
+          Incubator: true,
         },
       });
 
@@ -500,7 +581,7 @@ export const projectRouter = createTRPCRouter({
 
       await ctx.db.notification.create({
         data: {
-          userId: project.Entrepreneur?.userId ?? '',
+          userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',
           type: NotificationType.PROJECT_VIEW,
         },
       });

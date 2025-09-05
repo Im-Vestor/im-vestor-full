@@ -232,7 +232,7 @@ export const Header = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 md:gap-4">
+                <Button variant="ghost" className="flex items-center gap-2">
                   <span className="hidden md:inline">{user?.firstName}</span>
                   {isLoadingUserDetails ? (
                     <div className="w-6 h-6 bg-gray-600 rounded-full animate-pulse"></div>

@@ -1,14 +1,15 @@
-import { type Country, type Incubator, type Project, type State } from '@prisma/client';
-import { Building2, CircleUserRound, MapPin, Pencil } from 'lucide-react';
+import { type Country, type IncubatorEntrepreneur, type Project, type State } from '@prisma/client';
+import { ArrowRight, Building2, CircleUserRound, MapPin, Pencil } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { IncubatorForm } from './incubator-form';
-
 export const IncubatorProfile = ({ userId }: { userId?: string }) => {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
@@ -22,6 +23,7 @@ export const IncubatorProfile = ({ userId }: { userId?: string }) => {
   if (isLoading) {
     return <SkeletonProfile />;
   }
+
   if (isEditing || !incubator?.countryId) {
     return <IncubatorForm incubator={incubator} onCancel={() => setIsEditing(false)} />;
   }
@@ -72,16 +74,22 @@ export const IncubatorProfile = ({ userId }: { userId?: string }) => {
             {incubator?.projects.map(project => (
               <ProjectCard
                 key={project.id}
-                project={project as Project & { state: State; country: Country }}
-                profileData={
-                  incubator as Incubator & {
+                project={
+                  project as Project & {
                     state: State;
                     country: Country;
+                    incubatorEntrepreneurs: IncubatorEntrepreneur[];
                   }
                 }
               />
             ))}
           </div>
+        )}
+        {canEdit && (
+          <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
+            Add a Project
+            <ArrowRight className="ml-2" />
+          </Button>
         )}
       </div>
     </div>
@@ -90,10 +98,12 @@ export const IncubatorProfile = ({ userId }: { userId?: string }) => {
 
 function ProjectCard({
   project,
-  profileData,
 }: {
-  project: Project & { state: State; country: Country };
-  profileData: Incubator & { state: State; country: Country };
+  project: Project & {
+    state: State;
+    country: Country;
+    incubatorEntrepreneurs: IncubatorEntrepreneur[];
+  };
 }) {
   return (
     <Link
@@ -147,9 +157,9 @@ function ProjectCard({
       </div>
       <hr className="my-4 sm:my-6 border-white/10" />
       <div className="flex flex-wrap items-center gap-2">
-        {profileData.logo ? (
+        {project.logo ? (
           <Image
-            src={profileData.logo}
+            src={project.logo}
             alt="Incubator"
             width={24}
             height={24}
@@ -161,8 +171,12 @@ function ProjectCard({
           </div>
         )}
         <p className="text-xs sm:text-sm font-light">
-          Incubated by
-          <span className="text-[#EFD687]"> {profileData.ownerName}</span>
+          Created by
+          <span className="text-[#EFD687]">
+            {' '}
+            {project.incubatorEntrepreneurs[0]?.firstName}{' '}
+            {project.incubatorEntrepreneurs[0]?.lastName}
+          </span>
         </p>
         <div className="ml-auto flex space-x-1 sm:space-x-2">
           {Array.from({
