@@ -45,9 +45,9 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
 const INITIAL_VISIBLE_AREAS = 5; // Define a constant for the initial count
 
 export default function Companies() {
-  const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
-  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(INITIAL_VISIBLE_AREAS);
 
   // Filter states
@@ -60,6 +60,7 @@ export default function Companies() {
     max?: number;
   }>({});
   const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
+  const [onlyIncubatorProjects, setOnlyIncubatorProjects] = useState(false);
 
   // Calculate combined investment range from selected ranges
   const getInvestmentRange = () => {
@@ -89,6 +90,7 @@ export default function Companies() {
     sectorId: selectedSectors,
     stage: selectedStages,
     oneToFiveSlots: oneToFiveSlots,
+    onlyIncubatorProjects: onlyIncubatorProjects,
     minRevenue: revenueFilters.min,
     maxRevenue: revenueFilters.max,
     minInitialInvestment: investmentRange.min,
@@ -222,6 +224,17 @@ export default function Companies() {
                     }
                   />
                   <p className="text-sm">Social Impact Projects</p>
+                </div>
+              </div>
+              <p className="mt-2 font-medium">Incubator</p>
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="incubator-projects"
+                    checked={onlyIncubatorProjects}
+                    onCheckedChange={checked => setOnlyIncubatorProjects(checked === true)}
+                  />
+                  <p className="text-sm">Only Incubator Projects</p>
                 </div>
               </div>
               <p className="mt-2 font-medium">Revenue</p>

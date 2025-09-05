@@ -54,6 +54,7 @@ export const projectRouter = createTRPCRouter({
         sectorId: z.array(z.string()).optional(),
         stage: z.array(z.nativeEnum(ProjectStage)).optional(),
         oneToFiveSlots: z.boolean().optional(),
+        onlyIncubatorProjects: z.boolean().optional(),
         minRevenue: z.number().optional(),
         maxRevenue: z.number().optional(),
         minInitialInvestment: z.number().optional(),
@@ -96,6 +97,12 @@ export const projectRouter = createTRPCRouter({
       if (input.oneToFiveSlots) {
         where.investorSlots = {
           lte: 5,
+        };
+      }
+
+      if (input.onlyIncubatorProjects) {
+        where.incubatorId = {
+          not: null,
         };
       }
 
@@ -178,8 +185,6 @@ export const projectRouter = createTRPCRouter({
         skip: (input.page ?? 1) * 20,
         take: 20,
       });
-
-      console.log('projects', projects);
 
       return {
         projects: projects.map(project => ({
