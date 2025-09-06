@@ -14,7 +14,7 @@ import { sendEmail } from '~/utils/email';
 
 export const projectRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    return ctx.db.project.findUniqueOrThrow({
+    const project = await ctx.db.project.findUniqueOrThrow({
       where: { id: input.id, status: ProjectStatus.ACTIVE },
       include: {
         sector: true,
@@ -45,8 +45,19 @@ export const projectRouter = createTRPCRouter({
           },
         },
         incubatorEntrepreneurs: true,
+        _count: {
+          select: {
+            favoriteInvestors: true,
+            favoriteVcGroups: true,
+          },
+        },
       },
     });
+
+    return {
+      ...project,
+      likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+    };
   }),
   getAllWithFilters: protectedProcedure
     .input(
@@ -173,6 +184,12 @@ export const projectRouter = createTRPCRouter({
           country: true,
           state: true,
           sector: true,
+          _count: {
+            select: {
+              favoriteInvestors: true,
+              favoriteVcGroups: true,
+            },
+          },
         },
         orderBy: [
           {
@@ -193,6 +210,7 @@ export const projectRouter = createTRPCRouter({
             investor?.favoriteProjects.some(favorite => favorite.id === project.id) ??
             vc?.favoriteProjects.some(favorite => favorite.id === project.id) ??
             false,
+          likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
         })),
         total,
       };

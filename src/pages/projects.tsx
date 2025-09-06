@@ -334,6 +334,7 @@ function CompanyCard({
 }: {
   project: Project & { state: State | null; country: Country | null; sector: Area } & {
     isFavorite: boolean;
+    likesCount: number;
   };
 }) {
   const isBoosted = project.boostedUntil !== null && project.boostedUntil > new Date();
@@ -370,9 +371,10 @@ function CompanyCard({
               <h3 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-white/90">
                 {project.name}
               </h3>
-              {project.isFavorite && (
-                <Heart className="size-4 fill-yellow-500 text-yellow-500 transition-transform group-hover:scale-110" />
-              )}
+              <span className="ml-auto">{project.likesCount}</span>
+              <Heart
+                className={`size-4 ${project.likesCount > 0 ? 'fill-yellow-500 text-yellow-500' : 'fill-transparent'} transition-transform group-hover:scale-110`}
+              />
             </div>
             {project.state?.name && project.country?.name && (
               <span className="text-sm text-white/70 transition-colors group-hover:text-white/80">

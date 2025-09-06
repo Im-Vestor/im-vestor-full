@@ -55,6 +55,12 @@ export const recommendationsRouter = createTRPCRouter({
           sector: true,
           country: true,
           state: true,
+          _count: {
+            select: {
+              favoriteInvestors: true,
+              favoriteVcGroups: true,
+            },
+          },
         },
         take: 5,
       });
@@ -74,6 +80,7 @@ export const recommendationsRouter = createTRPCRouter({
       return projects.map(project => ({
         ...project,
         viewCount: viewCountMap.get(project.id) ?? 0,
+        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
       }));
     });
 
@@ -116,6 +123,12 @@ export const recommendationsRouter = createTRPCRouter({
             sector: true,
             country: true,
             state: true,
+            _count: {
+              select: {
+                favoriteInvestors: true,
+                favoriteVcGroups: true,
+              },
+            },
           },
           orderBy: [
             {
@@ -129,7 +142,10 @@ export const recommendationsRouter = createTRPCRouter({
         });
 
         return {
-          recommendedProjects,
+          recommendedProjects: recommendedProjects.map(project => ({
+            ...project,
+            likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+          })),
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
             totalViews: await ctx.db.projectView.count({
@@ -223,6 +239,12 @@ export const recommendationsRouter = createTRPCRouter({
             sector: true,
             country: true,
             state: true,
+            _count: {
+              select: {
+                favoriteInvestors: true,
+                favoriteVcGroups: true,
+              },
+            },
           },
           orderBy: {
             createdAt: 'desc',
@@ -231,7 +253,10 @@ export const recommendationsRouter = createTRPCRouter({
         });
 
         return {
-          recommendedProjects,
+          recommendedProjects: recommendedProjects.map(project => ({
+            ...project,
+            likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+          })),
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
             totalProjects: await ctx.db.project.count({
