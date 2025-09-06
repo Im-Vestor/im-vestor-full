@@ -336,11 +336,13 @@ function CompanyCard({
     isFavorite: boolean;
   };
 }) {
+  const isBoosted = project.boostedUntil !== null && project.boostedUntil > new Date();
+
   return (
     <Link
       href={`/companies/${project.id}`}
       className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${
-        project.isBoosted
+        isBoosted
           ? 'border-yellow-500/50 hover:border-yellow-600/50'
           : 'border-white/10 hover:border-white/20'
       }`}
@@ -434,7 +436,7 @@ function CompanyCard({
                 </div>
               )}
 
-              {project.isBoosted && (
+              {isBoosted && (
                 <div className="flex items-center gap-1">
                   <Zap className="h-3 w-3 text-yellow-500" />
                   <span>Boosted</span>

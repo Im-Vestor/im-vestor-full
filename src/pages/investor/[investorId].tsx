@@ -51,7 +51,7 @@ export default function InvestorDetails() {
 
   const handleSendPoke = () => {
     if (loggedInUser?.availablePokes === 0) {
-      toast.error('You have no pokes left');
+      router.push('/shop');
       return;
     }
     if (!pokeMessage.trim()) {

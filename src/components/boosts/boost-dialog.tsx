@@ -39,10 +39,15 @@ export const BoostDialog = ({
       <Button
         size="sm"
         onClick={() => setIsOpen(true)}
-        disabled={project.isBoosted === true || availableBoosts <= 0}
+        disabled={
+          (project.boostedUntil !== null && project.boostedUntil > new Date()) ||
+          availableBoosts <= 0
+        }
       >
         <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-        <span className="hidden sm:inline">{project.isBoosted === true ? 'Boosted' : 'Boost'}</span>
+        <span className="hidden sm:inline">
+          {project.boostedUntil !== null && project.boostedUntil > new Date() ? 'Boosted' : 'Boost'}
+        </span>
       </Button>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>

@@ -146,7 +146,7 @@ export default function SignupInvestor() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">First Name*</Label>
                         <FormControl>
-                          <Input placeholder="John" {...field} disabled={isRegistering} />
+                          <Input placeholder="Your name" {...field} disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -160,7 +160,7 @@ export default function SignupInvestor() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Last Name*</Label>
                         <FormControl>
-                          <Input placeholder="Doe" {...field} disabled={isRegistering} />
+                          <Input placeholder="Your last name" {...field} disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -177,7 +177,7 @@ export default function SignupInvestor() {
                           <Input
                             {...field}
                             type="email"
-                            placeholder="example@email.com"
+                            placeholder="Your email"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -233,7 +233,7 @@ export default function SignupInvestor() {
                         <FormControl>
                           <PhoneInput
                             {...field}
-                            placeholder="999 999 999"
+                            placeholder="Your mobile phone"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -289,7 +289,7 @@ export default function SignupInvestor() {
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="https://www.linkedin.com/in/your-profile"
+                            placeholder="Your LinkedIn URL"
                             disabled={isRegistering}
                           />
                         </FormControl>

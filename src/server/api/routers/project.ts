@@ -176,7 +176,7 @@ export const projectRouter = createTRPCRouter({
         },
         orderBy: [
           {
-            isBoosted: 'desc',
+            boostedUntil: 'desc',
           },
           {
             createdAt: 'desc',

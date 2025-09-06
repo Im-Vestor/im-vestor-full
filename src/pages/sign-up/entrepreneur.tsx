@@ -111,7 +111,7 @@ export default function SignupEntrepreneur() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">First Name*</Label>
                         <FormControl>
-                          <Input {...field} placeholder="John" disabled={isRegistering} />
+                          <Input {...field} placeholder="Your name" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -125,7 +125,7 @@ export default function SignupEntrepreneur() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Last Name*</Label>
                         <FormControl>
-                          <Input {...field} placeholder="Doe" disabled={isRegistering} />
+                          <Input {...field} placeholder="Your last name" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -141,7 +141,7 @@ export default function SignupEntrepreneur() {
                         <FormControl>
                           <PhoneInput
                             {...field}
-                            placeholder="999 999 999"
+                            placeholder="Your mobile phone"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -196,7 +196,7 @@ export default function SignupEntrepreneur() {
                           <Input
                             {...field}
                             type="email"
-                            placeholder="example@email.com"
+                            placeholder="Your email"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -215,7 +215,7 @@ export default function SignupEntrepreneur() {
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="https://www.linkedin.com/in/your-profile"
+                            placeholder="Your LinkedIn URL"
                             disabled={isRegistering}
                           />
                         </FormControl>

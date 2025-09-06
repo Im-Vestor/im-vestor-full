@@ -292,7 +292,7 @@ model Project {
   countryId                 Int?
   stateId                   Int?
   incubatorId               String?
-  isBoosted                 Boolean                 @default(false)
+  boostedUntil              DateTime?
   visibility                ProjectVisibility       @default(PRIVATE)
   socialImpactBeneficiaries Int?
   socialImpactDescription   String?

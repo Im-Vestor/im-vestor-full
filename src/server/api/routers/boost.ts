@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db } from '~/server/db';
 import { sendEmail } from '~/utils/email';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { addDays } from 'date-fns';
 
 export const boostRouter = createTRPCRouter({
   boostProject: protectedProcedure
@@ -45,7 +46,7 @@ export const boostRouter = createTRPCRouter({
         throw new Error('Project does not belong to entrepreneur');
       }
 
-      if (project.isBoosted) {
+      if (project.boostedUntil !== null && project.boostedUntil > new Date()) {
         throw new Error('Project is already boosted');
       }
 
@@ -57,7 +58,7 @@ export const boostRouter = createTRPCRouter({
       await ctx.db.project.update({
         where: { id: projectId },
         data: {
-          isBoosted: true,
+          boostedUntil: addDays(new Date(), 30),
         },
       });
 

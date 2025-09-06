@@ -119,7 +119,7 @@ export const recommendationsRouter = createTRPCRouter({
           },
           orderBy: [
             {
-              isBoosted: 'desc',
+              boostedUntil: 'desc',
             },
             {
               createdAt: 'desc',

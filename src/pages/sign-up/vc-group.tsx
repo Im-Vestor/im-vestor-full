@@ -122,7 +122,7 @@ const VcGroupSignUp: NextPage = () => {
                   <FormItem>
                     <Label className="font-normal text-neutral-200">Company Name</Label>
                     <FormControl>
-                      <Input {...field} placeholder="Sequoia Capital" />
+                      <Input {...field} placeholder="Your company name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,7 +153,7 @@ const VcGroupSignUp: NextPage = () => {
                   <FormItem>
                     <Label className="font-normal text-neutral-200">Company Email</Label>
                     <FormControl>
-                      <Input {...field} type="email" placeholder="contact@sequoiacap.com" />
+                      <Input {...field} type="email" placeholder="Your email" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +170,7 @@ const VcGroupSignUp: NextPage = () => {
                       <PhoneInput
                         {...field}
                         onChange={value => onChange(value)}
-                        placeholder="+1 650-854-3927"
+                        placeholder="Your mobile phone"
                       />
                     </FormControl>
                     <FormMessage />
@@ -185,7 +185,7 @@ const VcGroupSignUp: NextPage = () => {
                   <FormItem>
                     <Label className="font-normal text-neutral-200">Password</Label>
                     <FormControl>
-                      <Input {...field} type="password" placeholder="Min. 8 characters" />
+                      <Input {...field} type="password" placeholder="••••••••" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,7 +203,7 @@ const VcGroupSignUp: NextPage = () => {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Owner Name</Label>
                         <FormControl>
-                          <Input {...field} placeholder="Michael Moritz" />
+                          <Input {...field} placeholder="Your name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -217,7 +217,7 @@ const VcGroupSignUp: NextPage = () => {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Owner Role</Label>
                         <FormControl>
-                          <Input {...field} placeholder="Managing Partner" />
+                          <Input {...field} placeholder="Your role" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -231,11 +231,7 @@ const VcGroupSignUp: NextPage = () => {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">Owner Email</Label>
                         <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder="michael.moritz@sequoiacap.com"
-                          />
+                          <Input {...field} type="email" placeholder="Your email" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -252,7 +248,7 @@ const VcGroupSignUp: NextPage = () => {
                           <PhoneInput
                             {...field}
                             onChange={value => onChange(value)}
-                            placeholder="+1 650-123-4567"
+                            placeholder="Your mobile phone"
                           />
                         </FormControl>
                         <FormMessage />
@@ -269,10 +265,7 @@ const VcGroupSignUp: NextPage = () => {
                           LinkedIn URL (optional)
                         </Label>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="https://www.linkedin.com/in/your-profile"
-                          />
+                          <Input {...field} placeholder="Your LinkedIn URL" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

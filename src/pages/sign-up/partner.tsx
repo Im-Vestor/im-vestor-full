@@ -102,7 +102,7 @@ export default function SignupPartner() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">{t('firstName')}*</Label>
                         <FormControl>
-                          <Input {...field} placeholder="John" disabled={isRegistering} />
+                          <Input {...field} placeholder="Your name" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -116,7 +116,7 @@ export default function SignupPartner() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">{t('lastName')}*</Label>
                         <FormControl>
-                          <Input {...field} placeholder="Doe" disabled={isRegistering} />
+                          <Input {...field} placeholder="Your last name" disabled={isRegistering} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -132,7 +132,7 @@ export default function SignupPartner() {
                         <FormControl>
                           <PhoneInput
                             {...field}
-                            placeholder="999 999 999"
+                            placeholder="Your mobile phone"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -148,7 +148,11 @@ export default function SignupPartner() {
                       <FormItem>
                         <Label className="font-normal text-neutral-200">{t('companyName')}*</Label>
                         <FormControl>
-                          <Input {...field} placeholder="Company Name" disabled={isRegistering} />
+                          <Input
+                            {...field}
+                            placeholder="Your company name"
+                            disabled={isRegistering}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -165,7 +169,7 @@ export default function SignupPartner() {
                           <Input
                             {...field}
                             type="email"
-                            placeholder="example@email.com"
+                            placeholder="Your email"
                             disabled={isRegistering}
                           />
                         </FormControl>
