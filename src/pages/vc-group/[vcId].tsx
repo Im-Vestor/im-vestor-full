@@ -173,7 +173,7 @@ export default function VcGroupDetails() {
                     />
                   ) : (
                     <div className="flex size-12 items-center justify-center rounded-full bg-white/10">
-                      <User className="size-10 text-neutral-200 sm:size-12" />
+                      <User className="size-6 text-neutral-200 sm:size-8" />
                     </div>
                   )}
                   <div className="flex flex-col gap-1">
