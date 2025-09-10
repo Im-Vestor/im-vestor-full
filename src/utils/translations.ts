@@ -189,7 +189,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
   'pt-PT': {
     signIn: 'Iniciar Sessão',
     getStarted: 'Começar',
-    weMeanBusiness: 'Negócios é conosco!',
+    weMeanBusiness: 'Negócios é connosco!',
     connectingEntrepreneursAndInvestors:
       'Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity',
     whyChooseImVestor: 'Porquê',
