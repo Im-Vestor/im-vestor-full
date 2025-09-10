@@ -202,7 +202,7 @@ export default function EditCompany() {
   });
 
   useEffect(() => {
-    if (project && project.country && project.state) {
+    if (project?.country && project?.state) {
       setCountry(project.country.id.toString());
 
       form.reset({
