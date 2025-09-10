@@ -109,9 +109,9 @@ export function RecommendationsPanel() {
                         />
                         <div className="flex-1 space-y-1">
                           <h3 className="font-medium text-white">{project.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {project.Entrepreneur?.firstName} {project.Entrepreneur?.lastName}
-                          </p>
+                          {/*                           <p className="text-sm text-muted-foreground">
+                            {project.entrepreneur?.firstName} {project.entrepreneur?.lastName}
+                          </p> */}
                         </div>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-white">
                           <ArrowRight className="h-4 w-4" />

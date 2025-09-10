@@ -79,7 +79,7 @@ export function Dashboard() {
     <AdminSection>
       {/* Header */}
       <AdminPageHeader
-        title="Admin Dashboard"
+        title="Admin Home"
         description="Manage users, monitor platform activity, and oversee support tickets from a centralized admin interface."
         icon={Users}
         iconLabel="User Management"

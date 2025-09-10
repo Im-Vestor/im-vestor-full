@@ -48,16 +48,36 @@ export default function Investors() {
 
   // Filter states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [investmentFilters, setInvestmentFilters] = useState<{
-    min?: number;
-    max?: number;
-  }>({});
+  const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
+
+  // Calculate combined investment range from selected ranges
+  const getInvestmentRange = () => {
+    if (selectedInvestmentRanges.length === 0) return { min: undefined, max: undefined };
+
+    const selectedRanges = INVESTMENT_RANGES.filter(range =>
+      selectedInvestmentRanges.includes(range.id)
+    );
+
+    const mins = selectedRanges
+      .map(range => range.min)
+      .filter((min): min is number => min !== undefined);
+    const maxs = selectedRanges
+      .map(range => range.max)
+      .filter((max): max is number => max !== undefined);
+
+    return {
+      min: mins.length > 0 ? Math.min(...mins) : undefined,
+      max: maxs.length > 0 ? Math.max(...maxs) : undefined,
+    };
+  };
+
+  const investmentRange = getInvestmentRange();
 
   // Prepare filter parameters for the API call
   const filterParams = {
     areaIds: selectedAreas,
-    minInvestment: investmentFilters.min,
-    maxInvestment: investmentFilters.max,
+    minInvestment: investmentRange.min,
+    maxInvestment: investmentRange.max,
     searchQuery: searchQuery,
     page: page,
   };
@@ -76,14 +96,10 @@ export default function Investors() {
   };
 
   const handleInvestmentFilterChange = (id: string, checked: boolean) => {
-    if (!checked) {
-      setInvestmentFilters({});
-      return;
-    }
-
-    const range = INVESTMENT_RANGES.find(r => r.id === id);
-    if (range) {
-      setInvestmentFilters({ min: range.min, max: range.max });
+    if (checked) {
+      setSelectedInvestmentRanges([...selectedInvestmentRanges, id]);
+    } else {
+      setSelectedInvestmentRanges(selectedInvestmentRanges.filter(rangeId => rangeId !== id));
     }
   };
 
@@ -145,9 +161,7 @@ export default function Investors() {
                   <div key={range.id} className="flex items-center gap-2">
                     <Checkbox
                       id={range.id}
-                      checked={
-                        investmentFilters.min === range.min && investmentFilters.max === range.max
-                      }
+                      checked={selectedInvestmentRanges.includes(range.id)}
                       onCheckedChange={checked =>
                         handleInvestmentFilterChange(range.id, checked === true)
                       }

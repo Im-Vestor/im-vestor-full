@@ -52,6 +52,19 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           <title>Im-Vestor</title>
           <meta name="description" content="Imvestor" />
           <link rel="icon" href="/favicon.ico" />
+
+          {/* Open Graph meta tags */}
+          <meta property="og:title" content="Im-Vestor" />
+          <meta property="og:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
+          <meta property="og:image" content="/images/og-image.jpg" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://im-vestor.com" />
+
+          {/* Twitter Card meta tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Im-Vestor" />
+          <meta name="twitter:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
+          <meta name="twitter:image" content="/images/og-image.jpg" />
         </Head>
         <div className={`${roboto.className} ${roboto.variable} bg-background text-ui-text`}>
           <Component {...pageProps} />

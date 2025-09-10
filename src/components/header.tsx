@@ -29,7 +29,7 @@ import {
 
 const ENTREPRENEUR_MENUS = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/dashboard',
   },
   {
@@ -60,7 +60,7 @@ const ENTREPRENEUR_MENUS = [
 
 const INVESTOR_MENUS = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/dashboard',
   },
   {
@@ -87,7 +87,7 @@ const INVESTOR_MENUS = [
 
 const VC_MENUS = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/dashboard',
   },
   {
@@ -114,7 +114,7 @@ const VC_MENUS = [
 
 const PARTNER_MENUS = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/dashboard',
   },
   {
@@ -129,7 +129,7 @@ const PARTNER_MENUS = [
 
 const INCUBATOR_MENUS = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/dashboard',
   },
   {

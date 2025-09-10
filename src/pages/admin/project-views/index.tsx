@@ -443,7 +443,7 @@ export default function ProjectViewsPage() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold text-primary">
-              Dashboard de Atividade
+              Home de Atividade
             </h1>
             <p className="text-ui-text/70 text-lg max-w-2xl">
               Monitoramento completo da movimentação da plataforma com insights detalhados sobre visualizações, notificações e atividades dos usuários.

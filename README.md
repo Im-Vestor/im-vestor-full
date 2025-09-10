@@ -2,11 +2,11 @@
 
 A comprehensive platform connecting entrepreneurs, investors, and incubators.
 
-## Admin Dashboard Features
+## Admin Home Features
 
 ### Project Views & Activity Monitoring
 
-The admin dashboard at `/admin/project-views` provides comprehensive monitoring of platform activity:
+The admin home at `/admin/project-views` provides comprehensive monitoring of platform activity:
 
 #### Features:
 - **Activity Summary**: Overview of platform metrics including:
@@ -57,7 +57,7 @@ npm run db:push
 npm run dev
 ```
 
-4. Access the admin dashboard at `http://localhost:3000/admin/project-views`
+4. Access the admin home at `http://localhost:3000/admin/project-views`
 
 ## Admin Access
 
