@@ -34,7 +34,7 @@ import { useEffect, useState } from 'react';
 const NotificationTextMap: Record<string, { text: string; link: string }> = {
   [NotificationType.PROJECT_VIEW]: {
     text: 'An investor viewed your project',
-    link: '/entrepreneur/projects',
+    link: '/investor/' + '{{investorId}}',
   },
   [NotificationType.MEETING_CANCELLED]: { text: 'A meeting has been cancelled', link: '/meetings' },
   [NotificationType.MEETING_CREATED]: { text: 'A meeting has been created', link: '/meetings' },
@@ -124,7 +124,15 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
   }, [notificationsFromQuery]);
 
   const handleNotificationClick = (notification: Notification) => {
-    void router.push(NotificationTextMap[notification.type]?.link ?? '#');
+    if (NotificationTextMap[notification.type]?.link.includes('{{investorId}}')) {
+      const investorId = notification.investorId ?? '';
+
+      void router.push(
+        NotificationTextMap[notification.type]?.link.replace('{{investorId}}', investorId) ?? '#'
+      );
+    } else {
+      void router.push(NotificationTextMap[notification.type]?.link ?? '#');
+    }
   };
 
   // Calculate total notification count

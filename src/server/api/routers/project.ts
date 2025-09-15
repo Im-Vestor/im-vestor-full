@@ -606,6 +606,7 @@ export const projectRouter = createTRPCRouter({
         data: {
           userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',
           type: NotificationType.PROJECT_VIEW,
+          investorId: investor.id,
         },
       });
 
