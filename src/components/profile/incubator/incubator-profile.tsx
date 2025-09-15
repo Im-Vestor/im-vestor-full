@@ -8,6 +8,7 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { IncubatorForm } from './incubator-form';
+import { UpdateEmailButton } from '~/components/update-email-button';
 export const IncubatorProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -48,14 +49,17 @@ export const IncubatorProfile = ({ userId }: { userId?: string }) => {
         <div className="mt-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold">{incubator?.name}</h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 w-fit"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <UpdateEmailButton />
+            </div>
           )}
         </div>
         <hr className="my-4 sm:my-6 border-white/10" />

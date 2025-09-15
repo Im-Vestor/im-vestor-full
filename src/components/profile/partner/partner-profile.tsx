@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { PartnerForm } from './partner-form';
+import { UpdateEmailButton } from '~/components/update-email-button';
 
 export const PartnerProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -54,14 +55,17 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
         <div className="mt-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold">{partner?.firstName + ' ' + partner?.lastName}</h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 w-fit"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <UpdateEmailButton />
+            </div>
           )}
         </div>
         <div className="mt-4 flex items-center gap-3">

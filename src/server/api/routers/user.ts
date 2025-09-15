@@ -7,6 +7,10 @@ import {
 } from '~/server/api/trpc';
 import { createDeletionLink } from '~/utils/deletion-token';
 import { sendEmail } from '~/utils/email';
+import {
+  generateEmailVerificationToken,
+  generateVerificationLink,
+} from '~/utils/email-verification';
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
@@ -469,5 +473,42 @@ export const userRouter = createTRPCRouter({
       });
 
       return user?.status;
+    }),
+  sendUpdateEmailEmail: protectedProcedure
+    .input(z.object({ email: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        include: {
+          entrepreneur: true,
+          investor: true,
+          partner: true,
+          incubator: true,
+          vcGroup: true,
+        },
+      });
+
+      // Generate verification token and send verification email
+      const verificationToken = generateEmailVerificationToken(user?.id ?? '', input.email);
+      const verificationLink = generateVerificationLink(verificationToken);
+
+      const linkAddapted = verificationLink.replace('verify-email', 'update-email');
+
+      await sendEmail(
+        user?.entrepreneur?.firstName ??
+          user?.investor?.firstName ??
+          user?.partner?.firstName ??
+          user?.incubator?.name ??
+          user?.vcGroup?.name ??
+          '',
+        'Update your email address on Im-Vestor!',
+        'You can verify the new email address by clicking the button below.',
+        input.email,
+        'Verify your email - Im-Vestor',
+        linkAddapted,
+        'Verify Email'
+      );
+
+      return { success: true };
     }),
 });

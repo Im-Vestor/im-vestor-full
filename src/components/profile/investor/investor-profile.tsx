@@ -6,6 +6,7 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { InvestorForm } from './investor-form';
 import { SkeletonProfile } from '../skeleton-profile';
+import { UpdateEmailButton } from '~/components/update-email-button';
 
 export const InvestorProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -66,14 +67,17 @@ export const InvestorProfile = ({ userId }: { userId?: string }) => {
             {investor?.firstName + ' ' + investor?.lastName}
           </h2>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 w-fit"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <UpdateEmailButton />
+            </div>
           )}
         </div>
         <hr className="my-4 sm:my-6 border-white/10" />

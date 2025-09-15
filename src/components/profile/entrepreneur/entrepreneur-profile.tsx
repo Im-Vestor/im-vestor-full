@@ -18,6 +18,7 @@ import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { EntrepreneurForm } from './entrepreneur-form';
+import { UpdateEmailButton } from '~/components/update-email-button';
 
 export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
@@ -76,24 +77,30 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
 
       <div className="md:px-12 px-6 pt-16">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-semibold">
-            {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
-          </h2>
+          <div className="flex flex-col">
+            <h2 className="text-3xl font-semibold">
+              {entrepreneur?.firstName + ' ' + entrepreneur?.lastName}
+            </h2>
+            <p className="mt-3 text-lg text-gray-400">
+              {entrepreneur?.companyRole ?? 'Entrepreneur'}
+              {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ''}
+            </p>
+          </div>
           {canEdit && (
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Pencil className="h-2 w-2" />
-              {isEditing ? 'Cancel' : 'Edit'}
-            </Button>
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 w-fit"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-2 w-2" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <UpdateEmailButton />
+            </div>
           )}
         </div>
-        <p className="mt-3 text-lg text-gray-400">
-          {entrepreneur?.companyRole ?? 'Entrepreneur'}
-          {entrepreneur?.companyName ? `, ${entrepreneur.companyName}` : ''}
-        </p>
+
         <p className="mt-1 flex items-center gap-1 text-gray-400">
           <MapPin className="mr-0.5 h-4 w-4" />
           {entrepreneur?.state && entrepreneur?.country
