@@ -28,6 +28,6 @@ export function verifyEmailVerificationToken(token: string): EmailVerificationPa
 }
 
 export function generateVerificationLink(token: string): string {
-  const baseUrl = process.env.VERCEL_URL ?? 'http://localhost:3000';
+  const baseUrl = process.env.APP_URL ?? 'http://localhost:3000';
   return `${baseUrl}/api/verify-email?token=${token}`;
 }
