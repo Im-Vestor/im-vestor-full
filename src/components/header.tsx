@@ -133,8 +133,8 @@ const INCUBATOR_MENUS = [
     href: '/dashboard',
   },
   {
-    label: 'Projects',
-    href: '/projects',
+    label: 'Investors',
+    href: '/investors',
   },
   {
     label: 'Meetings',
@@ -142,7 +142,11 @@ const INCUBATOR_MENUS = [
   },
   {
     label: 'News',
-    href: '/news?type=incubator',
+    href: '/news?type=entrepreneur',
+  },
+  {
+    label: 'Shop',
+    href: '/shop',
   },
 ];
 
@@ -202,7 +206,10 @@ export const Header = () => {
     <div className="mb-12 md:rounded-full rounded-3xl border border-white/10 px-4 py-4 md:px-6 lg:px-8 bg-card">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3 hover:cursor-pointer hover:scale-105 transition-all duration-300"
+          onClick={() => void handleNavigation('/dashboard')}
+        >
           <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
           <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
         </div>
