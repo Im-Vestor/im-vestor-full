@@ -19,7 +19,7 @@ import { Hypertrain } from '../hypertrain/hypertrain';
 
 
 
-export default function Dashboard() {
+export default function Home() {
   const { user, isLoaded } = useUser();
   const userType = user?.publicMetadata.userType as UserType;
 

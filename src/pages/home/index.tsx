@@ -2,9 +2,9 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { Header } from '~/components/header';
-import Dashboard from '~/components/dashboard';
+import Home from '~/components/dashboard';
 
-export default function DashboardPage() {
+export default function HomePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
 
@@ -43,7 +43,7 @@ export default function DashboardPage() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <Dashboard />
+        <Home />
       </div>
     </main>
   );

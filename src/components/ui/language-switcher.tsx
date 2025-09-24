@@ -21,8 +21,8 @@ const LanguageFlag = ({
       src={`https://flagcdn.com/h60/${countryCode.toLowerCase()}.png`}
       alt={countryName}
       title={countryName}
-      width={16}
-      height={12}
+      width={14}
+      height={10}
     />
   );
 };
@@ -33,7 +33,7 @@ export const LanguageSwitcher = () => {
 
   return (
     <Select value={language} onValueChange={value => setLanguage(value as Language)}>
-      <SelectTrigger className="w-auto border-2 border-white/10 ">
+      <SelectTrigger className="w-auto border-2 border-white/10 h-8 sm:h-10 px-1 sm:px-3">
         <SelectValue>
           <div className="pr-2">
             {language && (

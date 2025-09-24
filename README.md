@@ -2,6 +2,30 @@
 
 A comprehensive platform connecting entrepreneurs, investors, and incubators.
 
+## 📚 Documentation
+
+- **[⚡ SETUP.md](./SETUP.md)** - Setup rápido em 5 minutos
+- **[🚀 ONBOARDING.md](./ONBOARDING.md)** - Onboarding completo
+- **[📖 DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - Guia técnico detalhado
+
+## 🎯 Quick Start
+
+```bash
+# Clone and install
+git clone <repository-url>
+cd im-vestor-full
+npm install
+
+# Setup database
+createdb im-vestor-dev
+npm run db:push
+
+# Start development
+npm run dev
+```
+
+Visit `http://localhost:3000` to see the application.
+
 ## Admin Home Features
 
 ### Project Views & Activity Monitoring
