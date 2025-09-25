@@ -2,7 +2,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { Header } from '~/components/header';
-import Home from '~/components/dashboard';
+import Home from '~/components/home';
 
 export default function HomePage() {
   const router = useRouter();
