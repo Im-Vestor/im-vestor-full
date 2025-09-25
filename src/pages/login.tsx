@@ -32,7 +32,7 @@ export default function Login() {
     if (user.isLoaded && user.isSignedIn && userData) {
       const profileCompleted = isProfileCompleted(userData);
       if (profileCompleted) {
-        router.push('/dashboard');
+        router.push('/home');
       } else {
         router.push('/profile');
       }
