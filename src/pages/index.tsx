@@ -185,7 +185,7 @@ export default function Home() {
     if (isUserLoaded && user && userData) {
       const profileCompleted = isProfileCompleted(userData);
       if (profileCompleted) {
-        void router.push('/dashboard');
+        void router.push('/home');
       }
     }
   }, [isUserLoaded, user, userData, router]);

@@ -30,7 +30,7 @@ import {
 const ENTREPRENEUR_MENUS = [
   {
     label: 'Home',
-    href: '/dashboard',
+    href: '/home',
   },
   {
     label: 'My Projects',
@@ -61,7 +61,7 @@ const ENTREPRENEUR_MENUS = [
 const INVESTOR_MENUS = [
   {
     label: 'Home',
-    href: '/dashboard',
+    href: '/home',
   },
   {
     label: 'Projects',
@@ -88,7 +88,7 @@ const INVESTOR_MENUS = [
 const VC_MENUS = [
   {
     label: 'Home',
-    href: '/dashboard',
+    href: '/home',
   },
   {
     label: 'Projects',
@@ -115,7 +115,7 @@ const VC_MENUS = [
 const PARTNER_MENUS = [
   {
     label: 'Home',
-    href: '/dashboard',
+    href: '/home',
   },
   {
     label: 'Referrals',
@@ -130,7 +130,7 @@ const PARTNER_MENUS = [
 const INCUBATOR_MENUS = [
   {
     label: 'Home',
-    href: '/dashboard',
+    href: '/home',
   },
   {
     label: 'Investors',
@@ -208,7 +208,7 @@ export const Header = () => {
         {/* Logo */}
         <div
           className="flex items-center gap-3 hover:cursor-pointer hover:scale-105 transition-all duration-300"
-          onClick={() => void handleNavigation('/dashboard')}
+          onClick={() => void handleNavigation('/home')}
         >
           <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
           <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
