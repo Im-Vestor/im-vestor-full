@@ -1,4 +1,5 @@
 import { type Country, type Entrepreneur, type Project, type State } from '@prisma/client';
+import { useUser } from '@clerk/nextjs';
 import {
   Building2,
   CircleUserRound,
@@ -12,6 +13,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 import { Header } from '~/components/header';
 import { SkeletonProfile } from '~/components/profile/skeleton-profile';
@@ -21,8 +23,29 @@ import { api } from '~/utils/api';
 
 export default function EntrepreneurProjects() {
   const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
 
-  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery();
+  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery(
+    undefined,
+    { enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'ENTREPRENEUR' }
+  );
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      void router.push('/login');
+      return;
+    }
+
+    // Check if user is an entrepreneur
+    if (isLoaded && isSignedIn && user?.publicMetadata.userType !== 'ENTREPRENEUR') {
+      void router.push('/404');
+    }
+  }, [isLoaded, isSignedIn, user, router]);
+
+  // Don't render anything if user is not an entrepreneur
+  if (isLoaded && isSignedIn && user?.publicMetadata.userType !== 'ENTREPRENEUR') {
+    return null;
+  }
 
   if (isLoading) {
     return (

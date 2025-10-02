@@ -40,7 +40,13 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
       <LanguageProvider>
-        <Toaster theme="dark" />
+        <Toaster
+          theme="dark"
+          position="top-right"
+          expand={false}
+          richColors
+          closeButton
+        />
         {analyticsEnabled && (
           <>
             <SpeedInsights />

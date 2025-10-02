@@ -372,3 +372,19 @@
 .animate-marquee-vertical {
   animation: marquee-vertical var(--duration) linear infinite;
 }
+
+/* Toast positioning for mobile */
+@media (max-width: 768px) {
+  [data-sonner-toaster] {
+    top: 16px !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+
+  [data-sonner-toast] {
+    margin-bottom: 8px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+}

@@ -1,5 +1,5 @@
 import { getAuth } from '@clerk/nextjs/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { env } from '~/env.js';
 import { db } from '~/server/db';
@@ -43,12 +43,16 @@ const products = [
   },
 ];
 
-export async function POST(req: Request) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   try {
-    const { userId } = getAuth(req as NextRequest);
+    const { userId } = getAuth(req);
 
     if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Get user from database
@@ -60,7 +64,7 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Create or get Stripe customer
@@ -83,7 +87,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const { productId, projectId } = (await req.json()) as {
+    const { productId, projectId } = req.body as {
       productId: string;
       projectId?: string;
     };
@@ -91,7 +95,7 @@ export async function POST(req: Request) {
     const product = products.find(p => p.id === productId);
 
     if (!product) {
-      return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+      return res.status(404).json({ message: 'Product not found' });
     }
 
     // Create Stripe checkout session
@@ -105,8 +109,8 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/shop`,
-      cancel_url: `${req.headers.get('origin')}/shop`,
+      success_url: `${req.headers.origin}/shop`,
+      cancel_url: `${req.headers.origin}/shop`,
       metadata: {
         userId: user.id,
         userType: user.userType,
@@ -115,9 +119,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ sessionId: session.id, url: session.url });
+    return res.status(200).json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('Stripe checkout error:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }

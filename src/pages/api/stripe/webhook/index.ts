@@ -1,9 +1,7 @@
 import { env } from '~/env.js';
-import { headers } from 'next/headers';
-import { NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '~/server/db';
-import { waitUntil } from '@vercel/functions';
 import { addDays } from 'date-fns';
 
 const allowedEvents: Stripe.Event.Type[] = [
@@ -27,33 +25,33 @@ const allowedEvents: Stripe.Event.Type[] = [
   'payment_intent.canceled',
 ];
 
-export async function POST(req: Request) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2025-05-28.basil',
   });
 
-  const body = await req.text();
-  const signature = (await headers()).get('Stripe-Signature');
+  const body = req.body as string;
+  const signature = req.headers['stripe-signature'] as string;
 
-  if (!signature) return NextResponse.json({}, { status: 400 });
-
-  async function doEventProcessing() {
-    if (typeof signature !== 'string') {
-      throw new Error("[STRIPE HOOK] Header isn't a string???");
-    }
-
-    const event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
-
-    waitUntil(processEvent(event));
+  if (!signature) {
+    return res.status(400).json({ message: 'Missing stripe signature' });
   }
 
   try {
-    await doEventProcessing();
+    const event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
+
+    // Process event asynchronously
+    void processEvent(event);
+
+    return res.status(200).json({ received: true });
   } catch (error) {
     console.error('[STRIPE HOOK] Error processing event', error);
+    return res.status(400).json({ message: 'Webhook error' });
   }
-
-  return NextResponse.json({ received: true });
 }
 
 async function processEvent(event: Stripe.Event) {
