@@ -675,7 +675,7 @@ export const projectRouter = createTRPCRouter({
         project.Entrepreneur.firstName,
         'Video access requested',
         'A user has requested access to your video presentation.',
-        project.Entrepreneur.user.email,
+        [project.Entrepreneur.user.email],
         'Video access requested'
       );
 

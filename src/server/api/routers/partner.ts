@@ -124,7 +124,7 @@ export const partnerRouter = createTRPCRouter({
         input.firstName,
         'Welcome to Im-Vestor!',
         'Thank you for signing up to Im-Vestor. Please verify your email address to activate your account.',
-        input.email,
+        [input.email],
         'Verify your email - Im-Vestor',
         verificationLink,
         'Verify Email'

@@ -109,8 +109,8 @@ export const supportRouter = createTRPCRouter({
         'User',
         'Support Ticket Reply',
         'Your support ticket has received a reply. Please check your dashboard to view the response.',
-        ticket.user.email,
-        `Re: ${ticket.subject}`,
+        [ticket.user.email],
+        `Re: ${ticket.subject}`
       );
 
       return reply;
@@ -173,7 +173,7 @@ export const supportRouter = createTRPCRouter({
         where: {
           id: input.ticketId,
           userId: ctx.auth.userId,
-          status: 'OPEN' // Only allow replies to open tickets
+          status: 'OPEN', // Only allow replies to open tickets
         },
       });
 
@@ -195,7 +195,7 @@ export const supportRouter = createTRPCRouter({
       // Notify admins about the new reply
       const admins = await ctx.db.user.findMany({
         where: {
-          userType: 'ADMIN'
+          userType: 'ADMIN',
         },
       });
 

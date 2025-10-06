@@ -81,7 +81,7 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      void scheduleMeeting(
+      const meetingDetails = scheduleMeeting(
         ctx.db,
         input.date,
         input.entrepreneurId ?? null,
@@ -91,14 +91,23 @@ export const negotiationRouter = createTRPCRouter({
         negotiation.id
       );
 
+      // Fetch all user types with their email information
       const investor = await ctx.db.investor.findUnique({
         where: { id: input.investorId },
-        select: { userId: true },
+        select: {
+          userId: true,
+          firstName: true,
+          user: { select: { email: true } },
+        },
       });
 
       const vcGroup = await ctx.db.vcGroup.findUnique({
         where: { id: input.vcGroupId },
-        select: { userId: true },
+        select: {
+          userId: true,
+          name: true,
+          user: { select: { email: true } },
+        },
       });
 
       const entrepreneur = await ctx.db.entrepreneur.findUnique({
@@ -123,13 +132,53 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      void sendEmail(
-        entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? ''),
-        'New pitch meeting request',
-        'An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.',
-        entrepreneur ? (entrepreneur?.user.email ?? '') : (incubator?.email ?? ''),
-        'New pitch meeting request'
-      );
+      // Collect all relevant emails and prepare meeting details
+      const meetingUrl = (await meetingDetails).url;
+      const recipientEmails: string[] = [];
+
+      // Add entrepreneur/incubator email (they need to accept/reject the meeting)
+      if (entrepreneur?.user.email) {
+        recipientEmails.push(entrepreneur.user.email);
+      }
+      if (incubator?.email) {
+        recipientEmails.push(incubator.email);
+      }
+
+      // Send email to entrepreneur/incubator about the meeting request
+      if (recipientEmails.length > 0) {
+        const recipientName = entrepreneur ? entrepreneur.firstName : (incubator?.name ?? '');
+        void sendEmail(
+          recipientName,
+          'New pitch meeting request',
+          `An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.`,
+          recipientEmails,
+          'New pitch meeting request',
+          meetingUrl,
+          'View Meeting Details'
+        );
+      }
+
+      // Send confirmation email to investor/VC group
+      const investorEmails: string[] = [];
+      if (investor?.user.email) {
+        investorEmails.push(investor.user.email);
+      }
+      if (vcGroup?.user.email) {
+        investorEmails.push(vcGroup.user.email);
+      }
+
+      if (investorEmails.length > 0) {
+        const investorName = investor ? investor.firstName : (vcGroup?.name ?? '');
+        void sendEmail(
+          investorName,
+          'Pitch meeting request sent',
+          `Your pitch meeting request has been sent. You will be notified once the entrepreneur responds.`,
+          investorEmails,
+          'Pitch meeting request sent',
+          meetingUrl,
+          'View Meeting Details'
+        );
+      }
 
       void createNotifications(
         ctx.db,
@@ -178,7 +227,7 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      void scheduleMeeting(
+      const meetingDetails = scheduleMeeting(
         ctx.db,
         input.date,
         input.entrepreneurId ?? null,
@@ -213,8 +262,8 @@ export const negotiationRouter = createTRPCRouter({
       void sendEmail(
         entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? ''),
         'New meeting request',
-        'An investor has requested a new meeting. Please check your dashboard to accept or reject the request.',
-        entrepreneur ? (entrepreneur?.user.email ?? '') : (incubator?.email ?? ''),
+        `An investor has requested a new meeting. Please check your dashboard to accept or reject the request or use the link below ${(await meetingDetails).url}`,
+        [entrepreneur?.user.email ?? '', incubator?.email ?? ''],
         'New meeting request'
       );
 
@@ -269,9 +318,11 @@ export const negotiationRouter = createTRPCRouter({
           : (negotiation.project.Incubator?.name ?? ''),
         'Negotiation cancelled',
         'The negotiation has been cancelled. Please check your dashboard to see the details.',
-        negotiation.project.Entrepreneur
-          ? (negotiation.project.Entrepreneur?.user.email ?? '')
-          : (negotiation.project.Incubator?.email ?? ''),
+        [
+          negotiation.project.Entrepreneur
+            ? (negotiation.project.Entrepreneur?.user.email ?? '')
+            : (negotiation.project.Incubator?.email ?? ''),
+        ],
         'Negotiation cancelled'
       );
 
@@ -356,9 +407,11 @@ export const negotiationRouter = createTRPCRouter({
           : (negotiation?.project.Incubator?.name ?? ''),
         'Negotiation went to next stage',
         'The negotiation has gone to the next stage. Please check your dashboard to see the details.',
-        negotiation?.project.Entrepreneur
-          ? (negotiation?.project.Entrepreneur?.user.email ?? '')
-          : (negotiation?.project.Incubator?.email ?? ''),
+        [
+          negotiation?.project.Entrepreneur
+            ? (negotiation?.project.Entrepreneur?.user.email ?? '')
+            : (negotiation?.project.Incubator?.email ?? ''),
+        ],
         'Negotiation went to next stage'
       );
 

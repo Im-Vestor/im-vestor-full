@@ -128,7 +128,7 @@ export const vcGroupRouter = createTRPCRouter({
         input.name,
         'Welcome to Im-Vestor!',
         'Thank you for signing up to Im-Vestor. Please verify your email address to activate your account.',
-        input.email,
+        [input.email],
         'Verify your email - Im-Vestor',
         verificationLink,
         'Verify Email'
@@ -379,7 +379,7 @@ export const vcGroupRouter = createTRPCRouter({
           member.name,
           `See ${project?.name} on Im-Vestor.`,
           `${memberThatSharedTheProject?.name} has shared a project with you.`,
-          member.email,
+          [member.email],
           `See ${project?.name} on Im-Vestor.`,
           `https://www.im-vestor.com/companies/${input.projectId}`,
           'See Project'

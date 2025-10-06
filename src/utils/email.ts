@@ -6,14 +6,14 @@ export async function sendEmail(
   name: string,
   firstText: string,
   secondText: string,
-  to: string,
+  to: Array<string>,
   subject: string,
   link?: string,
   buttonText?: string
 ) {
   const { data, error } = await resend.emails.send({
     from: 'Im-Vestor <hey@updates.im-vestor.com>',
-    to: [to],
+    to: to.filter(email => email && email.trim() !== ''),
     subject: subject,
     react: EmailTemplate({ name, firstText, secondText, link, buttonText }),
   });

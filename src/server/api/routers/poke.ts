@@ -50,7 +50,7 @@ export const pokeRouter = createTRPCRouter({
           ' ' +
           entrepreneur.lastName +
           '!',
-        investor.user.email,
+        [investor.user.email],
         'You have received a poke from ' +
           entrepreneur.firstName +
           ' ' +
@@ -115,7 +115,7 @@ export const pokeRouter = createTRPCRouter({
           ' ' +
           entrepreneur.lastName +
           '!',
-        vcGroup.user.email,
+        [vcGroup.user.email],
         'You have received a poke from ' +
           entrepreneur.firstName +
           ' ' +

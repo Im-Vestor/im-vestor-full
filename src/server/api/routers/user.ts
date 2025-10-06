@@ -412,7 +412,7 @@ export const userRouter = createTRPCRouter({
           : (user?.investor?.firstName ?? ''),
         'Video access requested',
         'A user has requested access to your video presentation.',
-        user?.email ?? '',
+        [user?.email ?? ''],
         'Video access requested'
       );
 
@@ -457,7 +457,7 @@ export const userRouter = createTRPCRouter({
       userName,
       'We received a request to delete your Im-Vestor account.',
       'If you want to proceed with the account deletion, please click the button below. This link will expire in 24 hours. If you did not request this deletion, please ignore this email.',
-      user.email,
+      [user.email],
       'Confirm Account Deletion',
       deletionLink,
       'Delete My Account'
@@ -503,7 +503,7 @@ export const userRouter = createTRPCRouter({
           '',
         'Update your email address on Im-Vestor!',
         'You can verify the new email address by clicking the button below.',
-        input.email,
+        [input.email],
         'Verify your email - Im-Vestor',
         linkAddapted,
         'Verify Email'

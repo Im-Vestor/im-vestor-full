@@ -67,7 +67,7 @@ export const boostRouter = createTRPCRouter({
         entrepreneur.firstName + ' ' + entrepreneur.lastName,
         'Your project has been boosted!',
         'Now it will be visible on the top of the list!',
-        entrepreneur.user.email,
+        [entrepreneur.user.email],
         'Your project has been boosted!'
       );
 
