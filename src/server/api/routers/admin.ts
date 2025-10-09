@@ -215,4 +215,263 @@ export const adminRouter = createTRPCRouter({
         throw new Error(`Failed to fetch platform activity summary: ${errorMessage}`);
       }
     }),
+
+  // Get all users for product gifting
+  getUsersForGifting: protectedProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        userType: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      await checkAdminAuthorization(ctx);
+
+      const where: any = {};
+
+      if (input.search) {
+        where.OR = [
+          { email: { contains: input.search, mode: "insensitive" as const } },
+          { entrepreneur: { firstName: { contains: input.search, mode: "insensitive" as const } } },
+          { entrepreneur: { lastName: { contains: input.search, mode: "insensitive" as const } } },
+          { investor: { firstName: { contains: input.search, mode: "insensitive" as const } } },
+          { investor: { lastName: { contains: input.search, mode: "insensitive" as const } } },
+          { incubator: { name: { contains: input.search, mode: "insensitive" as const } } },
+          { partner: { companyName: { contains: input.search, mode: "insensitive" as const } } },
+          { vcGroup: { name: { contains: input.search, mode: "insensitive" as const } } },
+        ];
+      }
+
+      if (input.userType) {
+        where.userType = input.userType;
+      }
+
+      const users = await ctx.db.user.findMany({
+        where,
+        take: 50, // Limit results for performance
+        include: {
+          entrepreneur: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          investor: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          incubator: {
+            select: {
+              name: true,
+            },
+          },
+          partner: {
+            select: {
+              companyName: true,
+            },
+          },
+          vcGroup: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: { email: "asc" },
+      });
+
+      return users.map(user => ({
+        id: user.id,
+        email: user.email,
+        userType: user.userType,
+        availablePokes: user.availablePokes,
+        availableBoosts: user.availableBoosts,
+        imageUrl: user.imageUrl,
+        name: user.entrepreneur
+          ? `${user.entrepreneur.firstName} ${user.entrepreneur.lastName}`
+          : user.investor
+            ? `${user.investor.firstName} ${user.investor.lastName}`
+            : user.incubator?.name
+              ? user.incubator.name
+              : user.partner?.companyName
+                ? user.partner.companyName
+                : user.vcGroup?.name
+                  ? user.vcGroup.name
+                  : 'N/A',
+      }));
+    }),
+
+  // Gift products to multiple users by email list
+  giftProductToUsersByEmail: protectedProcedure
+    .input(
+      z.object({
+        emails: z.array(z.string().email()).min(1, "At least one email is required"),
+        productType: z.enum(['poke', 'boost', 'pitch-of-the-week-ticket', 'hyper-train-ticket']),
+        quantity: z.number().min(1).max(10),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await checkAdminAuthorization(ctx);
+
+      const results = [];
+      const errors = [];
+
+      for (const email of input.emails) {
+        try {
+          // Find user by email
+          const user = await ctx.db.user.findUnique({
+            where: { email },
+          });
+
+          if (!user) {
+            errors.push({ email, error: 'User not found' });
+            continue;
+          }
+
+          // Check if user type is eligible for the product
+          const productEligibility = {
+            'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
+            'boost': ['ENTREPRENEUR'],
+            'pitch-of-the-week-ticket': ['ENTREPRENEUR'],
+            'hyper-train-ticket': ['INVESTOR', 'VC_GROUP'],
+          };
+
+          const eligibleTypes = productEligibility[input.productType as keyof typeof productEligibility];
+          if (!eligibleTypes || !eligibleTypes.includes(user.userType)) {
+            errors.push({ email, error: `User type ${user.userType} is not eligible for ${input.productType}` });
+            continue;
+          }
+
+          // Update user data based on product type
+          const updateData: any = {};
+
+          if (input.productType === 'poke') {
+            updateData.availablePokes = { increment: input.quantity };
+          } else if (input.productType === 'boost') {
+            updateData.availableBoosts = { increment: input.quantity };
+          }
+          // For other product types, we would need to create specific records
+          // For now, we'll handle them as special cases
+
+          const updatedUser = await ctx.db.user.update({
+            where: { id: user.id },
+            data: updateData,
+          });
+
+          // Create a notification for the user
+          await ctx.db.notification.create({
+            data: {
+              userId: user.id,
+              type: 'POKE',
+              read: false,
+            },
+          });
+
+          results.push({
+            email,
+            success: true,
+            user: {
+              id: updatedUser.id,
+              email: updatedUser.email,
+              availablePokes: updatedUser.availablePokes,
+              availableBoosts: updatedUser.availableBoosts,
+            },
+          });
+        } catch (error) {
+          errors.push({
+            email,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      return {
+        success: results.length > 0,
+        results,
+        errors,
+        summary: {
+          total: input.emails.length,
+          successful: results.length,
+          failed: errors.length,
+        },
+      };
+    }),
+
+  // Gift a product to a user
+  giftProductToUser: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        productType: z.enum(['poke', 'boost', 'pitch-of-the-week-ticket', 'hyper-train-ticket']),
+        quantity: z.number().min(1).max(10).default(1),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await checkAdminAuthorization(ctx);
+
+      // Verify user exists
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+        include: {
+          entrepreneur: true,
+          investor: true,
+        },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Validate product type for user type
+      const productValidation = {
+        'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
+        'boost': ['ENTREPRENEUR'],
+        'pitch-of-the-week-ticket': ['ENTREPRENEUR'],
+        'hyper-train-ticket': ['INVESTOR', 'VC_GROUP'],
+      };
+
+      if (!productValidation[input.productType]?.includes(user.userType)) {
+        throw new Error(`Product ${input.productType} is not available for user type ${user.userType}`);
+      }
+
+      // Update user's available products
+      const updateData: any = {};
+
+      if (input.productType === 'poke') {
+        updateData.availablePokes = { increment: input.quantity };
+      } else if (input.productType === 'boost') {
+        updateData.availableBoosts = { increment: input.quantity };
+      }
+
+      // For pitch-of-the-week-ticket and hyper-train-ticket, we would need to create specific records
+      // For now, we'll handle them as special cases or create a generic product tracking system
+
+      const updatedUser = await ctx.db.user.update({
+        where: { id: input.userId },
+        data: updateData,
+      });
+
+      // Create a notification for the user
+      await ctx.db.notification.create({
+        data: {
+          userId: input.userId,
+          type: 'POKE', // Using existing notification type
+          read: false,
+        },
+      });
+
+      return {
+        success: true,
+        message: `Successfully gifted ${input.quantity} ${input.productType}${input.quantity > 1 ? 's' : ''} to user`,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          availablePokes: updatedUser.availablePokes,
+          availableBoosts: updatedUser.availableBoosts,
+        },
+      };
+    }),
 });

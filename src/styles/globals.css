@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hypertrain Animation - Seamless Loop */
+@keyframes hypertrain-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(var(--scroll-distance));
+  }
+}
+
+.hypertrain-animate {
+  animation: hypertrain-scroll 20s linear infinite;
+  will-change: transform;
+  animation-fill-mode: none;
+}
+
+.hypertrain-animate.paused {
+  animation-play-state: paused;
+}
+
+/* Alternative seamless animation */
+@keyframes hypertrain-seamless {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.hypertrain-seamless {
+  animation: hypertrain-seamless 12s linear infinite;
+  will-change: transform;
+  animation-fill-mode: none;
+}
+
+.hypertrain-seamless.paused {
+  animation-play-state: paused;
+}
+
+/* Ultra smooth continuous animation */
+@keyframes hypertrain-continuous {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.hypertrain-continuous {
+  animation: hypertrain-continuous 10s linear infinite;
+  will-change: transform;
+  animation-fill-mode: none;
+  animation-timing-function: linear;
+}
+
+.hypertrain-continuous.paused {
+  animation-play-state: paused;
+}
+
 @layer base {
   :root {
     --radius: 0.5rem;
@@ -20,6 +81,73 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 100% / 0.1;
     --sidebar-ring: 47 84% 73%;
+  }
+
+  /* Light Mode Theme */
+  .light {
+    /* Primary Theme Colors - mantendo o dourado para consistência */
+    --primary: 47 84% 73%;
+    --primary-from: #edd689;
+    --primary-to: #d3b662;
+
+    /* Sidebar Theme Variables para Light Mode */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 47 84% 73%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 47 84% 73%;
+
+    /* Background Colors para Light Mode */
+    --background: 0 0% 100%;
+    --background-card: 0 0% 98%;
+    --background-gradient-from: #f8f9fa;
+    --background-gradient-to: #ffffff;
+
+    /* Text Colors para Light Mode */
+    --text-primary: 0 0% 9%;
+    --text-secondary: 0 0% 45%;
+    --text-muted: 0 0% 60%;
+
+    /* Border Colors para Light Mode */
+    --border: 0 0% 90%;
+    --border-muted: 0 0% 95%;
+
+    /* Card Colors para Light Mode */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --card-border: 0 0% 90%;
+
+    /* Input Colors para Light Mode */
+    --input: 0 0% 100%;
+    --input-border: 0 0% 90%;
+    --input-focus: 0 0% 80%;
+
+    /* Button Colors para Light Mode */
+    --button-primary: 47 84% 73%;
+    --button-primary-foreground: 0 0% 0%;
+    --button-secondary: 0 0% 96%;
+    --button-secondary-foreground: 0 0% 9%;
+    --button-outline: 0 0% 90%;
+    --button-outline-foreground: 0 0% 9%;
+
+    /* Destructive Colors para Light Mode */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Success Colors para Light Mode */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
+    /* Warning Colors para Light Mode */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 9%;
+
+    /* Info Colors para Light Mode */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
   }
 
   body {
@@ -54,12 +182,38 @@
     @apply border-white/10;
   }
 
+  /* Light Mode Utilities */
+  .light .border {
+    @apply border-black/10;
+  }
+
+  .light .bg-background {
+    background-color: hsl(var(--background));
+  }
+
+  .light .bg-background-card {
+    background-color: hsl(var(--background-card));
+  }
+
+  .light .text-ui-text {
+    color: hsl(var(--text-primary));
+  }
+
+  .light .text-ui-text-muted {
+    color: hsl(var(--text-muted));
+  }
+
+  .light .border-ui-border {
+    border-color: hsl(var(--border));
+  }
+
   /* Line clamp utilities for text truncation */
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
 
   .line-clamp-2 {
@@ -67,6 +221,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .line-clamp-3 {
@@ -74,6 +229,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
   }
 
   .line-clamp-4 {
@@ -81,6 +237,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
+    line-clamp: 4;
   }
 
   /* Card flip effect */
@@ -342,6 +499,30 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: #3f3f5a #1e1e2e;
+}
+
+/* Light mode scrollbar */
+.light ::-webkit-scrollbar {
+  width: 10px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 5px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* For Firefox - Light mode */
+.light * {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
 /* Marquee animations */

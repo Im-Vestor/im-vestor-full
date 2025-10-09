@@ -26,7 +26,6 @@ export default function Home() {
   const { data: news, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
     {},
     {
-      enabled: isLoaded && !!user,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
@@ -95,9 +94,9 @@ export default function Home() {
         ) : (
           <>
             <div className="w-16 h-16 rounded-full border-2 border-white/10 overflow-hidden">
-              {user?.imageUrl ? (
+              {userData?.imageUrl ? (
                 <img
-                  src={user.imageUrl}
+                  src={userData.imageUrl}
                   alt={`${getUserName()}'s profile`}
                   className="w-full h-full object-cover"
                 />

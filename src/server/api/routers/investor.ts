@@ -72,6 +72,11 @@ export const investorRouter = createTRPCRouter({
                 },
               },
             },
+            meetings: {
+              orderBy: {
+                startDate: 'desc',
+              },
+            },
           },
         },
         favoriteProjects: {
