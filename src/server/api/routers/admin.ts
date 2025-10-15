@@ -338,8 +338,8 @@ export const adminRouter = createTRPCRouter({
             'hyper-train-ticket': ['INVESTOR', 'VC_GROUP'],
           };
 
-          const eligibleTypes = productEligibility[input.productType as keyof typeof productEligibility];
-          if (!eligibleTypes || !eligibleTypes.includes(user.userType)) {
+          const eligibleTypes = productEligibility[input.productType];
+          if (!eligibleTypes?.includes(user.userType)) {
             errors.push({ email, error: `User type ${user.userType} is not eligible for ${input.productType}` });
             continue;
           }

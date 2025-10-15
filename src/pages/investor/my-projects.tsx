@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Header } from '~/components/header';
 import { api } from '~/utils/api';
 import { Badge } from '~/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardContent } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Textarea } from '~/components/ui/textarea';
 import { Input } from '~/components/ui/input';
@@ -15,8 +15,6 @@ import {
   MapPin,
   Calendar,
   DollarSign,
-  Users,
-  ExternalLink,
   MessageSquare,
   Clock,
   Edit3,
@@ -107,12 +105,6 @@ export default function MyProjects() {
     return null;
   }
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {

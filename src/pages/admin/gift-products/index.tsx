@@ -10,7 +10,7 @@ import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Gift, User, Package, Users, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Gift, User, Package, Users, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const products = [
@@ -58,7 +58,6 @@ function GiftProductsPage() {
   const [bulkProductType, setBulkProductType] = useState<string>('');
   const [bulkQuantity, setBulkQuantity] = useState(1);
   const [bulkReason, setBulkReason] = useState('');
-  const [isBulkGiftDialogOpen, setIsBulkGiftDialogOpen] = useState(false);
   const [bulkResults, setBulkResults] = useState<any>(null);
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
 

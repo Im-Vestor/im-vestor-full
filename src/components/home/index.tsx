@@ -10,6 +10,7 @@ import {
   Share2,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
 import { PartnersSection } from '~/components/ui/partners-section';
@@ -95,9 +96,11 @@ export default function Home() {
           <>
             <div className="w-16 h-16 rounded-full border-2 border-white/10 overflow-hidden">
               {userData?.imageUrl ? (
-                <img
+                <Image
                   src={userData.imageUrl}
                   alt={`${getUserName()}'s profile`}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-cover"
                 />
               ) : (
