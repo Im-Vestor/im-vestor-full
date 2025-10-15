@@ -121,31 +121,68 @@ export function RecommendationsPanel() {
                   </Link>
                 ))}
 
-                {recommendations?.recommendedInvestors?.map((investor) => (
-                  <Link key={investor.id} href={`/investor/${investor.id}`}>
-                    <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                      <div className="relative flex items-center gap-4">
-                        <Image
-                          src={investor.photo ?? '/images/male-avatar.svg'}
-                          alt={`${investor.firstName} ${investor.lastName}`}
-                          width={48}
-                          height={48}
-                          className="rounded-full"
-                        />
-                        <div className="flex-1 space-y-1">
-                          <h3 className="font-medium text-white">{investor.firstName} {investor.lastName}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {investor.country?.name}, {investor.state?.name}
-                          </p>
+                {recommendations?.recommendedInvestors?.map((user) => {
+                  const investor = (user as any).investor;
+                  const vcGroup = (user as any).vcGroup;
+
+                  if (investor && typeof investor === 'object' && 'id' in investor) {
+                    return (
+                      <Link key={user.id} href={`/investor/${investor.id}`}>
+                        <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                          <div className="relative flex items-center gap-4">
+                            <Image
+                              src={investor.photo ?? '/images/male-avatar.svg'}
+                              alt={`${investor.firstName} ${investor.lastName}`}
+                              width={48}
+                              height={48}
+                              className="rounded-full"
+                            />
+                            <div className="flex-1 space-y-1">
+                              <h3 className="font-medium text-white">{investor.firstName} {investor.lastName}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {investor.country?.name}, {investor.state?.name}
+                              </p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-white">
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-white">
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                      </Link>
+                    );
+                  }
+
+                  if (vcGroup && typeof vcGroup === 'object' && 'id' in vcGroup) {
+                    return (
+                      <Link key={user.id} href={`/vc-group/${vcGroup.id}`}>
+                        <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                          <div className="relative flex items-center gap-4">
+                            <Image
+                              src={vcGroup.logo ?? '/images/male-avatar.svg'}
+                              alt={vcGroup.name}
+                              width={48}
+                              height={48}
+                              className="rounded-lg"
+                            />
+                            <div className="flex-1 space-y-1">
+                              <h3 className="font-medium text-white">{vcGroup.name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {vcGroup.country?.name}, {vcGroup.state?.name}
+                              </p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-white">
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  }
+
+                  return null;
+                })}
               </>
             )}
           </div>

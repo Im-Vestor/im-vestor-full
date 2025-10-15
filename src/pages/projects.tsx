@@ -1,8 +1,10 @@
-import { type Area, type Country, type Project, type State, ProjectStage } from '@prisma/client';
+import { type Area, type Country, type Project, type State, ProjectStage, type UserType } from '@prisma/client';
+import { useUser } from '@clerk/nextjs';
 import { Building2, Heart, SearchIcon, Calendar, MapPin, CircleUserRound, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
@@ -45,6 +47,10 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
 const INITIAL_VISIBLE_AREAS = 5; // Define a constant for the initial count
 
 export default function Companies() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const userType = user?.publicMetadata.userType as UserType;
+
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
@@ -61,6 +67,18 @@ export default function Companies() {
   }>({});
   const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
   const [onlyIncubatorProjects, setOnlyIncubatorProjects] = useState(false);
+
+  // Redirect entrepreneurs away from this page
+  useEffect(() => {
+    if (isLoaded && userType === 'ENTREPRENEUR') {
+      router.push('/entrepreneur/projects');
+    }
+  }, [isLoaded, userType, router]);
+
+  // Don't render anything for entrepreneurs
+  if (isLoaded && userType === 'ENTREPRENEUR') {
+    return null;
+  }
 
   // Calculate combined investment range from selected ranges
   const getInvestmentRange = () => {
@@ -342,11 +360,10 @@ function CompanyCard({
   return (
     <Link
       href={`/companies/${project.id}`}
-      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${
-        isBoosted
-          ? 'border-yellow-500/50 hover:border-yellow-600/50'
-          : 'border-white/10 hover:border-white/20'
-      }`}
+      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${isBoosted
+        ? 'border-yellow-500/50 hover:border-yellow-600/50'
+        : 'border-white/10 hover:border-white/20'
+        }`}
     >
       <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (

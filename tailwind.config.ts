@@ -51,6 +51,60 @@ export default {
           hover: '#EF4444/90',
           foreground: 'white',
         },
+        // Light mode colors
+        light: {
+          background: {
+            DEFAULT: 'hsl(var(--background))',
+            card: 'hsl(var(--background-card))',
+            gradient: {
+              from: 'var(--background-gradient-from)',
+              to: 'var(--background-gradient-to)',
+            },
+          },
+          text: {
+            primary: 'hsl(var(--text-primary))',
+            secondary: 'hsl(var(--text-secondary))',
+            muted: 'hsl(var(--text-muted))',
+          },
+          border: {
+            DEFAULT: 'hsl(var(--border))',
+            muted: 'hsl(var(--border-muted))',
+          },
+          card: {
+            DEFAULT: 'hsl(var(--card))',
+            foreground: 'hsl(var(--card-foreground))',
+            border: 'hsl(var(--card-border))',
+          },
+          input: {
+            DEFAULT: 'hsl(var(--input))',
+            border: 'hsl(var(--input-border))',
+            focus: 'hsl(var(--input-focus))',
+          },
+          button: {
+            primary: 'hsl(var(--button-primary))',
+            'primary-foreground': 'hsl(var(--button-primary-foreground))',
+            secondary: 'hsl(var(--button-secondary))',
+            'secondary-foreground': 'hsl(var(--button-secondary-foreground))',
+            outline: 'hsl(var(--button-outline))',
+            'outline-foreground': 'hsl(var(--button-outline-foreground))',
+          },
+          destructive: {
+            DEFAULT: 'hsl(var(--destructive))',
+            foreground: 'hsl(var(--destructive-foreground))',
+          },
+          success: {
+            DEFAULT: 'hsl(var(--success))',
+            foreground: 'hsl(var(--success-foreground))',
+          },
+          warning: {
+            DEFAULT: 'hsl(var(--warning))',
+            foreground: 'hsl(var(--warning-foreground))',
+          },
+          info: {
+            DEFAULT: 'hsl(var(--info))',
+            foreground: 'hsl(var(--info-foreground))',
+          },
+        },
       },
       backgroundImage: {
         'primary-gradient': 'linear-gradient(to right, #EDD689, #D3B662)',

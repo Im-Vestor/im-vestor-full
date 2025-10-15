@@ -36,6 +36,116 @@ export const investorRouter = createTRPCRouter({
       },
     });
   }),
+
+  getMyProjects: protectedProcedure.query(async ({ ctx }) => {
+    // First check if the user is an investor
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      select: { userType: true }
+    });
+
+    if (!user || user.userType !== 'INVESTOR') {
+      throw new Error('Unauthorized: Only investors can access this resource');
+    }
+
+    const investor = await ctx.db.investor.findUnique({
+      where: { userId: ctx.auth.userId },
+      include: {
+        negotiations: {
+          include: {
+            project: {
+              include: {
+                Entrepreneur: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+                sector: true,
+                country: true,
+                state: true,
+                _count: {
+                  select: {
+                    favoriteInvestors: true,
+                    favoriteVcGroups: true,
+                  },
+                },
+              },
+            },
+            meetings: {
+              orderBy: {
+                startDate: 'desc',
+              },
+            },
+          },
+        },
+        favoriteProjects: {
+          include: {
+            Entrepreneur: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            sector: true,
+            country: true,
+            state: true,
+            _count: {
+              select: {
+                favoriteInvestors: true,
+                favoriteVcGroups: true,
+              },
+            },
+          },
+        },
+        investedProjects: {
+          include: {
+            Entrepreneur: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            sector: true,
+            country: true,
+            state: true,
+            _count: {
+              select: {
+                favoriteInvestors: true,
+                favoriteVcGroups: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!investor) {
+      return {
+        negotiations: [],
+        favoriteProjects: [],
+        investedProjects: [],
+      };
+    }
+
+    return {
+      negotiations: investor.negotiations.map(negotiation => ({
+        ...negotiation,
+        project: {
+          ...negotiation.project,
+          likesCount: negotiation.project._count.favoriteInvestors + negotiation.project._count.favoriteVcGroups,
+        },
+      })),
+      favoriteProjects: investor.favoriteProjects.map(project => ({
+        ...project,
+        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+      })),
+      investedProjects: investor.investedProjects.map(project => ({
+        ...project,
+        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+      })),
+    };
+  }),
   getByUserIdForAdmin: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -92,11 +202,11 @@ export const investorRouter = createTRPCRouter({
             where: {
               ...(searchQuery
                 ? {
-                    OR: [
-                      { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                      { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                    ],
-                  }
+                  OR: [
+                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
+                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
+                  ],
+                }
                 : {}),
               ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
               ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
@@ -116,8 +226,8 @@ export const investorRouter = createTRPCRouter({
             where: {
               ...(searchQuery
                 ? {
-                    OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                  }
+                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+                }
                 : {}),
               ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
               ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
@@ -150,11 +260,11 @@ export const investorRouter = createTRPCRouter({
             where: {
               ...(searchQuery
                 ? {
-                    OR: [
-                      { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                      { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                    ],
-                  }
+                  OR: [
+                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
+                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
+                  ],
+                }
                 : {}),
               ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
               ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
@@ -172,8 +282,8 @@ export const investorRouter = createTRPCRouter({
             where: {
               ...(searchQuery
                 ? {
-                    OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                  }
+                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+                }
                 : {}),
               ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
               ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),

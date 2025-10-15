@@ -219,44 +219,34 @@ export const recommendationsRouter = createTRPCRouter({
       }
 
       case UserType.INCUBATOR: {
-        // For incubators, recommend projects in their areas of expertise
-        const interestedAreas = user.incubator?.areas.map(a => a.id);
+        // For incubators, recommend investors in their areas of expertise
+        // const interestedAreas = user.incubator?.areas.map(a => a.id);
 
-        const recommendedProjects = await ctx.db.project.findMany({
+        const recommendedInvestors = await ctx.db.user.findMany({
           where: {
-            sectorId: {
-              in: interestedAreas,
-            },
-            visibility: 'PUBLIC',
+            OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
           },
           include: {
-            Entrepreneur: {
-              select: {
-                firstName: true,
-                lastName: true,
+            investor: {
+              include: {
+                state: true,
+                country: true,
+                areas: true,
               },
             },
-            sector: true,
-            country: true,
-            state: true,
-            _count: {
-              select: {
-                favoriteInvestors: true,
-                favoriteVcGroups: true,
+            vcGroup: {
+              include: {
+                state: true,
+                country: true,
+                interestedAreas: true,
               },
             },
-          },
-          orderBy: {
-            createdAt: 'desc',
           },
           take: 5,
         });
 
         return {
-          recommendedProjects: recommendedProjects.map(project => ({
-            ...project,
-            likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
-          })),
+          recommendedInvestors: recommendedInvestors.filter(u => u.investor ?? u.vcGroup),
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
             totalProjects: await ctx.db.project.count({
@@ -320,3 +310,4 @@ export const recommendationsRouter = createTRPCRouter({
     }
   }),
 });
+

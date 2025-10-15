@@ -4,6 +4,11 @@ import {
   NotificationType,
   type Project,
 } from '@prisma/client';
+
+// Extend the Notification type to include investorId
+type NotificationWithInvestorId = Notification & {
+  investorId?: string | null;
+};
 import { Bell, Building2, Trash2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Button } from '../ui/button';
@@ -75,8 +80,8 @@ type UserDetails = {
 
 export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => {
   const { isSignedIn } = useUser();
-  const [negotiationNotifications, setNegotiationNotifications] = useState<Notification[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [negotiationNotifications, setNegotiationNotifications] = useState<NotificationWithInvestorId[]>([]);
+  const [notifications, setNotifications] = useState<NotificationWithInvestorId[]>([]);
   const router = useRouter();
 
   const { data: notificationsFromQuery } = api.notifications.getUnreadNotifications.useQuery(
@@ -123,7 +128,7 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     setNotifications(notificationsFromQuery ?? []);
   }, [notificationsFromQuery]);
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: NotificationWithInvestorId) => {
     if (NotificationTextMap[notification.type]?.link.includes('{{investorId}}')) {
       const investorId = notification.investorId ?? '';
 

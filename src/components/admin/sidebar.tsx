@@ -10,7 +10,8 @@ import {
   LogOut,
   HelpCircle,
   Calendar,
-  Eye
+  Eye,
+  Gift
 } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -52,6 +53,13 @@ const routes = [
     icon: Eye,
     href: '/admin/project-views',
     color: 'text-emerald-500',
+    disabled: false,
+  },
+  {
+    label: 'Gift Products',
+    icon: Gift,
+    href: '/admin/gift-products',
+    color: 'text-pink-500',
     disabled: false,
   },
 

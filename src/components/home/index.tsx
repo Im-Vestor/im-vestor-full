@@ -12,12 +12,9 @@ import {
 import Link from 'next/link';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
+import { PartnersSection } from '~/components/ui/partners-section';
 import { api } from '~/utils/api';
 import { Hypertrain } from '../hypertrain/hypertrain';
-
-
-
-
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -29,11 +26,14 @@ export default function Home() {
   const { data: news, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
     {},
     {
-      enabled: isLoaded && !!user,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
+
+  const { data: hypertrainItems } = api.hypertrain.getHyperTrainItems.useQuery(undefined, {
+    enabled: isLoaded && !!user,
+  });
 
   // Don't render until authentication is loaded
   if (!isLoaded) {
@@ -93,8 +93,18 @@ export default function Home() {
           </>
         ) : (
           <>
-            <div className="w-16 h-16 bg-card rounded-full border-2 border-white/10 flex items-center justify-center">
-              <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+            <div className="w-16 h-16 rounded-full border-2 border-white/10 overflow-hidden">
+              {userData?.imageUrl ? (
+                <img
+                  src={userData.imageUrl}
+                  alt={`${getUserName()}'s profile`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-card flex items-center justify-center">
+                  <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+                </div>
+              )}
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Welcome back, {getUserName()}</h1>
@@ -105,18 +115,22 @@ export default function Home() {
       </div>
 
       {/* Main Action Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Link href="/projects">
-          <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Search className="w-6 h-6 text-white" />
-                <span className="text-lg font-medium text-white">Search Projects</span>
+      <div className={`grid gap-4 ${userType === 'ENTREPRENEUR' ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
+        {userType !== 'ENTREPRENEUR' && (
+          <Link href={userType === 'INCUBATOR' ? "/investors" : "/projects"}>
+            <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Search className="w-6 h-6 text-white" />
+                  <span className="text-lg font-medium text-white">
+                    {userType === 'INCUBATOR' ? 'Search Investors' : 'Search Projects'}
+                  </span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-white/70" />
               </div>
-              <ArrowRight className="w-5 h-5 text-white/70" />
             </div>
-          </div>
-        </Link>
+          </Link>
+        )}
 
         <Link href="/pitch-of-the-week">
           <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
@@ -132,7 +146,7 @@ export default function Home() {
       </div>
 
       {/* Hypertrain Area */}
-      <Hypertrain />
+      {hypertrainItems && hypertrainItems.length > 0 && <Hypertrain />}
 
       {/* Latest News Section */}
       <div className="space-y-4">
@@ -180,6 +194,8 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <PartnersSection variant="internal" />
 
       {/* Footer Utility Cards */}
       <div className="grid gap-4 md:grid-cols-3">

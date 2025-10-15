@@ -12,6 +12,16 @@ import {
 
 export const entrepreneurRouter = createTRPCRouter({
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
+    // First check if the user is an entrepreneur
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      select: { userType: true }
+    });
+
+    if (!user || user.userType !== 'ENTREPRENEUR') {
+      throw new Error('Unauthorized: Only entrepreneurs can access this resource');
+    }
+
     return ctx.db.entrepreneur.findUnique({
       where: { userId: ctx.auth.userId },
       include: {
@@ -38,6 +48,16 @@ export const entrepreneurRouter = createTRPCRouter({
     });
   }),
   getNegotiationsByUserId: protectedProcedure.query(async ({ ctx }) => {
+    // First check if the user is an entrepreneur
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      select: { userType: true }
+    });
+
+    if (!user || user.userType !== 'ENTREPRENEUR') {
+      throw new Error('Unauthorized: Only entrepreneurs can access this resource');
+    }
+
     const negotiations = await ctx.db.negotiation.findMany({
       where: { project: { Entrepreneur: { userId: ctx.auth.userId } } },
       include: {
@@ -220,6 +240,16 @@ export const entrepreneurRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // First check if the user is an entrepreneur
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        select: { userType: true }
+      });
+
+      if (!user || user.userType !== 'ENTREPRENEUR') {
+        throw new Error('Unauthorized: Only entrepreneurs can access this resource');
+      }
+
       if (input.photo) {
         await ctx.db.user.update({
           where: { id: ctx.auth.userId },

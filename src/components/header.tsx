@@ -64,6 +64,10 @@ const INVESTOR_MENUS = [
     href: '/home',
   },
   {
+    label: 'My Projects',
+    href: '/investor/my-projects',
+  },
+  {
     label: 'Projects',
     href: '/projects',
   },
