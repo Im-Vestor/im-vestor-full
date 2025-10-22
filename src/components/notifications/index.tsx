@@ -35,6 +35,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { useAuthenticatedQuery } from '~/hooks/useAuthenticatedQuery';
 
 const NotificationTextMap: Record<string, { text: string; link: string }> = {
   [NotificationType.PROJECT_VIEW]: {
@@ -79,17 +80,23 @@ type UserDetails = {
 };
 
 export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const [negotiationNotifications, setNegotiationNotifications] = useState<NotificationWithInvestorId[]>([]);
   const [notifications, setNotifications] = useState<NotificationWithInvestorId[]>([]);
   const router = useRouter();
 
-  const { data: notificationsFromQuery } = api.notifications.getUnreadNotifications.useQuery(
+  const authQueryOptions = useAuthenticatedQuery(() => null, {
+    enabled: true,
+    retryCount: 3,
+    retryDelay: 1000,
+  });
+
+  const { data: notificationsFromQuery, error: notificationsError, refetch } = api.notifications.getUnreadNotifications.useQuery(
     undefined,
     {
       staleTime: 600000, // 10 minutes in milliseconds
       refetchInterval: 600000, // 10 minutes in milliseconds
-      enabled: !!isSignedIn,
+      ...authQueryOptions,
     }
   );
 
@@ -127,6 +134,17 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     setNegotiationNotifications([]);
     setNotifications(notificationsFromQuery ?? []);
   }, [notificationsFromQuery]);
+
+  // Handle auth errors by retrying when auth state changes
+  useEffect(() => {
+    if (notificationsError?.data?.code === 'UNAUTHORIZED' && isLoaded && isSignedIn) {
+      // If we get an auth error but user is signed in, retry after a short delay
+      const timer = setTimeout(() => {
+        void refetch();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [notificationsError, isLoaded, isSignedIn, refetch]);
 
   const handleNotificationClick = (notification: NotificationWithInvestorId) => {
     if (NotificationTextMap[notification.type]?.link.includes('{{investorId}}')) {

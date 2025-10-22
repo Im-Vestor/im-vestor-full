@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
+import { ProjectSelectionDialog } from '~/components/shop/project-selection-dialog';
 import { api } from '~/utils/api';
 
 interface ProductProps {
@@ -49,9 +50,9 @@ const products = [
   {
     id: 'hyper-train-ticket',
     name: 'Hyper Train Ticket',
-    description: 'Expose yourself as a potential investor to other entrepreneurs.',
+    description: 'Get featured in the Hyper Train feed to increase visibility and connect with potential partners, investors, or entrepreneurs.',
     value: 35,
-    availableUserTypes: ['INVESTOR', 'VC_GROUP'],
+    availableUserTypes: ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
   },
 ];
 
@@ -82,29 +83,103 @@ const Product = ({ title, description, onBuy, isLoading, value }: ProductProps) 
 
 export default function Shop() {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showProjectSelection, setShowProjectSelection] = useState(false);
   const { user } = useUser();
   const userType = user?.publicMetadata.userType as string;
+
+  // Debug logs
+  console.log('Shop component rendered with:', {
+    user: !!user,
+    userType,
+    isProcessing,
+    showProjectSelection
+  });
 
   // Get user data including available pokes
   const { data: userData, isPending: isUserDataPending } = api.user.getUser.useQuery();
 
-  const { data: existingHypertrainItem, isPending: isExistingHypertrainItemPending } =
-    api.hypertrain.getHyperTrainItemByExternalId.useQuery(userData?.investor?.id ?? '', {
-      enabled: !!userData?.investor?.id,
+  // Get entrepreneur projects for project selection
+  const { data: entrepreneurData, isPending: isEntrepreneurDataPending } =
+    api.entrepreneur.getByUserId.useQuery(undefined, {
+      enabled: userType === 'ENTREPRENEUR',
     });
 
-  const handlePurchase = async (productId: string) => {
-    if (isProcessing || isUserDataPending || isExistingHypertrainItemPending) return;
+  // For entrepreneurs, we'll check for existing hypertrain items when they try to purchase
+  // For investors, we check their existing hypertrain item
+  const { data: existingHypertrainItem, isPending: isExistingHypertrainItemPending } =
+    api.hypertrain.getHyperTrainItemByExternalId.useQuery(
+      userData?.investor?.id ?? '',
+      {
+        enabled: userType === 'INVESTOR' && !!userData?.investor?.id,
+      }
+    );
+
+  // Debug hypertrain query
+  console.log('Hypertrain query state:', {
+    userType,
+    investorId: userData?.investor?.id,
+    enabled: userType === 'INVESTOR' && !!userData?.investor?.id,
+    isPending: isExistingHypertrainItemPending,
+    data: existingHypertrainItem
+  });
+
+  const handlePurchase = async (productId: string, projectId?: string) => {
+    console.log('handlePurchase called with:', { productId, projectId, isProcessing, isUserDataPending, isExistingHypertrainItemPending });
+
+    // Only block if user data is still loading or if we're already processing
+    if (isProcessing || isUserDataPending) {
+      console.log('Purchase blocked due to loading state');
+      return;
+    }
+
+    // Only check hypertrain loading state if the product is hyper-train-ticket AND user is investor
+    if (productId === 'hyper-train-ticket' && userType === 'INVESTOR' && isExistingHypertrainItemPending) {
+      console.log('Purchase blocked due to hypertrain loading state for investor');
+      return;
+    }
 
     setIsProcessing(true);
 
-    if (productId === 'hyper-train-ticket' && existingHypertrainItem) {
-      toast.error("You're currently in the hypertrain");
+    // Check for existing hypertrain items
+    if (productId === 'hyper-train-ticket') {
+      console.log('Processing hypertrain ticket purchase:', {
+        userType,
+        existingHypertrainItem,
+        isExistingHypertrainItemPending
+      });
+
+      // For investors, check if they already have a hypertrain item
+      if (userType === 'INVESTOR' && existingHypertrainItem) {
+        console.log('Investor already has hypertrain item, blocking purchase');
+        toast.error("You're currently in the hypertrain");
+        setIsProcessing(false);
+        return;
+      }
+    }
+
+    // For entrepreneurs buying hyper-train-ticket, show project selection if no projectId provided
+    if (productId === 'hyper-train-ticket' && userType === 'ENTREPRENEUR' && !projectId) {
+      console.log('Entrepreneur buying hypertrain without projectId:', {
+        entrepreneurData: !!entrepreneurData,
+        projects: entrepreneurData?.projects?.length
+      });
+
+      if (!entrepreneurData?.projects || entrepreneurData.projects.length === 0) {
+        console.log('No projects found, blocking purchase');
+        toast.error('You need to create a project first to use Hyper Train');
+        setIsProcessing(false);
+        return;
+      }
+
+      console.log('Showing project selection dialog');
+      setShowProjectSelection(true);
       setIsProcessing(false);
       return;
     }
 
     try {
+      console.log('Making API call to /api/stripe/checkout with:', { productId, projectId });
+
       const response = await fetch(`/api/stripe/checkout`, {
         method: 'POST',
         headers: {
@@ -112,18 +187,31 @@ export default function Shop() {
         },
         body: JSON.stringify({
           productId,
+          projectId,
         }),
       });
 
+      console.log('API response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to create checkout session: ${response.status} ${errorText}`);
       }
 
-      const { url } = (await response.json()) as {
+      const responseData = await response.json();
+      console.log('API response data:', responseData);
+
+      const { url } = responseData as {
         sessionId: string;
         url: string;
       };
 
+      if (!url) {
+        throw new Error('No checkout URL received from API');
+      }
+
+      console.log('Redirecting to checkout URL:', url);
       window.location.href = url;
     } catch (error) {
       console.error('Error creating checkout:', error);
@@ -131,6 +219,10 @@ export default function Shop() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleProjectSelection = (projectId: string) => {
+    handlePurchase('hyper-train-ticket', projectId);
   };
 
   return (
@@ -150,7 +242,10 @@ export default function Shop() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products
-            .filter(product => product.availableUserTypes.includes(userType))
+            .filter(product => {
+              if (!userType) return false;
+              return product.availableUserTypes.includes(userType);
+            })
             .map(product => (
               <Product
                 key={product.id}
@@ -163,6 +258,15 @@ export default function Shop() {
             ))}
         </div>
       </div>
+
+      {/* Project Selection Dialog for Entrepreneurs */}
+      <ProjectSelectionDialog
+        isOpen={showProjectSelection}
+        onClose={() => setShowProjectSelection(false)}
+        onSelectProject={handleProjectSelection}
+        projects={entrepreneurData?.projects ?? []}
+        isLoading={isEntrepreneurDataPending}
+      />
     </main>
   );
 }

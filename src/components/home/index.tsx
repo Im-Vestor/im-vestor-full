@@ -77,8 +77,10 @@ export default function Home() {
 
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];
-  const hasNews =
-    firstNewsArticle && 'type' in firstNewsArticle && firstNewsArticle.type === 'child_page';
+  const hasNews = !isLoadingNews &&
+    firstNewsArticle &&
+    'type' in firstNewsArticle &&
+    firstNewsArticle.type === 'child_page';
 
   return (
     <div className="space-y-8">

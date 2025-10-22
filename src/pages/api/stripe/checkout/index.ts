@@ -39,19 +39,23 @@ const products = [
     price: env.STRIPE_HYPER_TRAIN_TICKET_PRICE_ID,
     description:
       "Makes your project appear in the investors' hyper train feed, exposing your venture to a targeted audience.",
-    onlyEntrepreneur: false,
+    onlyEntrepreneur: true,
   },
 ];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('Stripe checkout API called with method:', req.method);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
     const { userId } = getAuth(req);
+    console.log('User ID from auth:', userId);
 
     if (!userId) {
+      console.log('No user ID found, returning 401');
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -92,13 +96,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       projectId?: string;
     };
 
+    console.log('Request body:', { productId, projectId });
+
     const product = products.find(p => p.id === productId);
+    console.log('Found product:', product);
 
     if (!product) {
+      console.log('Product not found for ID:', productId);
       return res.status(404).json({ message: 'Product not found' });
     }
 
     // Create Stripe checkout session
+    console.log('Creating Stripe checkout session with:', {
+      customer: customerId,
+      price: product.price,
+      productId: product.id,
+      projectId
+    });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -118,6 +133,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         projectId: projectId ?? null,
       },
     });
+
+    console.log('Stripe session created:', { sessionId: session.id, url: session.url });
 
     return res.status(200).json({ sessionId: session.id, url: session.url });
   } catch (error) {

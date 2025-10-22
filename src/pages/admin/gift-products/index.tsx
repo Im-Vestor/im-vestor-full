@@ -38,9 +38,9 @@ const products = [
   {
     id: 'hyper-train-ticket',
     name: 'Hyper Train Ticket',
-    description: 'Expose yourself as a potential investor to other entrepreneurs.',
+    description: 'Get featured in the Hyper Train feed to increase visibility and connect with potential partners, investors, or entrepreneurs.',
     value: 35,
-    availableUserTypes: ['INVESTOR', 'VC_GROUP'],
+    availableUserTypes: ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
   },
 ];
 

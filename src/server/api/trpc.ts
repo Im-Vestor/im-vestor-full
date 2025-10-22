@@ -11,8 +11,19 @@ const t = initTRPC.context<Context>().create({
 
 // check if the user is signed in, otherwise throw an UNAUTHORIZED code
 const isAuthed = t.middleware(({ next, ctx }) => {
-  if (!ctx.auth.userId) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  // Add more robust checking for auth state
+  if (!ctx.auth || !ctx.auth.userId) {
+    // Log the auth state for debugging
+    console.warn('Auth middleware: Missing auth or userId', {
+      hasAuth: !!ctx.auth,
+      hasUserId: !!ctx.auth?.userId,
+      hasSessionId: !!ctx.auth?.sessionId,
+    });
+
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Authentication required. Please ensure you are logged in and try again.'
+    });
   }
   return next({
     ctx: {

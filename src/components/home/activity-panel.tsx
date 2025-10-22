@@ -1,13 +1,36 @@
 import { Bell, Mail } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { useUser } from '@clerk/nextjs';
 
 import { api } from '~/utils/api';
 import Link from 'next/link';
 import { type Notification } from '@prisma/client';
 
 export function ActivityPanel() {
-  const { data: notifications } = api.notifications.getUnreadNotifications.useQuery();
-  const { data: negotiations } = api.user.getUser.useQuery();
+  const { isSignedIn, isLoaded } = useUser();
+
+  const { data: notifications } = api.notifications.getUnreadNotifications.useQuery(undefined, {
+    enabled: isLoaded && !!isSignedIn,
+    retry: (failureCount, error) => {
+      // Retry up to 3 times for auth errors
+      if (error?.data?.code === 'UNAUTHORIZED' && failureCount < 3) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+  });
+  const { data: negotiations } = api.user.getUser.useQuery(undefined, {
+    enabled: isLoaded && !!isSignedIn,
+    retry: (failureCount, error) => {
+      // Retry up to 3 times for auth errors
+      if (error?.data?.code === 'UNAUTHORIZED' && failureCount < 3) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+  });
 
   return (
     <div className="space-y-4">
