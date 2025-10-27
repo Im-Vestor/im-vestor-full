@@ -71,10 +71,17 @@ const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionCla
 
   // Check role-based permissions if required
   if (requiredRole) {
-    const adminRole = publicMetadata?.adminRole as string || 'read';
-    const roleHierarchy = { 'read': 1, 'write': 2, 'delete': 3 };
+    const adminRoleRaw = publicMetadata?.adminRole;
+    const adminRole: 'read' | 'write' | 'delete' =
+      adminRoleRaw === 'delete' || adminRoleRaw === 'write' || adminRoleRaw === 'read'
+        ? adminRoleRaw
+        : 'read';
+    const roleHierarchy: Record<'read' | 'write' | 'delete', number> = { read: 1, write: 2, delete: 3 };
 
-    if (roleHierarchy[adminRole as keyof typeof roleHierarchy] < roleHierarchy[requiredRole]) {
+    const currentLevel = roleHierarchy[adminRole];
+    const requiredLevel = roleHierarchy[requiredRole];
+
+    if (currentLevel < requiredLevel) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: `Insufficient permissions. Required role: ${requiredRole}, Current role: ${adminRole}`,

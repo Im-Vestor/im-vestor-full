@@ -46,8 +46,8 @@ export function Hypertrain() {
   const finalBaseItems = baseItems.length >= 2 ? baseItems : [weeklyPitchLinkHypertrainItem, weeklyPitchLinkHypertrainItem];
   const duplicatedHypertrainItems = [...finalBaseItems, ...finalBaseItems];
 
-  const itemWidth = 384; // w-96 = 384px
-  const gap = 24; // gap-6 = 24px
+  // const itemWidth = 384; // w-96 = 384px (kept for future animation calc)
+  // const gap = 24; // gap-6 = 24px (kept for future animation calc)
 
   // Calcular a distância para mover exatamente metade dos itens (para loop perfeito)
   // const scrollDistance = (itemWidth + gap) * finalBaseItems.length; // calculated value not currently used
