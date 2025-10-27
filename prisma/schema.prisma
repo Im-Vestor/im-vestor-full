@@ -461,6 +461,15 @@ model HyperTrainItem {
   externalId  String             @unique
 }
 
+model SiteContent {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  title       String
+  contentHtml String
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
 enum Currency {
   EUR
   USD

@@ -11,7 +11,8 @@ import {
   HelpCircle,
   Calendar,
   Eye,
-  Gift
+  Gift,
+  FileText
 } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -60,6 +61,13 @@ const routes = [
     icon: Gift,
     href: '/admin/gift-products',
     color: 'text-pink-500',
+    disabled: false,
+  },
+  {
+    label: 'Terms',
+    icon: FileText,
+    href: '/admin/terms',
+    color: 'text-yellow-500',
     disabled: false,
   },
 
