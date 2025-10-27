@@ -52,7 +52,7 @@ export function AdminStatsCard({ title, value, subtitle, icon: Icon, gradient, i
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
-          {typeof value === 'number' ? value.toLocaleString() : value}
+          {typeof value === 'number' ? value.toString() : value}
         </div>
         <p className="text-xs text-ui-text/60 mt-1">
           {subtitle}

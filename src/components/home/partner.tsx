@@ -10,7 +10,7 @@ export default function PartnerDashboard() {
 
   const { data: user, isLoading } = api.user.getUser.useQuery();
 
-  console.log(user);
+  // Debug log removed to prevent hydration mismatch
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">

@@ -76,7 +76,7 @@ function MobileDock() {
       transition={{ duration: 0.5, type: "spring", bounce: 0.2 }}
       className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden border-white/10"
     >
-      <nav className="flex justify-around items-center h-16 px-6">
+      <nav className="flex justify-around items-center h-16 px-6 pb-[env(safe-area-inset-bottom)]">
         {routes.slice(0, 5).map((route) => {
           const isActive = pathname === route.href;
           return (
@@ -84,7 +84,7 @@ function MobileDock() {
               key={route.href}
               href={route.href}
               className={cn(
-                'flex flex-col items-center justify-center w-full h-full px-1 relative',
+                'flex items-center justify-center w-full h-full px-1 relative',
                 'transition-all duration-300 hover:scale-110',
                 route.disabled && 'opacity-50 pointer-events-none'
               )}
@@ -106,34 +106,10 @@ function MobileDock() {
                 whileTap={{ scale: 0.95 }}
               >
                 <route.icon className={cn(
-                  'h-5 w-5 transition-colors duration-300',
+                  'h-6 w-6 transition-colors duration-300',
                   isActive ? route.color : 'text-muted-foreground'
                 )} />
               </motion.div>
-
-              {isActive ? (
-                <motion.span
-                  className={cn(
-                    "text-xs mt-1 font-medium transition-colors duration-300",
-                    " font-semibold"
-                  )}
-                  initial={{ y: 0 }}
-                  animate={{ y: -2 }}
-                  transition={{
-                    repeat: 1,
-                    repeatType: "reverse",
-                    duration: 0.25,
-                    ease: "easeInOut",
-                    delay: 0.1
-                  }}
-                >
-                  {route.label}
-                </motion.span>
-              ) : (
-                <span className="text-xs mt-1 font-medium text-muted-foreground transition-colors duration-300">
-                  {route.label}
-                </span>
-              )}
             </Link>
           );
         })}
@@ -347,8 +323,11 @@ export function Sidebar() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Use proper hydration handling
-  if (!mounted) return null;
+  // Always render desktop version during SSR and initial hydration
+  // This prevents hydration mismatch
+  if (!mounted) {
+    return <DesktopSidebar />;
+  }
 
   // Display the appropriate component based on screen size
   if (isMobile) {

@@ -78,11 +78,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Account already deleted' });
     }
 
-    // Mark user as inactive
+    // Mark user as inactive and anonymize email to free it for reuse
+    const anonymizedEmail = `deleted-${userId}-${Date.now()}@deleted.local`;
     await db.user.update({
       where: { id: userId },
       data: {
         status: UserStatus.INACTIVE,
+        email: anonymizedEmail,
       },
     });
 

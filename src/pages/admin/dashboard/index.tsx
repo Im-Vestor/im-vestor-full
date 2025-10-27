@@ -14,10 +14,12 @@ import { useState } from 'react';
 import { Skeleton } from "~/components/ui/skeleton";
 import { BusinessCardDialog } from "~/components/business-card";
 import { Input } from "~/components/ui/input";
-import { Search, Users, UserPlus, Mail, Calendar, Eye } from "lucide-react";
+import { Search, Users, UserPlus, Mail, Calendar, Eye, UserX, ArrowUpDown } from "lucide-react";
 import { useDebounce } from "~/hooks/use-debounce";
 import Link from "next/link";
 import { Badge } from "~/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "~/components/ui/alert-dialog";
+import { toast } from "sonner";
 import {
   AdminPageHeader,
   AdminStatsCard,
@@ -38,22 +40,17 @@ export default function DashboardPage() {
 
 function TableSkeleton({ columns }: { columns: number }) {
   return (
-    <AdminContentCard>
-      <div className="p-6 space-y-4">
-        <div className="flex items-center space-x-4">
-          {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton key={i} className="h-4 w-[100px] bg-white/10" />
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TableRow key={i} className="border-white/5">
+          {Array.from({ length: columns }).map((_, j) => (
+            <TableCell key={j}>
+              <Skeleton className="h-4 w-[100px] bg-white/10" />
+            </TableCell>
           ))}
-        </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center space-x-4">
-            {Array.from({ length: columns }).map((_, j) => (
-              <Skeleton key={j} className="h-4 w-[100px] bg-white/10" />
-            ))}
-          </div>
-        ))}
-      </div>
-    </AdminContentCard>
+        </TableRow>
+      ))}
+    </>
   );
 }
 
@@ -63,17 +60,48 @@ export function Dashboard() {
   const pageSize = 10;
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 500);
+  const [sortBy, setSortBy] = useState<'createdAt' | 'userType' | 'email'>('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const toggleSort = (field: 'createdAt' | 'userType' | 'email') => {
+    if (sortBy === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(field);
+      setSortDirection('asc');
+    }
+  };
 
   const { data: potentialUsers, isLoading: loadingPotential } = api.potentialUser.getAll.useQuery({
     page: potentialUserPage,
     limit: pageSize,
   });
 
-  const { data: registeredUsers, isLoading: loadingRegistered } = api.user.getAll.useQuery({
+  const { data: registeredUsers, isLoading: loadingRegistered, refetch: refetchRegisteredUsers } = api.user.getAll.useQuery({
     page: registeredUserPage,
     limit: pageSize,
     search: debouncedSearch,
+    sortBy,
+    sortDirection,
   });
+
+  // Removed legacy delete mutation; using only forceDeleteUser
+
+  // Force delete mutation (more aggressive)
+  const forceDeleteUserMutation = api.admin.forceDeleteUser.useMutation({
+    onSuccess: async (data) => {
+      toast.success(data.message);
+      await refetchRegisteredUsers();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  // Generate confirmation token for destructive operations
+  const generateConfirmationToken = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  };
 
   return (
     <AdminSection>
@@ -161,7 +189,7 @@ export function Dashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-ui-text/70 text-sm">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {new Date(user.createdAt).toISOString().split('T')[0]}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -221,16 +249,51 @@ export function Dashboard() {
               <TableHeader>
                 <TableRow className="border-white/10 hover:bg-white/5">
                   <TableHead className="text-ui-text/80 font-medium">Name</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Email</TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort('email')}
+                      className="inline-flex items-center gap-1 hover:text-primary"
+                    >
+                      Email
+                      {sortBy === 'email' && (
+                        <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </button>
+                  </TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Phone</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Type</TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort('userType')}
+                      className="inline-flex items-center gap-1 hover:text-primary"
+                    >
+                      Type
+                      {sortBy === 'userType' && (
+                        <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort('createdAt')}
+                      className="inline-flex items-center gap-1 hover:text-primary"
+                    >
+                      Created At
+                      {sortBy === 'createdAt' && (
+                        <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </button>
+                  </TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Projects</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Business Card</TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingRegistered ? (
-                  <TableSkeleton columns={6} />
+                  <TableSkeleton columns={8} />
                 ) : registeredUsers?.items.map((user) => (
                   <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors">
                     <TableCell>
@@ -256,6 +319,9 @@ export function Dashboard() {
                         {user.userType}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-ui-text/70 text-sm">
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('pt-BR') : '-'}
+                    </TableCell>
                     <TableCell>
                       <Badge className="bg-primary/20 text-primary border-primary/30">
                         {user.projectsCount ?? 0}
@@ -271,6 +337,108 @@ export function Dashboard() {
                         userName={user.name || `${user.firstName} ${user.lastName}`.trim()}
                         referralCode={user.referralCode}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10"
+                          >
+                            <UserX className="h-3 w-3 mr-1" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="sm:max-w-lg">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-lg">Force Delete User Account</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm">
+                              This will <strong>force delete</strong> the account for <strong>{user.name || `${user.firstName} ${user.lastName}`.trim()}</strong> ({user.email}).
+                              This uses a database transaction to ensure complete removal and will:
+                              <ul className="list-disc list-inside mt-2 space-y-1">
+                                <li><strong>Delete from Clerk authentication system</strong></li>
+                                <li>Remove ALL user data using database transaction</li>
+                                <li>Delete all associated projects, files, and records</li>
+                                <li>Remove all notifications, meetings, and connections</li>
+                                <li>Delete all support tickets and referrals</li>
+                                <li><strong>Allow user to create new account with same email</strong></li>
+                              </ul>
+                              <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-red-800 text-xs">
+                                ⚠️ This is a FORCE deletion using database transactions - guaranteed to remove all traces of the user.
+                              </div>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+
+                          <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                              <label htmlFor="deletion-reason" className="text-sm font-medium">
+                                Reason for deletion (required)
+                              </label>
+                              <Input
+                                id="deletion-reason"
+                                placeholder="Enter reason for account deletion..."
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label htmlFor="confirmation-token" className="text-sm font-medium">
+                                Confirmation Token
+                              </label>
+                              <Input
+                                id="confirmation-token"
+                                placeholder="Enter confirmation token..."
+                                className="w-full"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Generate token: <button
+                                  type="button"
+                                  onClick={() => {
+                                    const token = generateConfirmationToken();
+                                    const input = document.getElementById('confirmation-token') as HTMLInputElement;
+                                    if (input) input.value = token;
+                                  }}
+                                  className="text-blue-500 hover:text-blue-700 underline"
+                                >
+                                  Click here
+                                </button>
+                              </p>
+                            </div>
+                          </div>
+
+                          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                            <AlertDialogCancel className="w-full sm:w-auto">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                const reason = (document.getElementById('deletion-reason') as HTMLInputElement)?.value;
+                                const token = (document.getElementById('confirmation-token') as HTMLInputElement)?.value;
+
+                                if (!reason?.trim()) {
+                                  toast.error('Please provide a reason for deletion');
+                                  return;
+                                }
+
+                                if (!token?.trim()) {
+                                  toast.error('Please provide a confirmation token');
+                                  return;
+                                }
+
+                                forceDeleteUserMutation.mutate({
+                                  userId: user.id,
+                                  confirmationToken: token,
+                                  reason: reason
+                                });
+                              }}
+                              disabled={forceDeleteUserMutation.isPending}
+                              className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
+                            >
+                              {forceDeleteUserMutation.isPending ? 'Force Deleting...' : 'Force Delete Account'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}

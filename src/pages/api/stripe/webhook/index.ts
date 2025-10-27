@@ -67,12 +67,12 @@ async function processEvent(event: Stripe.Event) {
     const projectId = session.metadata?.projectId;
 
     if (userId && productType === 'poke') {
-      // Increment user's available pokes
+      // Product 'poke' represents "3 Pokes" per unit
       await db.user.update({
         where: { id: userId },
         data: {
           availablePokes: {
-            increment: 1,
+            increment: 3,
           },
         },
       });

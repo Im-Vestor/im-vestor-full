@@ -484,7 +484,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                        'bg-primary text-primary-foreground opacity-100'
+                                      'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -518,7 +518,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                              scheduleOtherStageMeetingMutation.isPending ? (
+                                scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -768,7 +768,7 @@ export default function CompanyDetails() {
                 <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-white/70">Founded</span>
                   <span className="font-medium">
-                    {new Date(project.foundationDate).toLocaleDateString()}
+                    {new Date(project.foundationDate).toISOString().split('T')[0]}
                   </span>
                 </div>
               )}

@@ -83,6 +83,7 @@ function GiftProductsPage() {
     },
   });
 
+
   // Bulk gift product mutation
   const bulkGiftProductMutation = api.admin.giftProductToUsersByEmail.useMutation({
     onSuccess: (data) => {
@@ -158,7 +159,13 @@ function GiftProductsPage() {
   };
 
   const getAvailableProducts = (userType: string) => {
-    return products.filter(product => product.availableUserTypes.includes(userType));
+    // Admin rule: Hyper Train only for INVESTOR and VC_GROUP
+    return products.filter(product => {
+      if (product.id === 'hyper-train-ticket') {
+        return userType === 'INVESTOR' || userType === 'VC_GROUP';
+      }
+      return product.availableUserTypes.includes(userType);
+    });
   };
 
   const getUserTypeColor = (userType: string) => {
@@ -173,43 +180,45 @@ function GiftProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Gift Products</h1>
-          <p className="text-muted-foreground">Give products from the shop to users</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-pink-500" />
-          <span className="text-sm font-medium">Admin Gift System</span>
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Gift Products</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Give products from the shop to users</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg w-fit">
+            <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-pink-500" />
+            <span className="text-xs sm:text-sm font-medium">Admin Gift System</span>
+          </div>
         </div>
       </div>
 
       {/* Search and Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             Search Users
           </CardTitle>
-          <CardDescription>Find users to gift products to</CardDescription>
+          <CardDescription className="text-sm">Find users to gift products to</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="search">Search by name or email</Label>
+              <Label htmlFor="search" className="text-sm font-medium">Search by name or email</Label>
               <Input
                 id="search"
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
+                className="w-full h-10"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="userType">Filter by user type</Label>
+              <Label htmlFor="userType" className="text-sm font-medium">Filter by user type</Label>
               <Select value={selectedUserType} onValueChange={setSelectedUserType}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-10">
                   <SelectValue placeholder="All user types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,35 +237,35 @@ function GiftProductsPage() {
 
       {/* Bulk Gift Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             Bulk Gift Products
           </CardTitle>
-          <CardDescription>Gift products to multiple users by providing their email addresses</CardDescription>
+          <CardDescription className="text-sm">Gift products to multiple users by providing their email addresses</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="emailList">Email List</Label>
+              <Label htmlFor="emailList" className="text-sm font-medium">Email List</Label>
               <textarea
                 id="emailList"
                 placeholder="Enter email addresses separated by commas, semicolons, or new lines&#10;Example: user1@example.com, user2@example.com&#10;user3@example.com"
                 value={emailList}
                 onChange={(e) => setEmailList(e.target.value)}
-                className="w-full min-h-[100px] p-3 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                rows={4}
+                className="w-full min-h-[80px] sm:min-h-[100px] p-3 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                rows={3}
               />
               <p className="text-xs text-muted-foreground">
                 Separate multiple emails with commas, semicolons, or new lines
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="bulkProduct">Product</Label>
+                <Label htmlFor="bulkProduct" className="text-sm font-medium">Product</Label>
                 <Select value={bulkProductType} onValueChange={setBulkProductType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Select a product" />
                   </SelectTrigger>
                   <SelectContent>
@@ -278,7 +287,7 @@ function GiftProductsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bulkQuantity">Quantity</Label>
+                <Label htmlFor="bulkQuantity" className="text-sm font-medium">Quantity</Label>
                 <Input
                   id="bulkQuantity"
                   type="number"
@@ -286,25 +295,27 @@ function GiftProductsPage() {
                   max="10"
                   value={bulkQuantity}
                   onChange={(e) => setBulkQuantity(parseInt(e.target.value) || 1)}
+                  className="h-10"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bulkReason">Reason (optional)</Label>
+              <Label htmlFor="bulkReason" className="text-sm font-medium">Reason (optional)</Label>
               <Input
                 id="bulkReason"
                 placeholder="Why are you gifting this product?"
                 value={bulkReason}
                 onChange={(e) => setBulkReason(e.target.value)}
+                className="h-10"
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <Button
                 onClick={handleBulkGiftProduct}
                 disabled={!emailList.trim() || !bulkProductType || bulkGiftProductMutation.isPending}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto h-10"
               >
                 {bulkGiftProductMutation.isPending ? (
                   <>
@@ -325,9 +336,9 @@ function GiftProductsPage() {
 
       {/* Users List */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
             Users ({users?.length || 0})
           </CardTitle>
         </CardHeader>
@@ -335,16 +346,19 @@ function GiftProductsPage() {
           {isLoadingUsers ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between p-3 sm:p-4 border rounded-lg animate-pulse">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full"></div>
+                <div key={i} className="flex flex-col gap-3 p-3 sm:p-4 border rounded-lg animate-pulse">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
                     <div className="space-y-2 flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/3 sm:w-1/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-2/3 sm:w-1/2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                       <div className="h-3 bg-gray-200 rounded w-1/4"></div>
                     </div>
                   </div>
-                  <div className="h-8 bg-gray-200 rounded w-full sm:w-24"></div>
+                  <div className="flex gap-2">
+                    <div className="h-8 bg-gray-200 rounded flex-1"></div>
+                    <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -355,30 +369,32 @@ function GiftProductsPage() {
                   key={user.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={user.imageUrl || undefined} alt={user.name} />
                       <AvatarFallback className="text-sm font-medium">
                         {user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <h3 className="font-medium truncate">{user.name}</h3>
-                        <Badge className={`${getUserTypeColor(user.userType)} text-xs shrink-0`}>
-                          {user.userType}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                      <div className="flex items-center gap-3 sm:gap-4 text-xs text-muted-foreground mt-1">
-                        <span>Pokes: {user.availablePokes}</span>
-                        <span>Boosts: {user.availableBoosts}</span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <h3 className="font-medium text-sm sm:text-base break-words">{user.name}</h3>
+                          <Badge className={`${getUserTypeColor(user.userType)} text-xs shrink-0 w-fit`}>
+                            {user.userType}
+                          </Badge>
+                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground break-all">{user.email}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>Pokes: {user.availablePokes}</span>
+                          <span>Boosts: {user.availableBoosts}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="shrink-0">
+                  <div className="flex gap-2">
                     <Dialog open={isGiftDialogOpen && selectedUser?.id === user.id} onOpenChange={(open) => {
                       setIsGiftDialogOpen(open);
                       if (open) {
@@ -388,24 +404,23 @@ function GiftProductsPage() {
                       }
                     }}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                          <Gift className="h-4 w-4 mr-2" />
-                          <span className="hidden sm:inline">Gift Product</span>
-                          <span className="sm:hidden">Gift</span>
+                        <Button variant="outline" size="sm" className="flex-1 h-8">
+                          <Gift className="h-3 w-3 mr-1 sm:mr-2" />
+                          <span className="text-xs sm:text-sm">Gift Product</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
+                      <DialogContent className="sm:max-w-md mx-4">
                         <DialogHeader>
-                          <DialogTitle>Gift Product to {user.name}</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="text-lg">Gift Product to {user.name}</DialogTitle>
+                          <DialogDescription className="text-sm">
                             Select a product to gift to this user. The product will be added to their account.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="product">Product</Label>
+                            <Label htmlFor="product" className="text-sm font-medium">Product</Label>
                             <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                              <SelectTrigger>
+                              <SelectTrigger className="h-10">
                                 <SelectValue placeholder="Select a product" />
                               </SelectTrigger>
                               <SelectContent>
@@ -426,7 +441,7 @@ function GiftProductsPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="quantity">Quantity</Label>
+                            <Label htmlFor="quantity" className="text-sm font-medium">Quantity</Label>
                             <Input
                               id="quantity"
                               type="number"
@@ -434,28 +449,32 @@ function GiftProductsPage() {
                               max="10"
                               value={quantity}
                               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                              className="h-10"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="reason">Reason (optional)</Label>
+                            <Label htmlFor="reason" className="text-sm font-medium">Reason (optional)</Label>
                             <Input
                               id="reason"
                               placeholder="Why are you gifting this product?"
                               value={reason}
                               onChange={(e) => setReason(e.target.value)}
+                              className="h-10"
                             />
                           </div>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-col sm:flex-row gap-2">
                           <Button
                             variant="outline"
                             onClick={() => setIsGiftDialogOpen(false)}
+                            className="w-full sm:w-auto h-10"
                           >
                             Cancel
                           </Button>
                           <Button
                             onClick={handleGiftProduct}
                             disabled={!selectedProduct || giftProductMutation.isPending}
+                            className="w-full sm:w-auto h-10"
                           >
                             {giftProductMutation.isPending ? 'Gifting...' : 'Gift Product'}
                           </Button>
@@ -467,10 +486,10 @@ function GiftProductsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No users found</h3>
-              <p className="text-muted-foreground">
+            <div className="text-center py-6 sm:py-8">
+              <User className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium mb-2">No users found</h3>
+              <p className="text-sm text-muted-foreground">
                 Try adjusting your search criteria or filters.
               </p>
             </div>
@@ -480,13 +499,13 @@ function GiftProductsPage() {
 
       {/* Bulk Gift Results Dialog */}
       <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh]">
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] mx-4">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Gift className="h-4 w-4 sm:h-5 sm:w-5" />
               Bulk Gift Results
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {bulkResults?.summary.successful} successful, {bulkResults?.summary.failed} failed
             </DialogDescription>
           </DialogHeader>
@@ -497,11 +516,11 @@ function GiftProductsPage() {
               {bulkResults.errors && bulkResults.errors.length > 0 && (
                 <>
                   {bulkResults.errors.map((error: any, index: number) => (
-                    <div key={`error-${index}`} className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    <div key={`error-${index}`} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-red-800 truncate">{error.email}</div>
-                        <div className="text-sm text-red-600">{error.error}</div>
+                        <div className="font-medium text-red-800 truncate text-sm sm:text-base">{error.email}</div>
+                        <div className="text-xs sm:text-sm text-red-600 mt-1">{error.error}</div>
                       </div>
                     </div>
                   ))}
@@ -512,11 +531,11 @@ function GiftProductsPage() {
               {bulkResults.results && bulkResults.results.length > 0 && (
                 <>
                   {bulkResults.results.map((result: any, index: number) => (
-                    <div key={`success-${index}`} className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <div key={`success-${index}`} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-green-800 truncate">{result.email}</div>
-                        <div className="text-sm text-green-600">
+                        <div className="font-medium text-green-800 truncate text-sm sm:text-base">{result.email}</div>
+                        <div className="text-xs sm:text-sm text-green-600 mt-1">
                           Pokes: {result.user.availablePokes} • Boosts: {result.user.availableBoosts}
                         </div>
                       </div>
@@ -528,7 +547,7 @@ function GiftProductsPage() {
           )}
 
           <DialogFooter>
-            <Button onClick={() => setIsResultsDialogOpen(false)}>
+            <Button onClick={() => setIsResultsDialogOpen(false)} className="w-full sm:w-auto h-10">
               Close
             </Button>
           </DialogFooter>

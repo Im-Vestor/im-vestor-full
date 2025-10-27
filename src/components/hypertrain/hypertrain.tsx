@@ -50,16 +50,9 @@ export function Hypertrain() {
   const gap = 24; // gap-6 = 24px
 
   // Calcular a distância para mover exatamente metade dos itens (para loop perfeito)
-  const scrollDistance = (itemWidth + gap) * finalBaseItems.length;
+  // const scrollDistance = (itemWidth + gap) * finalBaseItems.length; // calculated value not currently used
 
-  // Debug log
-  console.log('Hypertrain Debug:', {
-    finalBaseItemsLength: finalBaseItems.length,
-    duplicatedItemsLength: duplicatedHypertrainItems.length,
-    scrollDistance,
-    hypertrainItems: hypertrainItems?.length,
-    hasAnimation: true
-  });
+  // Debug log removed to prevent hydration mismatch
 
   if (isHypertrainItemsPending) {
     return (

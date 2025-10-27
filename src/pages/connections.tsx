@@ -125,7 +125,7 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
                 </div>
                 <p className="text-white/70">
                   {connection.type === 'following' ? 'You follow them' : 'Follow you'} since{' '}
-                  {new Date(connection.connection.createdAt).toLocaleDateString()}
+                  {new Date(connection.connection.createdAt).toISOString().split('T')[0]}
                 </p>
               </div>
             </div>

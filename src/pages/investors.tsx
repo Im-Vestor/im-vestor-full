@@ -36,8 +36,8 @@ const INVESTMENT_RANGES: InvestmentRange[] = [
 type UserWithRelations = User & {
   investor: (Investor & { state: State | null; country: Country | null; areas: Area[] }) | null;
   vcGroup:
-    | (VcGroup & { state: State | null; country: Country | null; interestedAreas: Area[] })
-    | null;
+  | (VcGroup & { state: State | null; country: Country | null; interestedAreas: Area[] })
+  | null;
 };
 
 export default function Investors() {
@@ -279,9 +279,9 @@ function InvestorCard({
                 <span className="text-sm text-white/70">Investimento: </span>
                 <span className="text-sm font-medium">
                   {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
-                  {investor.investmentMinValue.toLocaleString()} -{' '}
+                  {investor.investmentMinValue.toString()} -{' '}
                   {investor.currency === 'USD' ? '$' : investor.currency === 'EUR' ? '€' : 'R$'}
-                  {investor.investmentMaxValue.toLocaleString()}
+                  {investor.investmentMaxValue.toString()}
                 </span>
               </div>
 
@@ -366,7 +366,7 @@ function VcGroupCard({
                 <div>
                   <span className="text-sm text-white/70">Investimento: </span>
                   <span className="text-sm font-medium">
-                    €{vcGroup.averageInvestmentSize.toLocaleString()}
+                    €{vcGroup.averageInvestmentSize.toString()}
                   </span>
                 </div>
               )}

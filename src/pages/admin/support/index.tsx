@@ -254,7 +254,7 @@ function SupportTicketsList() {
                       </Badge>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>{new Date(ticket.createdAt).toLocaleString()}</span>
+                        <span>{new Date(ticket.createdAt).toISOString().split('T')[0]}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageCircle className="h-4 w-4" />
@@ -287,7 +287,7 @@ function SupportTicketsList() {
                       <div className="bg-white/5 rounded-lg rounded-tl-none p-4 border border-white/10">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs text-ui-text/50">
-                            {new Date(ticket.createdAt).toLocaleString()}
+                            {new Date(ticket.createdAt).toISOString().split('T')[0]}
                           </span>
                         </div>
                         <p className="text-sm whitespace-pre-wrap text-ui-text/90">{ticket.message}</p>
@@ -335,7 +335,7 @@ function SupportTicketsList() {
                                   isUserReply ? "" : "flex-row-reverse"
                                 )}>
                                   <span className="text-xs text-ui-text/50">
-                                    {new Date(reply.createdAt).toLocaleString()}
+                                    {new Date(reply.createdAt).toISOString().split('T')[0]}
                                   </span>
                                 </div>
                                 <p className="text-sm whitespace-pre-wrap text-ui-text/90">{reply.message}</p>

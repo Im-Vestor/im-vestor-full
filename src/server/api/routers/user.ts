@@ -166,196 +166,95 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page, limit, sortBy, sortDirection, search } = input;
 
-      console.log('getAll input:', input);
-
       try {
-        // Get all users from different tables using existing structure
-        const [investors, entrepreneurs, partners, incubators, vcGroups] = await Promise.all([
-          // Investors
-          ctx.db.investor.findMany({
-            select: {
-              id: true,
-              userId: true,
-              firstName: true,
-              lastName: true,
-              mobileFone: true,
-              user: {
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (search?.trim()) {
+          where.OR = [
+            { email: { contains: search, mode: 'insensitive' as const } },
+            { entrepreneur: { firstName: { contains: search, mode: 'insensitive' as const } } },
+            { entrepreneur: { lastName: { contains: search, mode: 'insensitive' as const } } },
+            { investor: { firstName: { contains: search, mode: 'insensitive' as const } } },
+            { investor: { lastName: { contains: search, mode: 'insensitive' as const } } },
+            { partner: { firstName: { contains: search, mode: 'insensitive' as const } } },
+            { partner: { lastName: { contains: search, mode: 'insensitive' as const } } },
+            { incubator: { name: { contains: search, mode: 'insensitive' as const } } },
+            { vcGroup: { name: { contains: search, mode: 'insensitive' as const } } },
+          ];
+        }
+
+        const allowedSortFields = new Set(['createdAt', 'userType', 'email']);
+        const orderBy = sortBy && sortDirection && allowedSortFields.has(sortBy)
+          ? [{ [sortBy]: sortDirection } as any]
+          : [{ createdAt: 'desc' as const }, { userType: 'asc' as const }];
+
+        const [users, total] = await Promise.all([
+          ctx.db.user.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy,
+            include: {
+              entrepreneur: {
                 select: {
+                  firstName: true,
+                  lastName: true,
+                  mobileFone: true,
+                  projects: { select: { id: true } },
+                },
+              },
+              investor: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  mobileFone: true,
+                },
+              },
+              partner: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  mobileFone: true,
+                },
+              },
+              incubator: {
+                select: {
+                  name: true,
                   email: true,
-                  referralCode: true,
+                  phone: true,
+                  projects: { select: { id: true } },
                 },
               },
-            },
-          }),
-          // Entrepreneurs - include projects to count them
-          ctx.db.entrepreneur.findMany({
-            select: {
-              id: true,
-              userId: true,
-              firstName: true,
-              lastName: true,
-              mobileFone: true,
-              user: {
+              vcGroup: {
                 select: {
+                  name: true,
                   email: true,
-                  referralCode: true,
-                },
-              },
-              projects: {
-                select: {
-                  id: true,
+                  phone: true,
                 },
               },
             },
           }),
-          // Partners
-          ctx.db.partner.findMany({
-            select: {
-              id: true,
-              userId: true,
-              firstName: true,
-              lastName: true,
-              mobileFone: true,
-              user: {
-                select: {
-                  email: true,
-                  referralCode: true,
-                },
-              },
-            },
-          }),
-          // Incubators - include projects to count them
-          ctx.db.incubator.findMany({
-            select: {
-              id: true,
-              userId: true,
-              name: true,
-              email: true,
-              phone: true,
-              projects: {
-                select: {
-                  id: true,
-                },
-              },
-            },
-          }),
-          // VC Groups
-          ctx.db.vcGroup.findMany({
-            select: {
-              id: true,
-              userId: true,
-              name: true,
-              email: true,
-              phone: true,
-            },
-          }),
+          ctx.db.user.count({ where }),
         ]);
 
-        console.log('Raw data from database:');
-        console.log('Investors:', investors.length, 'records');
-        console.log('Entrepreneurs:', entrepreneurs.length, 'records');
-        console.log('Partners:', partners.length, 'records');
-        console.log('Incubators:', incubators.length, 'records');
-        console.log('VcGroups:', vcGroups.length, 'records');
-
-        // Combine all users into a single array
-        const allUsers = [
-          ...investors.map(investor => ({
-            id: investor.userId,
-            email: investor.user.email ?? 'N/A',
-            phone: investor.mobileFone ?? 'N/A',
-            userType: 'INVESTOR' as const,
-            firstName: investor.firstName,
-            lastName: investor.lastName,
-            name: '',
-            projectsCount: 0, // Investors don't publish projects
-            referralCode: investor.user.referralCode ?? 'N/A',
-          })),
-          ...entrepreneurs.map(entrepreneur => ({
-            id: entrepreneur.userId,
-            email: entrepreneur.user.email ?? 'N/A',
-            phone: entrepreneur.mobileFone ?? 'N/A',
-            userType: 'ENTREPRENEUR' as const,
-            firstName: entrepreneur.firstName,
-            lastName: entrepreneur.lastName,
-            name: '',
-            projectsCount: entrepreneur.projects.length,
-            referralCode: entrepreneur.user.referralCode ?? 'N/A',
-          })),
-          ...partners.map(partner => ({
-            id: partner.userId,
-            email: partner.user.email ?? 'N/A',
-            phone: partner.mobileFone ?? 'N/A',
-            userType: 'PARTNER' as const,
-            firstName: partner.firstName,
-            lastName: partner.lastName,
-            name: '',
-            projectsCount: 0,
-            referralCode: partner.user.referralCode ?? 'N/A',
-          })),
-          ...incubators.map(incubator => ({
-            id: incubator.id,
-            email: incubator.email,
-            phone: incubator.phone ?? 'N/A',
-            userType: 'INCUBATOR' as const,
-            firstName: '',
-            lastName: '',
-            name: incubator.name,
-            projectsCount: incubator.projects.length,
-            referralCode: 'N/A',
-          })),
-          ...vcGroups.map(vcGroup => ({
-            id: vcGroup.id,
-            email: vcGroup.email,
-            phone: vcGroup.phone ?? 'N/A',
-            userType: 'VC_GROUP' as const,
-            firstName: '',
-            lastName: '',
-            name: vcGroup.name,
-            projectsCount: 0,
-            referralCode: 'N/A',
-          })),
-        ];
-
-        // Apply search filter if provided
-        let filteredUsers = allUsers;
-        if (search?.trim()) {
-          const searchTerm = search.trim().toLowerCase();
-          filteredUsers = allUsers.filter(user => {
-            const fullName = user.name || `${user.firstName} ${user.lastName}`.trim();
-            return (
-              fullName.toLowerCase().includes(searchTerm) ||
-              user.email.toLowerCase().includes(searchTerm)
-            );
-          });
-        }
-
-        console.log('Total users found:', filteredUsers.length);
-
-        // Apply sorting if specified
-        if (sortBy && sortDirection) {
-          filteredUsers.sort((a, b) => {
-            const aValue = a[sortBy as keyof typeof a] ?? '';
-            const bValue = b[sortBy as keyof typeof b] ?? '';
-
-            if (sortDirection === 'asc') {
-              return aValue.toString().localeCompare(bValue.toString());
-            } else {
-              return bValue.toString().localeCompare(aValue.toString());
-            }
-          });
-        }
-
-        // Apply pagination
-        const total = filteredUsers.length;
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+        const items = users.map(u => ({
+          id: u.id,
+          email: u.email,
+          phone: u.entrepreneur?.mobileFone ?? u.investor?.mobileFone ?? u.partner?.mobileFone ?? u.incubator?.phone ?? u.vcGroup?.phone ?? 'N/A',
+          userType: u.userType,
+          firstName: u.entrepreneur?.firstName ?? u.investor?.firstName ?? u.partner?.firstName ?? '',
+          lastName: u.entrepreneur?.lastName ?? u.investor?.lastName ?? u.partner?.lastName ?? '',
+          name: u.incubator?.name ?? u.vcGroup?.name ?? '',
+          projectsCount: (u.entrepreneur?.projects?.length ?? 0) + (u.incubator?.projects?.length ?? 0),
+          referralCode: u.referralCode,
+          createdAt: u.createdAt,
+        }));
 
         return {
-          items: paginatedUsers,
+          items,
           total,
-          hasMore: endIndex < total,
+          hasMore: skip + limit < total,
         };
       } catch (error) {
         console.error('Error in getAll query:', error);
@@ -496,11 +395,11 @@ export const userRouter = createTRPCRouter({
 
       await sendEmail(
         user?.entrepreneur?.firstName ??
-          user?.investor?.firstName ??
-          user?.partner?.firstName ??
-          user?.incubator?.name ??
-          user?.vcGroup?.name ??
-          '',
+        user?.investor?.firstName ??
+        user?.partner?.firstName ??
+        user?.incubator?.name ??
+        user?.vcGroup?.name ??
+        '',
         'Update your email address on Im-Vestor!',
         'You can verify the new email address by clicking the button below.',
         [input.email],

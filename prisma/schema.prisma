@@ -69,6 +69,8 @@ model User {
   stripeCustomerId     String?
   availableBoosts      Int                  @default(0)
   status               UserStatus           @default(ACTIVE)
+  createdAt            DateTime?            @default(now())
+  updatedAt            DateTime?            @default(now()) @updatedAt
   followingConnections Connection[]         @relation("Follower")
   followerConnections  Connection[]         @relation("Following")
   entrepreneur         Entrepreneur?
@@ -292,7 +294,6 @@ model Project {
   countryId                 Int?
   stateId                   Int?
   incubatorId               String?
-  boostedUntil              DateTime?
   visibility                ProjectVisibility       @default(PRIVATE)
   socialImpactBeneficiaries Int?
   socialImpactDescription   String?
@@ -301,7 +302,9 @@ model Project {
   photo2Caption             String?
   photo3Caption             String?
   photo4Caption             String?
+  boostedUntil              DateTime?
   files                     File[]
+  incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
   knowYourNumbers           KnowYourNumbers?
   negotiations              Negotiation[]
   country                   Country?                @relation(fields: [countryId], references: [id])
@@ -315,7 +318,6 @@ model Project {
   favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
   investedInvestors         Investor[]              @relation("InvestedInvestors")
   investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
-  incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
 }
 
 model IncubatorEntrepreneur {
@@ -498,8 +500,8 @@ enum UserType {
 
 enum UserStatus {
   ACTIVE
-  PENDING_EMAIL_VERIFICATION
   INACTIVE
+  PENDING_EMAIL_VERIFICATION
 }
 
 enum PreferredHoursPeriod {

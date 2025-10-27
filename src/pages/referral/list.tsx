@@ -53,7 +53,7 @@ export default function List() {
                       {referralWithBusiness.referral.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-white/50">
-                      Joined on {referralWithBusiness.referral?.joinedAt.toLocaleDateString()}
+                      Joined on {referralWithBusiness.referral?.joinedAt.toISOString().split('T')[0]}
                     </p>
                   </div>
                 </div>

@@ -42,12 +42,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
 
   const coverImage = pageData?.page ? getCoverImage(pageData.page as PageObjectResponse) : null;
 
-  // Extract date from block if available
-  const createdDate = block.created_time ? new Date(block.created_time).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }) : null;
+  // Extract date from block if available - using consistent formatting
+  const createdDate = block.created_time ? (() => {
+    const date = new Date(block.created_time);
+    // Use consistent formatting to prevent hydration mismatch
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  })() : null;
 
   return (
     <Link href={`/news/page/${block.id}`} className="group">

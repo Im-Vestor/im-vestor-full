@@ -93,7 +93,7 @@ function ActivitySummary({ days = 30 }: { days?: number }) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
-                  {stat.value.toLocaleString()}
+                  {stat.value.toString()}
                 </div>
                 <p className="text-xs text-ui-text/60 mt-1">
                   Últimos {days} dias
@@ -416,22 +416,17 @@ function NotificationLogsList() {
 
 function TableSkeleton({ columns }: { columns: number }) {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-white/10">
-      <div className="p-6 space-y-4">
-        <div className="flex items-center space-x-4">
-          {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton key={i} className="h-4 w-[100px] bg-white/10" />
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TableRow key={i} className="border-white/5">
+          {Array.from({ length: columns }).map((_, j) => (
+            <TableCell key={j}>
+              <Skeleton className="h-4 w-[100px] bg-white/10" />
+            </TableCell>
           ))}
-        </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center space-x-4">
-            {Array.from({ length: columns }).map((_, j) => (
-              <Skeleton key={j} className="h-4 w-[100px] bg-white/10" />
-            ))}
-          </div>
-        ))}
-      </div>
-    </Card>
+        </TableRow>
+      ))}
+    </>
   );
 }
 
