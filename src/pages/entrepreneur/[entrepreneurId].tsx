@@ -186,7 +186,7 @@ export default function EntrepreneurDetails() {
                 entrepreneur.projects.map(project => (
                   <Link
                     key={project.id}
-                    href={`/companies/${project.id}`}
+                    href={`/projects/${project.id}`}
                     className="block rounded-lg border border-white/10 p-4 transition-all hover:border-white/20 hover:bg-white/5"
                   >
                     <div className="flex items-center gap-3">

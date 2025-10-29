@@ -95,7 +95,7 @@ export default function CompanyDetails() {
   const { user } = useUser();
   const router = useRouter();
   const utils = api.useUtils();
-  const { companyId } = router.query;
+  const { projectId } = router.query;
 
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
   const isVc = user?.publicMetadata.userType === 'VC_GROUP';
@@ -105,15 +105,15 @@ export default function CompanyDetails() {
   const tomorrow = startOfTomorrow();
 
   const [openScheduleMeeting, setOpenScheduleMeeting] = useState(false);
-  const [websiteIsHidden, setWebsiteIsHidden] = useState(true);
+  const [showWebsiteModal, setShowWebsiteModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(tomorrow);
   const [time, setTime] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const { data: project, isLoading } = api.project.getById.useQuery(
-    { id: companyId as string },
-    { enabled: !!companyId }
+    { id: projectId as string },
+    { enabled: !!projectId }
   );
 
   const { data: preferredHours } = api.preferredHours.getPreferredHoursByEntrepreneurId.useQuery(
@@ -126,7 +126,8 @@ export default function CompanyDetails() {
     { enabled: !!project?.id }
   );
 
-  const isProjectOwner = user?.id === project?.Entrepreneur?.userId;
+  const isProjectOwner =
+    user?.id === project?.Entrepreneur?.userId || user?.id === project?.Incubator?.userId;
 
   const { data: investor } = api.investor.getByUserId.useQuery(undefined, {
     enabled: !!isInvestor,
@@ -138,8 +139,8 @@ export default function CompanyDetails() {
 
   const { data: negotiation } =
     api.negotiation.getNegotiationByProjectIdAndInvestorIdOrVcGroupId.useQuery(
-      { projectId: companyId as string },
-      { enabled: !!companyId }
+      { projectId: projectId as string },
+      { enabled: !!projectId }
     );
 
   const shareProjectMutation = api.vcGroup.shareProject.useMutation({
@@ -185,13 +186,13 @@ export default function CompanyDetails() {
     });
 
   const isFavorite = useMemo(() => {
-    if (!companyId) return false;
+    if (!projectId) return false;
     return (
-      investor?.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId) ??
-      vcGroup?.favoriteProjects.some(favoriteProject => favoriteProject.id === companyId) ??
+      investor?.favoriteProjects.some(favoriteProject => favoriteProject.id === projectId) ??
+      vcGroup?.favoriteProjects.some(favoriteProject => favoriteProject.id === projectId) ??
       false
     );
-  }, [investor?.favoriteProjects, vcGroup?.favoriteProjects, companyId]);
+  }, [investor?.favoriteProjects, vcGroup?.favoriteProjects, projectId]);
 
   const favoriteOrUnfavoriteMutation = api.project.favoriteOrUnfavorite.useMutation({
     onSuccess: async () => {
@@ -204,13 +205,13 @@ export default function CompanyDetails() {
   });
 
   const handleFavoriteClick = () => {
-    if (companyId) {
-      favoriteOrUnfavoriteMutation.mutate({ projectId: companyId as string });
+    if (projectId) {
+      favoriteOrUnfavoriteMutation.mutate({ projectId: projectId as string });
     }
   };
 
   const handleScheduleMeeting = async () => {
-    if (companyId && selectedDate && time) {
+    if (projectId && selectedDate && time) {
       const meetingDateTime = new Date(selectedDate);
       meetingDateTime.setHours(parseInt(time.split(':')[0] ?? '0'));
 
@@ -221,7 +222,7 @@ export default function CompanyDetails() {
           date: meetingDateTime,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
-          projectId: companyId as string,
+          projectId: projectId as string,
         });
       } else {
         scheduleOtherStageMeetingMutation.mutate({
@@ -230,14 +231,14 @@ export default function CompanyDetails() {
           date: meetingDateTime,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
-          projectId: companyId as string,
+          projectId: projectId as string,
         });
       }
     }
   };
 
   const handleScheduleMeetingNow = async () => {
-    if (companyId && project?.Entrepreneur?.id && (investor?.id || vcGroup?.id)) {
+    if (projectId && project?.Entrepreneur?.id && (investor?.id || vcGroup?.id)) {
       const now = new Date();
       if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
         schedulePitchMeetingMutation.mutate({
@@ -246,7 +247,7 @@ export default function CompanyDetails() {
           date: now,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
-          projectId: companyId as string,
+          projectId: projectId as string,
         });
       } else {
         scheduleOtherStageMeetingMutation.mutate({
@@ -255,7 +256,7 @@ export default function CompanyDetails() {
           date: now,
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
-          projectId: companyId as string,
+          projectId: projectId as string,
         });
       }
     } else {
@@ -270,11 +271,11 @@ export default function CompanyDetails() {
   };
 
   useEffect(() => {
-    if (companyId) {
-      addInvestorViewMutation.mutateAsync({ projectId: companyId as string });
+    if (projectId) {
+      addInvestorViewMutation.mutateAsync({ projectId: projectId as string });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyId]);
+  }, [projectId]);
 
   if (isLoading || !project) {
     return (
@@ -353,27 +354,38 @@ export default function CompanyDetails() {
                   ) : (
                     <span>Location not specified</span>
                   )}
-
                   <span className="mx-2">•</span>
                   <div className="flex items-center gap-1.5">
                     <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-                    {websiteIsHidden ? (
-                      <span
-                        className="text-white/70 cursor-pointer hover:underline"
-                        onClick={() => setWebsiteIsHidden(false)}
-                      >
-                        Click to show website
-                      </span>
-                    ) : (
-                      <Link
-                        href={project.website ?? ''}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white/70 hover:underline"
-                      >
-                        {project.website}
-                      </Link>
-                    )}
+                    <Dialog open={showWebsiteModal} onOpenChange={setShowWebsiteModal}>
+                      <DialogTrigger asChild>
+                        <Link
+                          href={project.website ?? ''}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white/70 hover:underline"
+                          onClick={e => {
+                            e.preventDefault();
+                            setShowWebsiteModal(true);
+                          }}
+                        >
+                          Click to show website
+                        </Link>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Atenção</DialogTitle>
+                          <DialogDescription>
+                            Relembrando os termos e condições, de que não pode contactar o
+                            empreendedor fora da plataforma. A partir deste momento, ambos estão
+                            legalmente conectados na plataforma im-vestor.com.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button onClick={() => setShowWebsiteModal(false)}>Entendi</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <span className="mx-2">•</span>
                   <span className="w-fit rounded-full bg-white/10 border border-white/10 px-2 py-0.5 text-sm text-primary sm:px-6">
@@ -554,6 +566,100 @@ export default function CompanyDetails() {
 
         <hr className="my-6 border-white/10 sm:my-8" />
 
+        {/* Hypertrain Information Section */}
+        {hypertrainItem && (
+          <>
+            <div className="mb-8 sm:mb-12">
+              <Card className="overflow-hidden border-2 border-purple-500/50 bg-gradient-to-br from-purple-500/20 via-primary/10 to-transparent">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                  {/* Image/Video Section - Left Half */}
+                  <div className="relative h-64 md:h-96 lg:h-[500px] overflow-hidden bg-gradient-to-br from-purple-600/20 to-primary/20">
+                    {hypertrainItem.image && (
+                      <Image
+                        src={hypertrainItem.image}
+                        alt={hypertrainItem.name}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    )}
+                    {/* Overlay gradient for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/40" />
+
+                    {/* Badge overlay on image */}
+                    <div className="absolute top-4 left-4 md:top-6 md:left-6">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-sm">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                        </span>
+                        HYPERTRAIN FEATURED
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content Section - Right Half */}
+                  <div className="flex flex-col justify-center p-6 md:p-8 lg:p-12">
+                    <div className="space-y-4 md:space-y-6">
+                      {/* Header */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm text-purple-400">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            Live until {format(new Date(hypertrainItem.liveUntil), 'MMMM d, yyyy')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      {hypertrainItem.description && (
+                        <p className="text-base md:text-lg text-white/80 leading-relaxed">
+                          {hypertrainItem.description}
+                        </p>
+                      )}
+
+                      {/* Info Box */}
+                      <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4 md:p-5 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-full bg-purple-500/20 p-2 mt-0.5">
+                            <Presentation className="h-5 w-5 text-purple-400" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-white mb-1">Premium Visibility</h3>
+                            <p className="text-sm text-white/70 leading-relaxed">
+                              This project is featured in Hypertrain, giving it increased visibility
+                              and priority placement to attract more investors and opportunities.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <div className="flex flex-wrap gap-3 text-sm text-white/60">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
+                            <span>Featured Project</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
+                            <span>Priority Listing</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
+                            <span>Enhanced Reach</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <hr className="my-6 border-white/10 sm:my-8" />
+          </>
+        )}
+
         {(isInvestor || isVc) && negotiation?.investorActionNeeded && (
           <NextStepDialog negotiationId={negotiation.id} />
         )}
@@ -638,7 +744,7 @@ export default function CompanyDetails() {
                         Your browser does not support the video tag.
                       </video>
                     ) : (
-                      <VideoRequestButton projectId={companyId as string} />
+                      <VideoRequestButton projectId={projectId as string} />
                     )}
                   </div>
                 </>
@@ -863,7 +969,7 @@ export default function CompanyDetails() {
         </div>
       </ConfirmationDialog>
 
-      {isProjectOwner && <ProjectViews projectId={companyId as string} />}
+      {isProjectOwner && <ProjectViews projectId={projectId as string} />}
 
       {/* Share Project Confirmation Dialog */}
       <AlertDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
@@ -924,7 +1030,7 @@ export default function CompanyDetails() {
             <AlertDialogAction
               onClick={() =>
                 shareProjectMutation.mutate({
-                  projectId: companyId as string,
+                  projectId: projectId as string,
                   currentUserEmail: user?.primaryEmailAddress?.emailAddress ?? '',
                 })
               }

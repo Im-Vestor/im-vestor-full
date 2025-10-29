@@ -43,7 +43,10 @@ export function Hypertrain() {
     : [weeklyPitchLinkHypertrainItem];
 
   // Garantir que sempre tenhamos pelo menos 2 itens para a animação
-  const finalBaseItems = baseItems.length >= 2 ? baseItems : [weeklyPitchLinkHypertrainItem, weeklyPitchLinkHypertrainItem];
+  const finalBaseItems =
+    baseItems.length >= 2
+      ? baseItems
+      : [weeklyPitchLinkHypertrainItem, weeklyPitchLinkHypertrainItem];
   const duplicatedHypertrainItems = [...finalBaseItems, ...finalBaseItems];
 
   // const itemWidth = 384; // w-96 = 384px (kept for future animation calc)
@@ -64,7 +67,7 @@ export function Hypertrain() {
         <div className="rounded-xl bg-card/30 p-6">
           <div className={`flex gap-6`}>
             {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="w-[408px] h-20 rounded-lg" />
+              <Skeleton key={index} className="w-[408px] h-32 rounded-lg" />
             ))}
           </div>
         </div>
@@ -85,44 +88,52 @@ export function Hypertrain() {
           onMouseLeave={() => setIsPaused(false)}
         >
           {duplicatedHypertrainItems?.map((item, index) => (
-            <div key={`${item.id}-${index}`} className="flex-shrink-0 w-96 min-w-96 group cursor-pointer">
-              <Link href={item.link} target="_blank" rel="noopener noreferrer" className="block">
+            <div
+              key={`${item.id}-${index}`}
+              className="flex-shrink-0 w-96 min-w-96 h-32 group cursor-pointer"
+            >
+              <Link
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-full block"
+              >
                 <div
-                  className={`bg-card/50 rounded-lg p-4 border ${getTypeColor(item.type)} transition-all duration-300 hover:scale-105`}
+                  className={`bg-card/50 rounded-lg h-full p-4 border ${getTypeColor(item.type)} transition-all duration-300 hover:scale-105`}
                 >
                   <div className="flex items-start gap-4">
                     {item.image ? (
-                      <div className="size-12 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
+                      <div className="size-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
                         <Image src={item.image} alt={item.name} fill className="object-cover" />
                       </div>
                     ) : item.type === 'NEWS' ? (
                       <div
-                        className={`size-12 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                        className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
                       >
                         <Newspaper className="size-6" />
                       </div>
                     ) : item.type === 'INVESTOR' ? (
                       <div
-                        className={`size-12 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                        className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
                       >
                         <UserSearch className="size-6" />
                       </div>
                     ) : item.type === 'PROJECT' ? (
                       <div
-                        className={`size-12 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                        className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
                       >
                         <Building2 className="size-6" />
                       </div>
                     ) : item.type === 'WEEKLY_PITCH' ? (
                       <div
-                        className={`size-12 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                        className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
                       >
                         <Calendar1 className="size-6" />
                       </div>
                     ) : null}
                     <div className="flex flex-col min-w-0 w-full">
-                      <div className="flex justify-between w-full overflow-hidden">
-                        <h3 className="font-medium text-white truncate">{item.name}</h3>
+                      <div className="flex justify-between w-full p-1 overflow-hidden">
+                        <h3 className="font-medium  text-white truncate">{item.name}</h3>
                         {item.type === 'WEEKLY_PITCH' ? (
                           <span className="px-2 py-1 w-fit text-xs font-bold rounded border bg-blue-500/10 text-blue-400 border-blue-500/30">
                             PITCH
@@ -150,7 +161,6 @@ export function Hypertrain() {
           )}
         </div>
       </div>
-
     </div>
   );
 }

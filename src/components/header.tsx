@@ -137,6 +137,10 @@ const INCUBATOR_MENUS = [
     href: '/home',
   },
   {
+    label: 'My Projects',
+    href: '/incubator/projects',
+  },
+  {
     label: 'Investors',
     href: '/investors',
   },

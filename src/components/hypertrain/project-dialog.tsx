@@ -1,4 +1,5 @@
 import { type HyperTrainItem, type Project } from '@prisma/client';
+import Link from 'next/link';
 import { Train } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -10,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '../ui/dialog';
 
 export const ProjectDialog = ({
@@ -64,31 +66,42 @@ export const ProjectDialog = ({
 
   return (
     <>
-      <Button size="sm" onClick={() => setIsOpen(true)} disabled={!!hypertrainItem}>
-        <Train className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-        <span className="hidden sm:inline">
-          {hypertrainItem ? 'In Hypertrain' : 'Add to Hypertrain'}
-        </span>
-      </Button>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add to Hypertrain</DialogTitle>
-            <DialogDescription>
-              Add your project to the hypertrain to get more visibility and attract more investors.
-            </DialogDescription>
-          </DialogHeader>
+      {hypertrainItem ? (
+        <Link href={`/projects/${project.id}/hypertrain`}>
+          <Button size="sm">
+            <Train className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Hypertrain
+          </Button>
+        </Link>
+      ) : (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Train className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="hidden sm:inline">
+                {hypertrainItem ? 'In Hypertrain' : 'Add to Hypertrain'}
+              </span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add to Hypertrain</DialogTitle>
+              <DialogDescription>
+                Add your project to the hypertrain to get more visibility and attract more
+                investors.
+              </DialogDescription>
+            </DialogHeader>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isProcessing}>
-              Cancel
-            </Button>
-            <Button onClick={handlePurchase} disabled={isProcessing}>
-              {isProcessing ? 'Processing...' : 'Add to Hypertrain'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isProcessing}>
+                Cancel
+              </Button>
+              <Button onClick={handlePurchase} disabled={isProcessing}>
+                {isProcessing ? 'Processing...' : 'Add to Hypertrain'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

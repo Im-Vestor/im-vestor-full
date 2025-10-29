@@ -129,7 +129,7 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
           </div>
         )}
         {canEdit && (
-          <Button className="mt-4 md:w-1/3" onClick={() => router.push('/companies/create')}>
+          <Button className="mt-4 md:w-1/3" onClick={() => router.push('/projects/create')}>
             Add a Project
             <ArrowRight className="ml-2" />
           </Button>
@@ -149,7 +149,7 @@ function ProjectCard({
   return (
     <Link
       className="cursor-pointer rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20 relative"
-      href={`/companies/${project.id}`}
+      href={`/projects/${project.id}`}
     >
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0">
         <div className="flex gap-4 sm:gap-6">
@@ -190,7 +190,7 @@ function ProjectCard({
         </div>
         <div className="flex sm:flex-col gap-2 sm:items-end">
           <Link
-            href={`/companies/edit/${project.id}`}
+            href={`/projects/${project.id}/edit`}
             className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10"
             onClick={e => e.stopPropagation()}
           >
@@ -198,7 +198,7 @@ function ProjectCard({
             <span className="sm:inline">Edit</span>
           </Link>
           <Link
-            href={`/companies/know-your-numbers/${project.id}`}
+            href={`/projects/${project.id}/know-your-numbers`}
             className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10"
             onClick={e => e.stopPropagation()}
           >
