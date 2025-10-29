@@ -10,12 +10,12 @@ import { api } from '~/utils/api';
 export default function EditCompany() {
   const utils = api.useUtils();
   const router = useRouter();
-  const { companyId } = router.query;
+  const { projectId } = router.query;
 
   const { data: project, isLoading } = api.project.getById.useQuery(
-    { id: companyId as string },
+    { id: projectId as string },
     {
-      enabled: !!companyId,
+      enabled: !!projectId,
     }
   );
 

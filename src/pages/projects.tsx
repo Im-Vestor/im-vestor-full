@@ -359,11 +359,12 @@ function CompanyCard({
 
   return (
     <Link
-      href={`/companies/${project.id}`}
-      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${isBoosted
-        ? 'border-yellow-500/50 hover:border-yellow-600/50'
-        : 'border-white/10 hover:border-white/20'
-        }`}
+      href={`/projects/${project.id}`}
+      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${
+        isBoosted
+          ? 'border-yellow-500/50 hover:border-yellow-600/50'
+          : 'border-white/10 hover:border-white/20'
+      }`}
     >
       <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (

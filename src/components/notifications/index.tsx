@@ -173,7 +173,7 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
           {userDetails.openNegotiations.map(negotiation => (
             <DropdownMenuItem
               key={negotiation.id}
-              onClick={() => void router.push(`/companies/${negotiation.project.id}`)}
+              onClick={() => void router.push(`/projects/${negotiation.project.id}`)}
               className="p-0 hover:bg-transparent focus:bg-transparent hover:text-foreground flex items-center gap-1 justify-between border-b border-white/10"
             >
               <Button

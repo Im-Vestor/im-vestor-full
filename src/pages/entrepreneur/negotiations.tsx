@@ -72,7 +72,7 @@ export default function EntrepreneurNegotiations() {
               <p className="text-gray-400 mb-6">
                 Create your first project to start connecting with investors.
               </p>
-              <Button onClick={() => router.push('/companies/create')}>
+              <Button onClick={() => router.push('/projects/create')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Project
               </Button>
@@ -99,7 +99,7 @@ function NegotiationCard({
 }) {
   return (
     <Link
-      href={`/companies/${negotiation.project.id}`}
+      href={`/projects/${negotiation.project.id}`}
       className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20 relative grid grid-cols-3 gap-4 items-center justify-between"
     >
       <div className="col-span-1 flex gap-4">

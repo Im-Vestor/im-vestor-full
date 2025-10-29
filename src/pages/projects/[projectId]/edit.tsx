@@ -110,7 +110,7 @@ type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
 export default function EditCompany() {
   const router = useRouter();
-  const { companyId } = router.query;
+  const { projectId } = router.query;
   const { user } = useUser();
 
   const isIncubator = user?.publicMetadata.userType === 'INCUBATOR';
@@ -133,9 +133,9 @@ export default function EditCompany() {
   );
 
   const { data: project } = api.project.getById.useQuery(
-    { id: companyId as string },
+    { id: projectId as string },
     {
-      enabled: !!companyId,
+      enabled: !!projectId,
     }
   );
 
@@ -323,10 +323,10 @@ export default function EditCompany() {
   };
 
   async function onSubmit(data: CompanyFormValues) {
-    if (!companyId) return;
+    if (!projectId) return;
 
     await updateCompany({
-      id: companyId as string,
+      id: projectId as string,
       ...data,
     });
   }
@@ -1187,7 +1187,7 @@ export default function EditCompany() {
                   disabled={isPending || isUpdatingVisibility || isUpdatingStatus}
                   onClick={() =>
                     updateVisibility({
-                      id: companyId as string,
+                      id: projectId as string,
                       visibility:
                         project?.visibility === ProjectVisibility.PRIVATE
                           ? ProjectVisibility.PUBLIC
@@ -1231,7 +1231,7 @@ export default function EditCompany() {
                       <AlertDialogAction
                         onClick={() => {
                           updateStatus({
-                            id: companyId as string,
+                            id: projectId as string,
                             status: ProjectStatus.INACTIVE,
                           });
                         }}

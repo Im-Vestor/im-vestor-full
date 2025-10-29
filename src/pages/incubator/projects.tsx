@@ -1,5 +1,10 @@
-import { type Country, type Entrepreneur, type Project, type State } from '@prisma/client';
-import { useUser } from '@clerk/nextjs';
+import {
+  type Incubator,
+  type Country,
+  type Entrepreneur,
+  type Project,
+  type State,
+} from '@prisma/client';
 import {
   Building2,
   CircleUserRound,
@@ -13,7 +18,6 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 
 import { Header } from '~/components/header';
 import { SkeletonProfile } from '~/components/profile/skeleton-profile';
@@ -21,31 +25,10 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 
-export default function EntrepreneurProjects() {
+export default function IncubatorProjects() {
   const router = useRouter();
-  const { user, isLoaded, isSignedIn } = useUser();
 
-  const { data: entrepreneur, isPending: isLoading } = api.entrepreneur.getByUserId.useQuery(
-    undefined,
-    { enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'ENTREPRENEUR' }
-  );
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      void router.push('/login');
-      return;
-    }
-
-    // Check if user is an entrepreneur
-    if (isLoaded && isSignedIn && user?.publicMetadata.userType !== 'ENTREPRENEUR') {
-      void router.push('/404');
-    }
-  }, [isLoaded, isSignedIn, user, router]);
-
-  // Don't render anything if user is not an entrepreneur
-  if (isLoaded && isSignedIn && user?.publicMetadata.userType !== 'ENTREPRENEUR') {
-    return null;
-  }
+  const { data: incubator, isPending: isLoading } = api.incubator.getByUserId.useQuery();
 
   if (isLoading) {
     return (
@@ -79,14 +62,14 @@ export default function EntrepreneurProjects() {
             </Button>
           </div>
 
-          {entrepreneur?.projects && entrepreneur.projects.length > 0 ? (
+          {incubator?.projects && incubator.projects.length > 0 ? (
             <div className="grid gap-6">
-              {entrepreneur.projects.map(project => (
+              {incubator.projects.map(project => (
                 <ProjectCard
                   key={project.id}
                   project={project as Project & { state: State; country: Country }}
                   profileData={
-                    entrepreneur as Entrepreneur & {
+                    incubator as Incubator & {
                       state: State;
                       country: Country;
                     }
@@ -118,7 +101,7 @@ function ProjectCard({
   profileData,
 }: {
   project: Project & { state: State; country: Country };
-  profileData: Entrepreneur & { state: State; country: Country };
+  profileData: Incubator & { state: State; country: Country };
 }) {
   return (
     <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20 relative">
@@ -189,22 +172,12 @@ function ProjectCard({
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          {profileData.photo ? (
-            <Image
-              src={profileData.photo}
-              alt="Founder"
-              width={24}
-              height={24}
-              className="h-4 w-4 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10">
-              <User className="size-3 text-neutral-200" />
-            </div>
-          )}
+          <div className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10">
+            <User className="size-3 text-neutral-200" />
+          </div>
           <p className="text-xs sm:text-sm font-light">
             Founded by
-            <span className="text-[#EFD687]"> {profileData.firstName}</span>
+            <span className="text-[#EFD687]"> {profileData.name}</span>
           </p>
         </div>
 

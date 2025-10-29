@@ -381,7 +381,7 @@ export const vcGroupRouter = createTRPCRouter({
           `${memberThatSharedTheProject?.name} has shared a project with you.`,
           [member.email],
           `See ${project?.name} on Im-Vestor.`,
-          `https://www.im-vestor.com/companies/${input.projectId}`,
+          `https://www.im-vestor.com/projects/${input.projectId}`,
           'See Project'
         );
       }

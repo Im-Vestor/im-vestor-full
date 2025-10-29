@@ -74,4 +74,48 @@ export const hypertrainRouter = createTRPCRouter({
         });
       }
     }),
+
+  updateHyperTrainItem: protectedProcedure
+    .input(
+      z.object({
+        externalId: z.string(),
+        description: z.string().max(150, 'Description must be at most 150 characters').optional(),
+        image: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const existingItem = await ctx.db.hyperTrainItem.findUnique({
+          where: {
+            externalId: input.externalId,
+          },
+        });
+
+        if (!existingItem) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Hypertrain item not found',
+          });
+        }
+
+        const updatedItem = await ctx.db.hyperTrainItem.update({
+          where: {
+            externalId: input.externalId,
+          },
+          data: {
+            description: input.description,
+            image: input.image,
+            updatedAt: new Date(),
+          },
+        });
+
+        return updatedItem;
+      } catch (error) {
+        console.error('Error updating hypertrain item:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update hypertrain item',
+        });
+      }
+    }),
 });

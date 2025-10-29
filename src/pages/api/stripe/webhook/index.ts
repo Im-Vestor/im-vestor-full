@@ -106,8 +106,6 @@ async function processEvent(event: Stripe.Event) {
             type: 'INVESTOR',
             name: `${user?.investor?.firstName} ${user?.investor?.lastName}`,
             link: `/investor/${user?.investor?.id}`,
-            description: user?.investor?.about,
-            image: user?.imageUrl,
             liveUntil: addDays(new Date(), 7),
           },
         });
@@ -128,8 +126,6 @@ async function processEvent(event: Stripe.Event) {
             type: 'INVESTOR',
             name: `${user?.vcGroup?.name}`,
             link: `/vc-group/${user?.vcGroup?.id}`,
-            description: user?.vcGroup?.description,
-            image: user?.imageUrl,
             liveUntil: addDays(new Date(), 7),
           },
         });
@@ -146,9 +142,26 @@ async function processEvent(event: Stripe.Event) {
             externalId: String(project?.id),
             type: 'PROJECT',
             name: project?.name ?? 'Untitled Project',
-            link: `/companies/${project?.id}`,
-            description: project?.about ?? 'No description',
-            image: project?.logo ?? null,
+            link: `/projects/${project?.id}`,
+            liveUntil: addDays(new Date(), 7),
+          },
+        });
+      }
+
+      if (userType === 'INCUBATOR') {
+        const user = await db.user.findUnique({
+          where: { id: userId },
+          include: {
+            incubator: true,
+          },
+        });
+
+        await db.hyperTrainItem.create({
+          data: {
+            externalId: String(user?.incubator?.id),
+            type: 'INVESTOR',
+            name: user?.incubator?.name ?? 'Incubator',
+            link: `/incubator/${user?.incubator?.id}`,
             liveUntil: addDays(new Date(), 7),
           },
         });

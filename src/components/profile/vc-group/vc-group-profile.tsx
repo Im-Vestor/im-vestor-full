@@ -104,7 +104,7 @@ export const VcGroupProfile = ({ userId }: { userId?: string }) => {
             vcGroup?.investedProjects.map(project => (
               <Link
                 key={project.id}
-                href={`/companies/${project.id}`}
+                href={`/projects/${project.id}`}
                 className="flex gap-3 items-start"
               >
                 {project.logo ? (
