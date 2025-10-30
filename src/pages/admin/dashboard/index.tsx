@@ -57,7 +57,7 @@ function TableSkeleton({ columns }: { columns: number }) {
 export function Dashboard() {
   const [potentialUserPage, setPotentialUserPage] = useState(1);
   const [registeredUserPage, setRegisteredUserPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 10000;
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 500);
   const [sortBy, setSortBy] = useState<'createdAt' | 'userType' | 'email'>('createdAt');
