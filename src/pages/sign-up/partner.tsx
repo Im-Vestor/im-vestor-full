@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -7,6 +8,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
+import { Checkbox } from '~/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -25,6 +27,9 @@ const formSchema = z
     confirmPassword: z.string(),
     mobileFone: z.string().min(1, 'Mobile phone is required'),
     referralToken: z.string().optional(),
+    acceptTerms: z.boolean().refine(val => val === true, {
+      message: 'You must accept the terms and conditions',
+    }),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -47,6 +52,7 @@ export default function SignupPartner() {
       mobileFone: '',
       companyName: '',
       referralToken: (router.query.referralToken as string) ?? '',
+      acceptTerms: false,
     },
   });
 
@@ -214,6 +220,35 @@ export default function SignupPartner() {
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/10 p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label className="font-normal text-sm text-neutral-200 cursor-pointer">
+                            {t('iAcceptThe')}&nbsp;
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              className="text-primary hover:underline"
+                            >
+                              {t('termsAndConditions')}
+                            </Link>
+                          </Label>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />

@@ -22,6 +22,7 @@ type TranslationKey =
   | 'loggingIn'
   | 'followUs'
   | 'termsAndConditions'
+  | 'iAcceptThe'
   | 'navigateConfidence'
   | 'navigateConfidenceDesc'
   | 'navigateConfidenceShort'
@@ -108,6 +109,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     loggingIn: 'Logging in...',
     followUs: 'Follow us',
     termsAndConditions: 'Terms & Conditions',
+    iAcceptThe: 'I read and accept the',
     navigateConfidence: 'Navigate with Confidence',
     navigateConfidenceDesc:
       "Whether you're a seasoned investor or a first-time entrepreneur, Im-Vestor provides resources to guide you through each stage of your business or investment journey.",
@@ -191,7 +193,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     getStarted: 'Começar',
     weMeanBusiness: 'Negócios é connosco!',
     connectingEntrepreneursAndInvestors:
-      'Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity',
+      'Conectando empreendedores visionários com investidores estratégicos no universo em expansão de oportunidades',
     whyChooseImVestor: 'Porquê',
     entrepreneur: 'EMPREENDEDOR',
     investor: 'INVESTIDOR',
@@ -208,6 +210,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     loggingIn: 'A entrar...',
     followUs: 'Siga-nos',
     termsAndConditions: 'Termos e Condições',
+    iAcceptThe: 'Eu li e aceito os',
     navigateConfidence: 'Navegue na sua jornada com Confiança',
     navigateConfidenceDesc:
       'Seja um investidor experiente ou um empreendedor de primeira viagem, o Im-Vestor fornece recursos para o guiar em cada etapa da sua jornada de negócios ou investimento.',
