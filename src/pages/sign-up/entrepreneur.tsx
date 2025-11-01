@@ -333,7 +333,6 @@ export default function SignupEntrepreneur() {
                 name={form.getValues('firstName') + ' ' + form.getValues('lastName')}
                 type="entrepreneur"
                 features={[
-                  '1 active project at a time',
                   'Up to 5 investors per project',
                   'Investor Search',
                   'View investor profiles',
