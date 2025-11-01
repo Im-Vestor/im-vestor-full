@@ -83,7 +83,9 @@ type TranslationKey =
   | 'takeYourPass'
   | 'back'
   | 'accountCreatedSuccessfully'
-  | 'failedToCreateAccount';
+  | 'failedToCreateAccount'
+  | 'joinAs'
+  | 'legalDisclaimer';
 
 // Define the translations for each language
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -187,6 +189,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back: 'Back',
     accountCreatedSuccessfully: 'Check your email to verify your account!',
     failedToCreateAccount: 'Failed to create account.',
+    joinAs: 'Join as',
+    legalDisclaimer:
+      'The material presented via this website is for informational purposes only. Nothing in this website constitutes a solicitation for the purchase or sale of any financial product or service. Material presented on this website does not constitute a public offering of securities or investment management services in any jurisdiction. Investing in startup and early stage companies involves risks, including loss of capital, illiquidity, lack of dividends and dilution, and it should be done only as part of a diversified portfolio. The Investments presented in this website are suitable only for investors who are sufficiently sophisticated to understand these risks and make their own investment decisions.',
   },
   'pt-PT': {
     signIn: 'Iniciar Sessão',
@@ -288,6 +293,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back: 'Voltar',
     accountCreatedSuccessfully: 'Verifique o seu email para verificar a sua conta!',
     failedToCreateAccount: 'Falha ao criar conta.',
+    joinAs: 'Junte-se como',
+    legalDisclaimer:
+      'O material apresentado através deste website é apenas para fins informativos. Nada neste website constitui uma solicitação para a compra ou venda de qualquer produto ou serviço financeiro. O material apresentado neste website não constitui uma oferta pública de valores mobiliários ou serviços de gestão de investimentos em qualquer jurisdição. Investir em startups e empresas em fase inicial envolve riscos, incluindo perda de capital, iliquidez, falta de dividendos e diluição, e deve ser feito apenas como parte de um portfólio diversificado. Os investimentos apresentados neste website são adequados apenas para investidores suficientemente sofisticados para compreender esses riscos e tomar as suas próprias decisões de investimento.',
   },
 };
 

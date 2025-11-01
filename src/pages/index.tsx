@@ -387,7 +387,6 @@ export default function Home() {
                         src="https://r1pf0du9n17u37qf.public.blob.vercel-storage.com/Investor-LfT3nXCTFM9WBb33OA3Oyq4qfGQlto.mp4"
                         type="video/mp4"
                       />
-                      Your browser does not support the video tag.
                     </video>
                   </motion.div>
                 </>
@@ -755,7 +754,7 @@ export default function Home() {
 
                       <Link className="mt-8 z-50" href="/sign-up/entrepreneur">
                         <Button>
-                          Join as {t('entrepreneur')}
+                          {t('joinAs')} {t('entrepreneur')}
                           <ArrowRight className="ml-2" />
                         </Button>
                       </Link>
@@ -805,7 +804,7 @@ export default function Home() {
 
                       <Link className="mt-8 z-50" href="/sign-up/investor">
                         <Button>
-                          Join as {t('investor')}
+                          {t('joinAs')} {t('investor')}
                           <ArrowRight className="ml-2" />
                         </Button>
                       </Link>
@@ -1025,17 +1024,7 @@ export default function Home() {
                 </Link>
                 <p>{t('copyright')}</p>
               </div>
-              <p className="mt-4 text-center text-xs text-gray-700">
-                The material presented via this website is for informational purposes only. Nothing
-                in this website constitutes a solicitation for the purchase or sale of any financial
-                product or service. Material presented on this website does not constitute a public
-                offering of securities or investment management services in any jurisdiction.
-                Investing in startup and early stage companies involves risks, including loss of
-                capital, illiquidity, lack of dividends and dilution, and it should be done only as
-                part of a diversified portfolio. The Investments presented in this website are
-                suitable only for investors who are sufficiently sophisticated to understand these
-                risks and make their own investment decisions.
-              </p>
+              <p className="mt-4 text-center text-xs text-gray-700">{t('legalDisclaimer')}</p>
             </motion.footer>
           </StarField>
         </motion.div>
