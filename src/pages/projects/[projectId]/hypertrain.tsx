@@ -199,7 +199,10 @@ export default function HypertrainEdit() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <Card>
               <CardHeader>
                 <CardTitle>Project Description</CardTitle>
@@ -295,7 +298,7 @@ export default function HypertrainEdit() {
               </CardContent>
             </Card>
 
-            <Card className="border-2">
+            <Card className="col-span-1 md:col-span-2">
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
