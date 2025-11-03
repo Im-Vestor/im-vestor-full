@@ -24,6 +24,23 @@ export const userRouter = createTRPCRouter({
         partner: true,
         incubator: true,
         vcGroup: true,
+        referralsAsReferred: {
+          include: {
+            referrer: {
+              include: {
+                entrepreneur: true,
+                investor: true,
+                partner: true,
+                incubator: true,
+                vcGroup: true,
+              },
+            },
+          },
+          take: 1, // Only need the first referral (most recent)
+          orderBy: {
+            joinedAt: 'desc',
+          },
+        },
       },
     });
 

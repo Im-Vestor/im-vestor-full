@@ -1032,87 +1032,110 @@ export const adminRouter = createTRPCRouter({
       // Get current date for filtering active HyperTrain items
       const now = new Date();
 
-      // Calculate counts for each user
-      const usersWithCounts = await Promise.all(
-        users.map(async (user) => {
-          let availableHyperTrainTickets = 0;
-          let availablePitches = 0;
+      // OPTIMIZATION: Batch fetch all HyperTrain counts and Projects instead of N+1 queries
+      // Group users by type to batch queries
+      const investorIds = users
+        .filter(u => u.userType === 'INVESTOR' && u.investor?.id)
+        .map(u => String(u.investor!.id));
 
-          // Count active HyperTrain tickets
-          if (user.userType === 'INVESTOR' && user.investor?.id) {
-            const activeHyperTrainItems = await ctx.db.hyperTrainItem.count({
-              where: {
-                externalId: String(user.investor.id),
-                liveUntil: {
-                  gte: now,
-                },
-              },
-            });
-            availableHyperTrainTickets = activeHyperTrainItems;
-          } else if (user.userType === 'VC_GROUP' && user.vcGroup?.id) {
-            const activeHyperTrainItems = await ctx.db.hyperTrainItem.count({
-              where: {
-                externalId: String(user.vcGroup.id),
-                liveUntil: {
-                  gte: now,
-                },
-              },
-            });
-            availableHyperTrainTickets = activeHyperTrainItems;
-          } else if (user.userType === 'ENTREPRENEUR' && user.entrepreneur?.id) {
-            // For entrepreneurs, count HyperTrain items for their projects
-            const entrepreneurProjects = await ctx.db.project.findMany({
-              where: {
-                entrepreneurId: user.entrepreneur.id,
-              },
-              select: {
-                id: true,
-              },
-            });
+      const vcGroupIds = users
+        .filter(u => u.userType === 'VC_GROUP' && u.vcGroup?.id)
+        .map(u => String(u.vcGroup!.id));
 
-            const projectIds = entrepreneurProjects.map(p => p.id);
-            if (projectIds.length > 0) {
-              const activeHyperTrainItems = await ctx.db.hyperTrainItem.count({
-                where: {
-                  externalId: {
-                    in: projectIds,
-                  },
-                  liveUntil: {
-                    gte: now,
-                  },
-                },
-              });
-              availableHyperTrainTickets = activeHyperTrainItems;
-            }
-          }
+      const entrepreneurIds = users
+        .filter(u => u.userType === 'ENTREPRENEUR' && u.entrepreneur?.id)
+        .map(u => u.entrepreneur!.id);
 
-          // TODO: Implement pitch ticket counting when pitch tracking is implemented
-          // For now, return 0 as pitches are not stored in a dedicated table
-          availablePitches = 0;
-
-          return {
-            id: user.id,
-            email: user.email,
-            userType: user.userType,
-            availablePokes: user.availablePokes,
-            availableBoosts: user.availableBoosts,
-            availablePitches,
-            availableHyperTrainTickets,
-            imageUrl: user.imageUrl,
-            name: user.entrepreneur
-              ? `${user.entrepreneur.firstName} ${user.entrepreneur.lastName}`
-              : user.investor
-                ? `${user.investor.firstName} ${user.investor.lastName}`
-                : user.incubator?.name
-                  ? user.incubator.name
-                  : user.partner?.companyName
-                    ? user.partner.companyName
-                    : user.vcGroup?.name
-                      ? user.vcGroup.name
-                      : 'N/A',
-          };
+      // Batch fetch all projects for entrepreneurs
+      const allProjects = entrepreneurIds.length > 0
+        ? await ctx.db.project.findMany({
+          where: {
+            entrepreneurId: { in: entrepreneurIds },
+          },
+          select: {
+            id: true,
+            entrepreneurId: true,
+          },
         })
-      );
+        : [];
+
+      // Group projects by entrepreneur (filter out null entrepreneurIds)
+      const projectsByEntrepreneur = new Map<string, string[]>();
+      for (const project of allProjects) {
+        if (project.entrepreneurId) {
+          const existing = projectsByEntrepreneur.get(project.entrepreneurId) || [];
+          existing.push(project.id);
+          projectsByEntrepreneur.set(project.entrepreneurId, existing);
+        }
+      }
+
+      const allProjectIds = Array.from(projectsByEntrepreneur.values()).flat();
+      const allExternalIds = [...investorIds, ...vcGroupIds, ...allProjectIds.map(String)];
+
+      // Batch fetch all HyperTrain items for all external IDs in one query
+      const allHyperTrainItems = allExternalIds.length > 0
+        ? await ctx.db.hyperTrainItem.findMany({
+          where: {
+            externalId: { in: allExternalIds },
+            liveUntil: { gte: now },
+          },
+          select: {
+            externalId: true,
+          },
+        })
+        : [];
+
+      // Count HyperTrain items by externalId in memory (still much better than N+1 queries)
+      const hyperTrainCountMap = new Map<string, number>();
+      for (const item of allHyperTrainItems) {
+        const count = hyperTrainCountMap.get(item.externalId) || 0;
+        hyperTrainCountMap.set(item.externalId, count + 1);
+      }
+
+      // Map users with counts using the batch-fetched data
+      const usersWithCounts = users.map((user) => {
+        let availableHyperTrainTickets = 0;
+        let availablePitches = 0;
+
+        // Get HyperTrain ticket counts from batch-fetched map
+        if (user.userType === 'INVESTOR' && user.investor?.id) {
+          availableHyperTrainTickets = hyperTrainCountMap.get(String(user.investor.id)) || 0;
+        } else if (user.userType === 'VC_GROUP' && user.vcGroup?.id) {
+          availableHyperTrainTickets = hyperTrainCountMap.get(String(user.vcGroup.id)) || 0;
+        } else if (user.userType === 'ENTREPRENEUR' && user.entrepreneur?.id) {
+          // For entrepreneurs, sum HyperTrain items for all their projects
+          const projectIds = projectsByEntrepreneur.get(user.entrepreneur.id) || [];
+          availableHyperTrainTickets = projectIds.reduce((sum, projectId) => {
+            return sum + (hyperTrainCountMap.get(projectId) || 0);
+          }, 0);
+        }
+
+        // TODO: Implement pitch ticket counting when pitch tracking is implemented
+        // For now, return 0 as pitches are not stored in a dedicated table
+        availablePitches = 0;
+
+        return {
+          id: user.id,
+          email: user.email,
+          userType: user.userType,
+          availablePokes: user.availablePokes,
+          availableBoosts: user.availableBoosts,
+          availablePitches,
+          availableHyperTrainTickets,
+          imageUrl: user.imageUrl,
+          name: user.entrepreneur
+            ? `${user.entrepreneur.firstName} ${user.entrepreneur.lastName}`
+            : user.investor
+              ? `${user.investor.firstName} ${user.investor.lastName}`
+              : user.incubator?.name
+                ? user.incubator.name
+                : user.partner?.companyName
+                  ? user.partner.companyName
+                  : user.vcGroup?.name
+                    ? user.vcGroup.name
+                    : 'N/A',
+        };
+      });
 
       return usersWithCounts;
     }),
@@ -1227,6 +1250,10 @@ export const adminRouter = createTRPCRouter({
 
               if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
                 const project = fullUser.entrepreneur.projects[0];
+                if (!project) {
+                  errors.push({ email, error: 'Entrepreneur must have at least one project to use Hyper Train' });
+                  continue;
+                }
                 await ctx.db.hyperTrainItem.upsert({
                   where: { externalId: project.id },
                   update: { liveUntil: addDays(new Date(), 7) },
@@ -1235,8 +1262,8 @@ export const adminRouter = createTRPCRouter({
                     type: 'PROJECT',
                     name: project.name,
                     link: `/projects/${project.id}`,
-                    description: project.description ?? undefined,
-                    image: project.imageUrl ?? undefined,
+                    description: project.about ?? undefined,
+                    image: project.logo ?? project.photo1 ?? undefined,
                     liveUntil: addDays(new Date(), 7),
                   },
                 });
@@ -1396,6 +1423,9 @@ export const adminRouter = createTRPCRouter({
 
           if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
             const project = fullUser.entrepreneur.projects[0];
+            if (!project) {
+              throw new Error("Entrepreneur must have at least one project to use Hyper Train");
+            }
             await ctx.db.hyperTrainItem.upsert({
               where: { externalId: project.id },
               update: { liveUntil: addDays(new Date(), 7) },
@@ -1404,8 +1434,8 @@ export const adminRouter = createTRPCRouter({
                 type: 'PROJECT',
                 name: project.name,
                 link: `/projects/${project.id}`,
-                description: project.description ?? undefined,
-                image: project.imageUrl ?? undefined,
+                description: project.about ?? undefined,
+                image: project.logo ?? project.photo1 ?? undefined,
                 liveUntil: addDays(new Date(), 7),
               },
             });

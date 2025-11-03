@@ -74,10 +74,17 @@ function GiftProductsPage() {
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
 
   // Fetch users for gifting with debounced search
-  const { data: users, isLoading: isLoadingUsers, refetch: refetchUsers } = api.admin.getUsersForGifting.useQuery({
-    search: debouncedSearchTerm || undefined,
-    userType: selectedUserType && selectedUserType !== 'all' ? selectedUserType : undefined,
-  });
+  const { data: users, isLoading: isLoadingUsers, refetch: refetchUsers } = api.admin.getUsersForGifting.useQuery(
+    {
+      search: debouncedSearchTerm || undefined,
+      userType: selectedUserType && selectedUserType !== 'all' ? selectedUserType : undefined,
+    },
+    {
+      staleTime: 30000, // 30 seconds - data stays fresh for 30s
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnMount: false, // Don't refetch on component remount if data is fresh
+    }
+  );
 
   // Gift product mutation
   const giftProductMutation = api.admin.giftProductToUser.useMutation({

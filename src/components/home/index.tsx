@@ -15,11 +15,13 @@ import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
 import { PartnersSection } from '~/components/ui/partners-section';
 import { api } from '~/utils/api';
+import { useTranslation } from '~/hooks/use-translation';
 import { Hypertrain } from '../hypertrain/hypertrain';
 
 export default function Home() {
   const { user, isLoaded } = useUser();
   const userType = user?.publicMetadata.userType as UserType;
+  const t = useTranslation();
 
   const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery(undefined, {
     enabled: isLoaded && !!user,
@@ -75,6 +77,38 @@ export default function Home() {
     }
   };
 
+  // Get the referrer's name based on their type
+  const getReferrerName = () => {
+    const referral = userData?.referralsAsReferred?.[0];
+    if (!referral?.referrer) return null;
+
+    const referrer = referral.referrer;
+    const referrerType = referrer.userType;
+
+    switch (referrerType) {
+      case 'ENTREPRENEUR':
+        return referrer.entrepreneur
+          ? `${referrer.entrepreneur.firstName} ${referrer.entrepreneur.lastName}`
+          : null;
+      case 'INVESTOR':
+        return referrer.investor
+          ? `${referrer.investor.firstName} ${referrer.investor.lastName}`
+          : null;
+      case 'PARTNER':
+        return referrer.partner
+          ? `${referrer.partner.firstName} ${referrer.partner.lastName}`
+          : null;
+      case 'INCUBATOR':
+        return referrer.incubator ? referrer.incubator.name : null;
+      case 'VC_GROUP':
+        return referrer.vcGroup ? referrer.vcGroup.name : null;
+      default:
+        return null;
+    }
+  };
+
+  const referrerName = getReferrerName();
+
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];
   const hasNews = !isLoadingNews &&
@@ -118,6 +152,15 @@ export default function Home() {
           </>
         )}
       </div>
+
+      {/* Referrer Information */}
+      {referrerName && (
+        <div className="rounded-xl border-2 border-[#E5CD82]/20 bg-[#E5CD82]/10 p-4">
+          <p className="text-white/90">
+            {t('youWereReferredBy')} <span className="font-semibold text-[#E5CD82]">{referrerName}</span>
+          </p>
+        </div>
+      )}
 
       {/* Main Action Cards */}
       <div className={`grid gap-4 ${userType === 'ENTREPRENEUR' ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>

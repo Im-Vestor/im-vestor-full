@@ -79,6 +79,7 @@ type TranslationKey =
   | 'referralToken'
   | 'referralTokenOptional'
   | 'continue'
+  | 'youWereReferredBy'
   | 'pleaseFieldFields'
   | 'takeYourPass'
   | 'back'
@@ -184,6 +185,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     referralToken: 'referred?',
     referralTokenOptional: 'Referral Token (optional)',
     continue: 'Continue',
+    youWereReferredBy: 'You were referred by',
     pleaseFieldFields: 'Please fill all the fields',
     takeYourPass: 'Take your pass',
     back: 'Back',
@@ -288,6 +290,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     referralToken: 'referenciado?',
     referralTokenOptional: 'Token de Referência (opcional)',
     continue: 'Continuar',
+    youWereReferredBy: 'Foste referenciado por',
     pleaseFieldFields: 'Por favor, preencha todos os campos',
     takeYourPass: 'Obtenha o seu passe',
     back: 'Voltar',
