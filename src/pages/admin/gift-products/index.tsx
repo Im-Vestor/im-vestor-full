@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import AdminLayout from '../index';
-import { api } from '~/utils/api';
+import { api, type RouterInputs, type RouterOutputs } from '~/utils/api';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -8,10 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Gift, User, Package, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Gift, User, Package, Users, CheckCircle, XCircle, Handshake, Zap, UserCircle, Train, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDebounce } from '~/hooks/use-debounce';
+
+// Type definitions
+type UserForGifting = RouterOutputs['admin']['getUsersForGifting'][number];
+type BulkGiftResult = RouterOutputs['admin']['giftProductToUsersByEmail'];
+type ProductType = RouterInputs['admin']['giftProductToUser']['productType'];
 
 const products = [
   {
@@ -44,26 +50,32 @@ const products = [
   },
 ];
 
+// Helper function to clamp number between min and max
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(Math.max(value, min), max);
+};
+
 function GiftProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [selectedUserType, setSelectedUserType] = useState<string>('');
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<UserForGifting | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | ''>('');
   const [quantity, setQuantity] = useState(1);
   const [reason, setReason] = useState('');
   const [isGiftDialogOpen, setIsGiftDialogOpen] = useState(false);
 
   // Bulk gift states
   const [emailList, setEmailList] = useState('');
-  const [bulkProductType, setBulkProductType] = useState<string>('');
+  const [bulkProductType, setBulkProductType] = useState<ProductType | ''>('');
   const [bulkQuantity, setBulkQuantity] = useState(1);
   const [bulkReason, setBulkReason] = useState('');
-  const [bulkResults, setBulkResults] = useState<any>(null);
+  const [bulkResults, setBulkResults] = useState<BulkGiftResult | null>(null);
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
 
-  // Fetch users for gifting
+  // Fetch users for gifting with debounced search
   const { data: users, isLoading: isLoadingUsers, refetch: refetchUsers } = api.admin.getUsersForGifting.useQuery({
-    search: searchTerm || undefined,
+    search: debouncedSearchTerm || undefined,
     userType: selectedUserType && selectedUserType !== 'all' ? selectedUserType : undefined,
   });
 
@@ -118,7 +130,7 @@ function GiftProductsPage() {
 
     giftProductMutation.mutate({
       userId: selectedUser.id,
-      productType: selectedProduct as any,
+      productType: selectedProduct as ProductType,
       quantity,
       reason: reason || undefined,
     });
@@ -152,18 +164,16 @@ function GiftProductsPage() {
 
     bulkGiftProductMutation.mutate({
       emails,
-      productType: bulkProductType as any,
+      productType: bulkProductType as ProductType,
       quantity: bulkQuantity,
       reason: bulkReason || undefined,
     });
   };
 
   const getAvailableProducts = (userType: string) => {
-    // Admin rule: Hyper Train only for INVESTOR and VC_GROUP
+    // Filter products based on user type
+    // Note: Hyper Train is only available for INVESTOR and VC_GROUP (as per backend validation)
     return products.filter(product => {
-      if (product.id === 'hyper-train-ticket') {
-        return userType === 'INVESTOR' || userType === 'VC_GROUP';
-      }
       return product.availableUserTypes.includes(userType);
     });
   };
@@ -193,6 +203,108 @@ function GiftProductsPage() {
           </div>
         </div>
       </div>
+
+      {/* Bulk Gift Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+            Bulk Gift Products
+          </CardTitle>
+          <CardDescription className="text-sm">Gift products to multiple users by providing their email addresses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailList" className="text-sm font-medium">Email List</Label>
+              <textarea
+                id="emailList"
+                placeholder="Enter email addresses separated by commas, semicolons, or new lines&#10;Example: user1@example.com, user2@example.com&#10;user3@example.com"
+                value={emailList}
+                onChange={(e) => setEmailList(e.target.value)}
+                className="w-full min-h-[80px] sm:min-h-[100px] p-3 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Separate multiple emails with commas, semicolons, or new lines
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bulkProduct" className="text-sm font-medium">Product</Label>
+                <Select value={bulkProductType} onValueChange={(value) => setBulkProductType(value as ProductType | '')}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select a product" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ${product.value} • Available for: {product.availableUserTypes.join(', ')}
+                            </div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bulkQuantity" className="text-sm font-medium">Quantity</Label>
+                <Input
+                  id="bulkQuantity"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={bulkQuantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 1;
+                    setBulkQuantity(clamp(value, 1, 10));
+                  }}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bulkReason" className="text-sm font-medium">Reason (optional)</Label>
+              <Input
+                id="bulkReason"
+                placeholder="Why are you gifting this product?"
+                value={bulkReason}
+                onChange={(e) => setBulkReason(e.target.value)}
+                className="h-10"
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleBulkGiftProduct}
+                disabled={!emailList.trim() || !bulkProductType || bulkGiftProductMutation.isPending}
+                className="w-full sm:w-auto h-10"
+              >
+                {bulkGiftProductMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Gift className="h-4 w-4 mr-2" />
+                    Gift to Email List
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Search and Filters */}
       <Card>
@@ -230,105 +342,6 @@ function GiftProductsPage() {
                   <SelectItem value="PARTNER">Partner</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bulk Gift Section */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-            Bulk Gift Products
-          </CardTitle>
-          <CardDescription className="text-sm">Gift products to multiple users by providing their email addresses</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 sm:space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="emailList" className="text-sm font-medium">Email List</Label>
-              <textarea
-                id="emailList"
-                placeholder="Enter email addresses separated by commas, semicolons, or new lines&#10;Example: user1@example.com, user2@example.com&#10;user3@example.com"
-                value={emailList}
-                onChange={(e) => setEmailList(e.target.value)}
-                className="w-full min-h-[80px] sm:min-h-[100px] p-3 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                Separate multiple emails with commas, semicolons, or new lines
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="bulkProduct" className="text-sm font-medium">Product</Label>
-                <Select value={bulkProductType} onValueChange={setBulkProductType}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select a product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              ${product.value} • Available for: {product.availableUserTypes.join(', ')}
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bulkQuantity" className="text-sm font-medium">Quantity</Label>
-                <Input
-                  id="bulkQuantity"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={bulkQuantity}
-                  onChange={(e) => setBulkQuantity(parseInt(e.target.value) || 1)}
-                  className="h-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bulkReason" className="text-sm font-medium">Reason (optional)</Label>
-              <Input
-                id="bulkReason"
-                placeholder="Why are you gifting this product?"
-                value={bulkReason}
-                onChange={(e) => setBulkReason(e.target.value)}
-                className="h-10"
-              />
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <Button
-                onClick={handleBulkGiftProduct}
-                disabled={!emailList.trim() || !bulkProductType || bulkGiftProductMutation.isPending}
-                className="w-full sm:w-auto h-10"
-              >
-                {bulkGiftProductMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Gift className="h-4 w-4 mr-2" />
-                    Gift to All Users
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </CardContent>
@@ -373,114 +386,63 @@ function GiftProductsPage() {
                 >
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.imageUrl || undefined} alt={user.name} />
+                      <AvatarImage src={user.imageUrl || ''} alt={user.name || 'User avatar'} />
                       <AvatarFallback className="text-sm font-medium">
-                        {user.name.charAt(0).toUpperCase()}
+                        <UserCircle className="h-3 w-3" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex flex-row items-center justify-between w-full">
                       <div className="flex flex-col gap-1">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                          <h3 className="font-medium text-sm sm:text-base break-words">{user.name}</h3>
+                          <h3 className="font-medium text-sm sm:text-base break-words">{user.name || 'N/A'}</h3>
                           <Badge className={`${getUserTypeColor(user.userType)} text-xs shrink-0 w-fit`}>
                             {user.userType}
                           </Badge>
                         </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground break-all">{user.email}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>Pokes: {user.availablePokes}</span>
-                          <span>Boosts: {user.availableBoosts}</span>
+                        <div className="flex items-center gap-6 text-xs text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground break-all">{user.email}</p>
+                          {user.availablePokes > 0 ? (
+                            <span className="flex items-center gap-1">
+                              <Handshake className="h-3 w-3" />
+                              <span>Pokes: {user.availablePokes}</span>
+                            </span>
+                          ) : null}
+                          {user.availableBoosts > 0 ? (
+                            <span className="flex items-center gap-1">
+                              <Zap className="h-3 w-3" />
+                              <span>Boosts: {user.availableBoosts}</span>
+                            </span>
+                          ) : null}
+                          {user.availablePitches > 0 ? (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              <span>Pitches: {user.availablePitches}</span>
+                            </span>
+                          ) : null}
+                          {user.availableHyperTrainTickets > 0 ? (
+                            <span className="flex items-center gap-1">
+                              <Train className="h-3 w-3" />
+                              <span>Hyper Train Tickets: {user.availableHyperTrainTickets}</span>
+                            </span>
+                          ) : null}
                         </div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-fit h-8"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setSelectedProduct('');
+                          setQuantity(1);
+                          setReason('');
+                          setIsGiftDialogOpen(true);
+                        }}
+                      >
+                        <Gift className="h-3 w-3 mr-1 sm:mr-2" />
+                        <span className="text-xs sm:text-sm">Gift Product</span>
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Dialog open={isGiftDialogOpen && selectedUser?.id === user.id} onOpenChange={(open) => {
-                      setIsGiftDialogOpen(open);
-                      if (open) {
-                        setSelectedUser(user);
-                      } else {
-                        setSelectedUser(null);
-                      }
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1 h-8">
-                          <Gift className="h-3 w-3 mr-1 sm:mr-2" />
-                          <span className="text-xs sm:text-sm">Gift Product</span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md mx-4">
-                        <DialogHeader>
-                          <DialogTitle className="text-lg">Gift Product to {user.name}</DialogTitle>
-                          <DialogDescription className="text-sm">
-                            Select a product to gift to this user. The product will be added to their account.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="product" className="text-sm font-medium">Product</Label>
-                            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                              <SelectTrigger className="h-10">
-                                <SelectValue placeholder="Select a product" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getAvailableProducts(user.userType).map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                    <div className="flex items-center gap-2">
-                                      <Package className="h-4 w-4" />
-                                      <div>
-                                        <div className="font-medium">{product.name}</div>
-                                        <div className="text-xs text-muted-foreground">
-                                          ${product.value} • {product.description}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="quantity" className="text-sm font-medium">Quantity</Label>
-                            <Input
-                              id="quantity"
-                              type="number"
-                              min="1"
-                              max="10"
-                              value={quantity}
-                              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                              className="h-10"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="reason" className="text-sm font-medium">Reason (optional)</Label>
-                            <Input
-                              id="reason"
-                              placeholder="Why are you gifting this product?"
-                              value={reason}
-                              onChange={(e) => setReason(e.target.value)}
-                              className="h-10"
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter className="flex-col sm:flex-row gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setIsGiftDialogOpen(false)}
-                            className="w-full sm:w-auto h-10"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleGiftProduct}
-                            disabled={!selectedProduct || giftProductMutation.isPending}
-                            className="w-full sm:w-auto h-10"
-                          >
-                            {giftProductMutation.isPending ? 'Gifting...' : 'Gift Product'}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
                   </div>
                 </motion.div>
               ))}
@@ -496,6 +458,96 @@ function GiftProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Single Gift Dialog - Moved outside loop */}
+      <Dialog open={isGiftDialogOpen} onOpenChange={(open) => {
+        setIsGiftDialogOpen(open);
+        if (!open) {
+          setSelectedUser(null);
+          setSelectedProduct('');
+          setQuantity(1);
+          setReason('');
+        }
+      }}>
+        <DialogContent className="sm:max-w-md mx-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg">
+              Gift Product to {selectedUser?.name || selectedUser?.email || 'User'}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Select a product to gift to this user. The product will be added to their account.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="product" className="text-sm font-medium">Product</Label>
+                <Select value={selectedProduct} onValueChange={(value) => setSelectedProduct(value as ProductType)}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select a product" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableProducts(selectedUser.userType).map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ${product.value} • {product.description}
+                            </div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quantity" className="text-sm font-medium">Quantity</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={quantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 1;
+                    setQuantity(clamp(value, 1, 10));
+                  }}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reason" className="text-sm font-medium">Reason (optional)</Label>
+                <Input
+                  id="reason"
+                  placeholder="Why are you gifting this product?"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsGiftDialogOpen(false)}
+              className="w-full sm:w-auto h-10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGiftProduct}
+              disabled={!selectedUser || !selectedProduct || giftProductMutation.isPending}
+              className="w-full sm:w-auto h-10"
+            >
+              {giftProductMutation.isPending ? 'Gifting...' : 'Gift Product'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Bulk Gift Results Dialog */}
       <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
@@ -515,7 +567,7 @@ function GiftProductsPage() {
               {/* Failed Results First */}
               {bulkResults.errors && bulkResults.errors.length > 0 && (
                 <>
-                  {bulkResults.errors.map((error: any, index: number) => (
+                  {bulkResults.errors.map((error, index: number) => (
                     <div key={`error-${index}`} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
@@ -530,7 +582,7 @@ function GiftProductsPage() {
               {/* Successful Results */}
               {bulkResults.results && bulkResults.results.length > 0 && (
                 <>
-                  {bulkResults.results.map((result: any, index: number) => (
+                  {bulkResults.results.map((result, index: number) => (
                     <div key={`success-${index}`} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                       <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">

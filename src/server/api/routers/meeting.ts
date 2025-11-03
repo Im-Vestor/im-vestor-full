@@ -28,32 +28,32 @@ export const meetingRouter = createTRPCRouter({
       const whereClause =
         userType === UserType.ENTREPRENEUR
           ? {
-              entrepreneurId: user?.entrepreneur?.id,
-            }
+            entrepreneurId: user?.entrepreneur?.id,
+          }
           : userType === UserType.INCUBATOR
             ? {
-                incubators: {
+              incubators: {
+                some: {
+                  id: user?.incubator?.id,
+                },
+              },
+            }
+            : {
+              ...(user?.investor && {
+                investors: {
                   some: {
-                    id: user?.incubator?.id,
+                    id: user?.investor?.id,
                   },
                 },
-              }
-            : {
-                ...(user?.investor && {
-                  investors: {
-                    some: {
-                      id: user?.investor?.id,
-                    },
+              }),
+              ...(user?.vcGroup && {
+                vcGroups: {
+                  some: {
+                    id: user?.vcGroup?.id,
                   },
-                }),
-                ...(user?.vcGroup && {
-                  vcGroups: {
-                    some: {
-                      id: user?.vcGroup?.id,
-                    },
-                  },
-                }),
-              };
+                },
+              }),
+            };
 
       const meetings = await ctx.db.meeting.findMany({
         where: {
@@ -164,7 +164,7 @@ export const meetingRouter = createTRPCRouter({
         throw new Error('User IDs not found');
       }
 
-      const userIdsArray = userIds.filter(userId => userId !== undefined);
+      const userIdsArray = userIds.filter((userId): userId is string => typeof userId === 'string');
 
       await createNotifications(ctx.db, userIdsArray, NotificationType.MEETING_CANCELLED);
 

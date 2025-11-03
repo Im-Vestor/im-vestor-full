@@ -40,6 +40,12 @@ export const api = createTRPCNext<AppRouter>({
            */
           transformer: superjson,
           url: `${getBaseUrl()}/api/trpc`,
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: 'include', // Include cookies in requests
+            });
+          },
         }),
       ],
     };
