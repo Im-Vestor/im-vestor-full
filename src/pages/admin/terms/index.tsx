@@ -28,13 +28,26 @@ function EditorTerms() {
   const [title, setTitle] = useState<string>('Termos de Utilização');
   const [html, setHtml] = useState<string>('<h1>Termos de Utilização</h1><p>Adicione aqui os termos e condições...</p>');
   const editorRef = useRef<HTMLDivElement>(null);
+  const isComposingRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (data) {
       setTitle(data.title || 'Termos de Utilização');
-      setHtml(data.contentHtml || '<h1>Termos de Utilização</h1>');
+      const newHtml = data.contentHtml || '<h1>Termos de Utilização</h1>';
+      setHtml(newHtml);
+      // Initialize editor content without triggering React re-render
+      if (editorRef.current) {
+        editorRef.current.innerHTML = newHtml;
+      }
     }
   }, [data]);
+
+  // Ensure the editor has initial content when mounted (for default state before data loads)
+  useEffect(() => {
+    if (!isLoading && editorRef.current && !editorRef.current.innerHTML && html) {
+      editorRef.current.innerHTML = html;
+    }
+  }, [isLoading, html]);
 
   const exec = (command: string, value?: string) => {
     if (typeof window === 'undefined') return;
@@ -48,8 +61,18 @@ function EditorTerms() {
   };
 
   const onInput = () => {
+    if (isComposingRef.current) return;
     const currentHtml = editorRef.current?.innerHTML ?? '';
     setHtml(currentHtml);
+  };
+
+  const onCompositionStart = () => {
+    isComposingRef.current = true;
+  };
+
+  const onCompositionEnd = () => {
+    isComposingRef.current = false;
+    onInput();
   };
 
   const onSave = async () => {
@@ -113,7 +136,8 @@ function EditorTerms() {
           contentEditable
           suppressContentEditableWarning
           onInput={onInput}
-          dangerouslySetInnerHTML={{ __html: isLoading ? '<p>Carregando...</p>' : html }}
+          onCompositionStart={onCompositionStart}
+          onCompositionEnd={onCompositionEnd}
         />
       </div>
 

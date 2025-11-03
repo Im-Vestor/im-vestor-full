@@ -2,13 +2,13 @@ import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "~/utils/api";
 
 export default function Terms() {
 	const router = useRouter();
 	const { isLoaded, isSignedIn } = useUser();
-  const { data } = api.content.getByKey.useQuery({ key: "terms" });
+	const { data } = api.content.getByKey.useQuery({ key: "terms" });
 
 	return (
 		<main className="flex min-h-screen flex-col items-center pb-12">
@@ -28,14 +28,16 @@ export default function Terms() {
 			)}
 			<div className="mt-8 w-full max-w-5xl rounded-2xl border-4 border-white/10 bg-[#181920] bg-opacity-30 p-8 backdrop-blur-md">
 				<h1 className="mb-8 text-center text-4xl font-semibold text-[#E5CD82]">
-          {data?.title ?? 'Termos de Utilização'}
+					{data?.title ?? 'Termos de Utilização'}
 				</h1>
 				<div className="space-y-6 text-neutral-100">
-          {data?.contentHtml ? (
-            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: data.contentHtml }} />
-          ) : (
-            <p className="text-lg">Os termos e condições serão disponibilizados em breve.</p>
-          )}
+					{data?.contentHtml ? (
+						<div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: data.contentHtml }} />
+					) : (
+						<div className="flex items-center justify-center">
+							<Loader2 className="h-4 w-4 animate-spin" />
+						</div>
+					)}
 				</div>
 			</div>
 		</main>
