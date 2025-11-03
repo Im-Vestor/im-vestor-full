@@ -8,34 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Answer {
-  id                String           @id
-  answer            String
-  questionId        String
-  knowYourNumbersId String?
-  KnowYourNumbers   KnowYourNumbers? @relation(fields: [knowYourNumbersId], references: [id])
-}
-
-model Area {
-  id        String      @id
-  name      String
-  Project   Project[]
-  Incubator Incubator[]
-  Investor  Investor[]
-  VcGroup   VcGroup[]
-}
-
-model Connection {
-  id                                String   @id
-  createdAt                         DateTime @default(now())
-  followerId                        String
-  followingId                       String
-  User_Connection_followerIdToUser  User     @relation("Connection_followerIdToUser", fields: [followerId], references: [id])
-  User_Connection_followingIdToUser User     @relation("Connection_followingIdToUser", fields: [followingId], references: [id])
-
-  @@unique([followerId, followingId])
-}
-
 model Country {
   id           Int            @id @default(autoincrement())
   name         String
@@ -45,60 +17,124 @@ model Country {
   Incubator    Incubator[]
   Investor     Investor[]
   Project      Project[]
-  State        State[]
+  states       State[]
   VcGroup      VcGroup[]
 }
 
-model Entrepreneur {
-  id               String           @id
-  firstName        String
-  lastName         String
-  mobileFone       String?
-  companyName      String?
-  companyRole      String?
-  fiscalCode       String?
-  birthDate        DateTime?
-  photo            String?
-  banner           String?
-  about            String?
-  userId           String           @unique
-  stateId          Int?
-  countryId        Int?
-  personalPitchUrl String?
-  linkedinUrl      String?
-  Country          Country?         @relation(fields: [countryId], references: [id])
-  State            State?           @relation(fields: [stateId], references: [id])
-  User             User             @relation(fields: [userId], references: [id])
-  Meeting          Meeting[]
-  PreferredHours   PreferredHours[]
-  Project          Project[]
+model State {
+  id           Int            @id @default(autoincrement())
+  name         String
+  countryId    Int
+  Entrepreneur Entrepreneur[]
+  Incubator    Incubator[]
+  Investor     Investor[]
+  Project      Project[]
+  country      Country        @relation(fields: [countryId], references: [id])
+  VcGroup      VcGroup[]
 }
 
-model File {
-  id        String   @id
+model Area {
+  id        String      @id @default(uuid())
   name      String
-  type      String
-  size      Int
-  url       String
-  projectId String?
-  Project   Project? @relation(fields: [projectId], references: [id])
+  Project   Project[]
+  Incubator Incubator[] @relation("AreaToIncubator")
+  Investor  Investor[]  @relation("AreaToInvestor")
+  VcGroup   VcGroup[]   @relation("AreaToVcGroup")
 }
 
-model HyperTrainItem {
-  id          String             @id
+model Offer {
+  id          String      @id @default(uuid())
   name        String
-  description String?
-  image       String?
-  link        String
-  type        HyperTrainItemType
-  createdAt   DateTime           @default(now())
-  liveUntil   DateTime
-  updatedAt   DateTime
-  externalId  String             @unique
+  description String
+  Incubator   Incubator[] @relation("IncubatorToOffer")
+}
+
+model Referral {
+  id         String   @id @default(uuid())
+  name       String
+  joinedAt   DateTime @default(now())
+  referrerId String
+  referredId String
+  referred   User     @relation("ReferredToUser", fields: [referredId], references: [id])
+  referrer   User     @relation("ReferrerToUser", fields: [referrerId], references: [id])
+}
+
+model User {
+  id                   String               @id @default(uuid())
+  email                String               @unique
+  imageUrl             String?
+  referralCode         String               @unique
+  userType             UserType
+  availablePokes       Int                  @default(0)
+  stripeCustomerId     String?
+  availableBoosts      Int                  @default(0)
+  status               UserStatus           @default(ACTIVE)
+  createdAt            DateTime?            @default(now())
+  updatedAt            DateTime?            @default(now()) @updatedAt
+  followingConnections Connection[]         @relation("Follower")
+  followerConnections  Connection[]         @relation("Following")
+  entrepreneur         Entrepreneur?
+  incubator            Incubator?
+  investor             Investor?
+  Notification         Notification[]
+  partner              Partner?
+  referralsAsReferred  Referral[]           @relation("ReferredToUser")
+  referralsAsReferrer  Referral[]           @relation("ReferrerToUser")
+  supportTickets       SupportTicket[]
+  supportTicketReplies SupportTicketReply[] @relation("AdminReplies")
+  vcGroup              VcGroup?
+}
+
+model VcGroup {
+  id                    String          @id @default(uuid())
+  name                  String
+  bio                   String?
+  description           String?
+  website               String?
+  email                 String
+  logo                  String?
+  phone                 String?
+  openingDate           DateTime?
+  managedCapital        Float?
+  averageInvestmentSize Float?
+  brochureUrl           String?
+  investmentPolicy      String?
+  stages                ProjectStage[]
+  linkedinUrl           String?
+  youtubeUrl            String?
+  instagram             String?
+  twitter               String?
+  principalStartups     String?
+  principalExits        String?
+  userId                String          @unique
+  stateId               Int?
+  countryId             Int?
+  negotiations          Negotiation[]
+  projectViews          ProjectView[]
+  country               Country?        @relation(fields: [countryId], references: [id])
+  state                 State?          @relation(fields: [stateId], references: [id])
+  user                  User            @relation(fields: [userId], references: [id])
+  members               VcGroupMember[]
+  interestedAreas       Area[]          @relation("AreaToVcGroup")
+  favoriteProjects      Project[]       @relation("FavoriteVcGroups")
+  investedProjects      Project[]       @relation("InvestedVcGroups")
+  meetings              Meeting[]       @relation("MeetingVcGroups")
+}
+
+model VcGroupMember {
+  id        String  @id @default(uuid())
+  name      String
+  photo     String?
+  role      String
+  email     String
+  phone     String?
+  owner     Boolean @default(false)
+  vcGroupId String
+  vcGroup   VcGroup @relation(fields: [vcGroupId], references: [id])
 }
 
 model Incubator {
-  id                          String    @id
+  id                          String    @id @default(uuid())
   name                        String
   bio                         String?
   description                 String?
@@ -125,17 +161,167 @@ model Incubator {
   userId                      String    @unique
   stateId                     Int?
   countryId                   Int?
-  Country                     Country?  @relation(fields: [countryId], references: [id])
-  State                       State?    @relation(fields: [stateId], references: [id])
-  User                        User      @relation(fields: [userId], references: [id])
-  Project                     Project[]
-  Area                        Area[]
-  Offer                       Offer[]
-  Meeting                     Meeting[] @relation("MeetingIncubators")
+  country                     Country?  @relation(fields: [countryId], references: [id])
+  state                       State?    @relation(fields: [stateId], references: [id])
+  user                        User      @relation(fields: [userId], references: [id])
+  projects                    Project[]
+  areas                       Area[]    @relation("AreaToIncubator")
+  offers                      Offer[]   @relation("IncubatorToOffer")
+  meetings                    Meeting[] @relation("MeetingIncubators")
+}
+
+model Partner {
+  id             String  @id @default(uuid())
+  firstName      String
+  lastName       String
+  companyName    String?
+  mobileFone     String?
+  userId         String  @unique
+  companyLogoUrl String?
+  photo          String?
+  user           User    @relation(fields: [userId], references: [id])
+}
+
+model Investor {
+  id                 String        @id @default(uuid())
+  firstName          String
+  lastName           String
+  mobileFone         String?
+  fiscalCode         String?
+  investmentMinValue Float
+  investmentMaxValue Float
+  birthDate          DateTime?
+  photo              String?
+  banner             String?
+  about              String?
+  currency           Currency      @default(USD)
+  userId             String        @unique
+  stateId            Int?
+  countryId          Int?
+  personalPitchUrl   String?
+  linkedinUrl        String?
+  country            Country?      @relation(fields: [countryId], references: [id])
+  state              State?        @relation(fields: [stateId], references: [id])
+  user               User          @relation(fields: [userId], references: [id])
+  negotiations       Negotiation[]
+  projectViews       ProjectView[]
+  areas              Area[]        @relation("AreaToInvestor")
+  favoriteProjects   Project[]     @relation("FavoriteInvestors")
+  investedProjects   Project[]     @relation("InvestedInvestors")
+  meetings           Meeting[]     @relation("MeetingInvestors")
+}
+
+model Meeting {
+  id             String        @id @default(uuid())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  name           String
+  url            String
+  startDate      DateTime
+  endDate        DateTime
+  negotiationId  String?
+  entrepreneurId String?
+  entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
+  negotiation    Negotiation?  @relation(fields: [negotiationId], references: [id])
+  incubators     Incubator[]   @relation("MeetingIncubators")
+  investors      Investor[]    @relation("MeetingInvestors")
+  vcGroups       VcGroup[]     @relation("MeetingVcGroups")
+}
+
+model Entrepreneur {
+  id               String           @id @default(uuid())
+  firstName        String
+  lastName         String
+  mobileFone       String?
+  companyName      String?
+  companyRole      String?
+  fiscalCode       String?
+  birthDate        DateTime?
+  photo            String?
+  banner           String?
+  about            String?
+  userId           String           @unique
+  stateId          Int?
+  countryId        Int?
+  personalPitchUrl String?
+  linkedinUrl      String?
+  country          Country?         @relation(fields: [countryId], references: [id])
+  state            State?           @relation(fields: [stateId], references: [id])
+  user             User             @relation(fields: [userId], references: [id])
+  meetings         Meeting[]
+  preferredHours   PreferredHours[]
+  projects         Project[]
+}
+
+model PreferredHours {
+  id             String               @id @default(uuid())
+  period         PreferredHoursPeriod
+  time           String
+  entrepreneurId String
+  entrepreneur   Entrepreneur         @relation(fields: [entrepreneurId], references: [id])
+}
+
+model Project {
+  id                        String                  @id @default(uuid())
+  name                      String
+  quickSolution             String?
+  website                   String?
+  foundationDate            DateTime?
+  stage                     ProjectStage?
+  about                     String?
+  status                    ProjectStatus           @default(ACTIVE)
+  startInvestment           Float?
+  investorSlots             Int?
+  annualRevenue             Float?
+  monthsToReturn            Int?
+  equity                    Float?
+  investmentGoal            Float
+  logo                      String?
+  currency                  Currency                @default(USD)
+  photo1                    String?
+  photo2                    String?
+  photo3                    String?
+  photo4                    String?
+  videoUrl                  String?
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+  entrepreneurId            String?
+  favoriteInvestorId        String?
+  favoriteVcGroupId         String?
+  investedInvestorId        String?
+  investedVcGroupId         String?
+  sectorId                  String
+  countryId                 Int?
+  stateId                   Int?
+  incubatorId               String?
+  visibility                ProjectVisibility       @default(PRIVATE)
+  socialImpactBeneficiaries Int?
+  socialImpactDescription   String?
+  socialImpactMetrics       String?
+  photo1Caption             String?
+  photo2Caption             String?
+  photo3Caption             String?
+  photo4Caption             String?
+  boostedUntil              DateTime?
+  files                     File[]
+  incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
+  knowYourNumbers           KnowYourNumbers?
+  negotiations              Negotiation[]
+  country                   Country?                @relation(fields: [countryId], references: [id])
+  Entrepreneur              Entrepreneur?           @relation(fields: [entrepreneurId], references: [id])
+  Incubator                 Incubator?              @relation(fields: [incubatorId], references: [id])
+  sector                    Area                    @relation(fields: [sectorId], references: [id])
+  state                     State?                  @relation(fields: [stateId], references: [id])
+  faqs                      ProjectFaq[]
+  views                     ProjectView[]
+  favoriteInvestors         Investor[]              @relation("FavoriteInvestors")
+  favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
+  investedInvestors         Investor[]              @relation("InvestedInvestors")
+  investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
 }
 
 model IncubatorEntrepreneur {
-  id          String    @id
+  id          String    @id @default(uuid())
   firstName   String
   lastName    String
   mobileFone  String?
@@ -145,66 +331,13 @@ model IncubatorEntrepreneur {
   about       String?
   linkedinUrl String?
   projectId   String
-  Project     Project   @relation(fields: [projectId], references: [id])
-}
-
-model Investor {
-  id                        String        @id
-  firstName                 String
-  lastName                  String
-  mobileFone                String?
-  fiscalCode                String?
-  investmentMinValue        Float
-  investmentMaxValue        Float
-  birthDate                 DateTime?
-  photo                     String?
-  banner                    String?
-  about                     String?
-  currency                  Currency      @default(USD)
-  userId                    String        @unique
-  stateId                   Int?
-  countryId                 Int?
-  personalPitchUrl          String?
-  linkedinUrl               String?
-  Country                   Country?      @relation(fields: [countryId], references: [id])
-  State                     State?        @relation(fields: [stateId], references: [id])
-  User                      User          @relation(fields: [userId], references: [id])
-  Negotiation               Negotiation[]
-  ProjectView               ProjectView[]
-  Area                      Area[]
-  Project_FavoriteInvestors Project[]     @relation("FavoriteInvestors")
-  Project_InvestedInvestors Project[]     @relation("InvestedInvestors")
-  Meeting                   Meeting[]     @relation("MeetingInvestors")
-}
-
-model KnowYourNumbers {
-  id        String   @id
-  projectId String   @unique
-  Answer    Answer[]
-  Project   Project  @relation(fields: [projectId], references: [id])
-}
-
-model Meeting {
-  id             String        @id
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime
-  name           String
-  url            String
-  startDate      DateTime
-  endDate        DateTime
-  negotiationId  String?
-  entrepreneurId String?
-  Entrepreneur   Entrepreneur? @relation(fields: [entrepreneurId], references: [id])
-  Negotiation    Negotiation?  @relation(fields: [negotiationId], references: [id])
-  Incubator      Incubator[]   @relation("MeetingIncubators")
-  Investor       Investor[]    @relation("MeetingInvestors")
-  VcGroup        VcGroup[]     @relation("MeetingVcGroups")
+  Project     Project   @relation("IncubatorEntrepreneurs", fields: [projectId], references: [id])
 }
 
 model Negotiation {
-  id                                String           @id
+  id                                String           @id @default(uuid())
   createdAt                         DateTime         @default(now())
-  updatedAt                         DateTime
+  updatedAt                         DateTime         @updatedAt
   stage                             NegotiationStage @default(PITCH)
   investorActionNeeded              Boolean          @default(false)
   entrepreneurActionNeeded          Boolean          @default(false)
@@ -213,43 +346,101 @@ model Negotiation {
   investorId                        String?
   projectId                         String
   vcGroupId                         String?
-  Meeting                           Meeting[]
-  Investor                          Investor?        @relation(fields: [investorId], references: [id])
-  Project                           Project          @relation(fields: [projectId], references: [id])
+  meetings                          Meeting[]
+  investor                          Investor?        @relation(fields: [investorId], references: [id])
+  project                           Project          @relation(fields: [projectId], references: [id])
   VcGroup                           VcGroup?         @relation(fields: [vcGroupId], references: [id])
 }
 
+model KnowYourNumbers {
+  id        String   @id @default(uuid())
+  projectId String   @unique
+  answers   Answer[]
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model Answer {
+  id                String           @id @default(uuid())
+  answer            String
+  questionId        String
+  knowYourNumbersId String?
+  KnowYourNumbers   KnowYourNumbers? @relation(fields: [knowYourNumbersId], references: [id])
+}
+
+model ProjectFaq {
+  id        String  @id @default(uuid())
+  question  String
+  answer    String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model ProjectView {
+  id         String    @id @default(uuid())
+  createdAt  DateTime  @default(now())
+  investorId String?
+  projectId  String
+  vcGroupId  String?
+  investor   Investor? @relation(fields: [investorId], references: [id])
+  project    Project   @relation(fields: [projectId], references: [id])
+  VcGroup    VcGroup?  @relation(fields: [vcGroupId], references: [id])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  size      Int
+  url       String
+  projectId String?
+  Project   Project? @relation(fields: [projectId], references: [id])
+}
+
+model Connection {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  followerId  String
+  followingId String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  following   User     @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
 model Notification {
-  id         String           @id
+  id         String           @id @default(uuid())
   createdAt  DateTime         @default(now())
   type       NotificationType
   read       Boolean          @default(false)
   userId     String
   investorId String?
-  User       User             @relation(fields: [userId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
 }
 
-model Offer {
-  id          String      @id
-  name        String
-  description String
-  Incubator   Incubator[]
+model SupportTicket {
+  id        String               @id @default(uuid())
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  subject   String
+  message   String
+  status    SupportTicketStatus  @default(OPEN)
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id])
+  replies   SupportTicketReply[]
 }
 
-model Partner {
-  id             String  @id
-  firstName      String
-  lastName       String
-  companyName    String?
-  mobileFone     String?
-  userId         String  @unique
-  companyLogoUrl String?
-  photo          String?
-  User           User    @relation(fields: [userId], references: [id])
+model SupportTicketReply {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  message   String
+  adminId   String
+  ticketId  String
+  admin     User          @relation("AdminReplies", fields: [adminId], references: [id])
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
 }
 
 model PotentialUser {
-  id        String   @id
+  id        String   @id @default(uuid())
   name      String
   email     String
   phone     String?
@@ -257,100 +448,17 @@ model PotentialUser {
   event     String?
 }
 
-model PreferredHours {
-  id             String               @id
-  period         PreferredHoursPeriod
-  time           String
-  entrepreneurId String
-  Entrepreneur   Entrepreneur         @relation(fields: [entrepreneurId], references: [id])
-}
-
-model Project {
-  id                         String                  @id
-  name                       String
-  quickSolution              String?
-  website                    String?
-  foundationDate             DateTime?
-  stage                      ProjectStage?
-  about                      String?
-  status                     ProjectStatus           @default(ACTIVE)
-  startInvestment            Float?
-  investorSlots              Int?
-  annualRevenue              Float?
-  monthsToReturn             Int?
-  equity                     Float?
-  investmentGoal             Float
-  logo                       String?
-  currency                   Currency                @default(USD)
-  photo1                     String?
-  photo2                     String?
-  photo3                     String?
-  photo4                     String?
-  videoUrl                   String?
-  createdAt                  DateTime                @default(now())
-  updatedAt                  DateTime
-  entrepreneurId             String?
-  favoriteInvestorId         String?
-  favoriteVcGroupId          String?
-  investedInvestorId         String?
-  investedVcGroupId          String?
-  sectorId                   String
-  countryId                  Int?
-  stateId                    Int?
-  incubatorId                String?
-  visibility                 ProjectVisibility       @default(PRIVATE)
-  socialImpactBeneficiaries  Int?
-  socialImpactDescription    String?
-  socialImpactMetrics        String?
-  photo1Caption              String?
-  photo2Caption              String?
-  photo3Caption              String?
-  photo4Caption              String?
-  boostedUntil               DateTime?
-  File                       File[]
-  IncubatorEntrepreneur      IncubatorEntrepreneur[]
-  KnowYourNumbers            KnowYourNumbers?
-  Negotiation                Negotiation[]
-  Country                    Country?                @relation(fields: [countryId], references: [id])
-  Entrepreneur               Entrepreneur?           @relation(fields: [entrepreneurId], references: [id])
-  Incubator                  Incubator?              @relation(fields: [incubatorId], references: [id])
-  Area                       Area                    @relation(fields: [sectorId], references: [id])
-  State                      State?                  @relation(fields: [stateId], references: [id])
-  ProjectFaq                 ProjectFaq[]
-  ProjectView                ProjectView[]
-  Investor_FavoriteInvestors Investor[]              @relation("FavoriteInvestors")
-  VcGroup_FavoriteVcGroups   VcGroup[]               @relation("FavoriteVcGroups")
-  Investor_InvestedInvestors Investor[]              @relation("InvestedInvestors")
-  VcGroup_InvestedVcGroups   VcGroup[]               @relation("InvestedVcGroups")
-}
-
-model ProjectFaq {
-  id        String  @id
-  question  String
-  answer    String
-  projectId String
-  Project   Project @relation(fields: [projectId], references: [id])
-}
-
-model ProjectView {
-  id         String    @id
-  createdAt  DateTime  @default(now())
-  investorId String?
-  projectId  String
-  vcGroupId  String?
-  Investor   Investor? @relation(fields: [investorId], references: [id])
-  Project    Project   @relation(fields: [projectId], references: [id])
-  VcGroup    VcGroup?  @relation(fields: [vcGroupId], references: [id])
-}
-
-model Referral {
-  id                             String   @id
-  name                           String
-  joinedAt                       DateTime @default(now())
-  referrerId                     String
-  referredId                     String
-  User_Referral_referredIdToUser User     @relation("Referral_referredIdToUser", fields: [referredId], references: [id])
-  User_Referral_referrerIdToUser User     @relation("Referral_referrerIdToUser", fields: [referrerId], references: [id])
+model HyperTrainItem {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  image       String?
+  link        String
+  type        HyperTrainItemType
+  createdAt   DateTime           @default(now())
+  liveUntil   DateTime
+  updatedAt   DateTime           @updatedAt
+  externalId  String             @unique
 }
 
 model SiteContent {
@@ -360,114 +468,6 @@ model SiteContent {
   contentHtml String
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
-}
-
-model State {
-  id           Int            @id @default(autoincrement())
-  name         String
-  countryId    Int
-  Entrepreneur Entrepreneur[]
-  Incubator    Incubator[]
-  Investor     Investor[]
-  Project      Project[]
-  Country      Country        @relation(fields: [countryId], references: [id])
-  VcGroup      VcGroup[]
-}
-
-model SupportTicket {
-  id                 String               @id
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  subject            String
-  message            String
-  status             SupportTicketStatus  @default(OPEN)
-  userId             String
-  User               User                 @relation(fields: [userId], references: [id])
-  SupportTicketReply SupportTicketReply[]
-}
-
-model SupportTicketReply {
-  id            String        @id
-  createdAt     DateTime      @default(now())
-  message       String
-  adminId       String
-  ticketId      String
-  User          User          @relation(fields: [adminId], references: [id])
-  SupportTicket SupportTicket @relation(fields: [ticketId], references: [id])
-}
-
-model User {
-  id                                      String               @id
-  email                                   String               @unique
-  imageUrl                                String?
-  referralCode                            String               @unique
-  userType                                UserType
-  availablePokes                          Int                  @default(0)
-  stripeCustomerId                        String?
-  availableBoosts                         Int                  @default(0)
-  status                                  UserStatus           @default(ACTIVE)
-  createdAt                               DateTime?            @default(now())
-  updatedAt                               DateTime?            @default(now())
-  Connection_Connection_followerIdToUser  Connection[]         @relation("Connection_followerIdToUser")
-  Connection_Connection_followingIdToUser Connection[]         @relation("Connection_followingIdToUser")
-  Entrepreneur                            Entrepreneur?
-  Incubator                               Incubator?
-  Investor                                Investor?
-  Notification                            Notification[]
-  Partner                                 Partner?
-  Referral_Referral_referredIdToUser      Referral[]           @relation("Referral_referredIdToUser")
-  Referral_Referral_referrerIdToUser      Referral[]           @relation("Referral_referrerIdToUser")
-  SupportTicket                           SupportTicket[]
-  SupportTicketReply                      SupportTicketReply[]
-  VcGroup                                 VcGroup?
-}
-
-model VcGroup {
-  id                       String          @id
-  name                     String
-  bio                      String?
-  description              String?
-  website                  String?
-  email                    String
-  logo                     String?
-  phone                    String?
-  openingDate              DateTime?
-  managedCapital           Float?
-  averageInvestmentSize    Float?
-  brochureUrl              String?
-  investmentPolicy         String?
-  stages                   ProjectStage[]
-  linkedinUrl              String?
-  youtubeUrl               String?
-  instagram                String?
-  twitter                  String?
-  principalStartups        String?
-  principalExits           String?
-  userId                   String          @unique
-  stateId                  Int?
-  countryId                Int?
-  Negotiation              Negotiation[]
-  ProjectView              ProjectView[]
-  Country                  Country?        @relation(fields: [countryId], references: [id])
-  State                    State?          @relation(fields: [stateId], references: [id])
-  User                     User            @relation(fields: [userId], references: [id])
-  VcGroupMember            VcGroupMember[]
-  Area                     Area[]
-  Project_FavoriteVcGroups Project[]       @relation("FavoriteVcGroups")
-  Project_InvestedVcGroups Project[]       @relation("InvestedVcGroups")
-  Meeting                  Meeting[]       @relation("MeetingVcGroups")
-}
-
-model VcGroupMember {
-  id        String  @id
-  name      String
-  photo     String?
-  role      String
-  email     String
-  phone     String?
-  owner     Boolean @default(false)
-  vcGroupId String
-  VcGroup   VcGroup @relation(fields: [vcGroupId], references: [id])
 }
 
 enum Currency {
@@ -480,6 +480,53 @@ enum HyperTrainItemType {
   PROJECT
   INVESTOR
   NEWS
+}
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+}
+
+enum ProjectVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum SupportTicketStatus {
+  OPEN
+  CLOSED
+}
+
+enum UserType {
+  ENTREPRENEUR
+  INVESTOR
+  PARTNER
+  VC_GROUP
+  INCUBATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_EMAIL_VERIFICATION
+}
+
+enum PreferredHoursPeriod {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum ProjectStage {
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C
+  IPO
+  SOCIAL_IMPACT
 }
 
 enum NegotiationStage {
@@ -502,51 +549,4 @@ enum NotificationType {
   SUPPORT_TICKET_STATUS_UPDATED
   SUPPORT_TICKET_CREATED
   SUPPORT_TICKET_RECEIVED
-}
-
-enum PreferredHoursPeriod {
-  MORNING
-  AFTERNOON
-  EVENING
-}
-
-enum ProjectStage {
-  PRE_SEED
-  SEED
-  SERIES_A
-  SERIES_B
-  SERIES_C
-  IPO
-  SOCIAL_IMPACT
-}
-
-enum ProjectStatus {
-  ACTIVE
-  INACTIVE
-  COMPLETED
-}
-
-enum ProjectVisibility {
-  PUBLIC
-  PRIVATE
-}
-
-enum SupportTicketStatus {
-  OPEN
-  CLOSED
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  PENDING_EMAIL_VERIFICATION
-}
-
-enum UserType {
-  ENTREPRENEUR
-  INVESTOR
-  PARTNER
-  VC_GROUP
-  INCUBATOR
-  ADMIN
 }
