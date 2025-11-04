@@ -8,7 +8,10 @@ export default function PartnerDashboard() {
 
   // in this page we will need to fetch all the projects from entrepreneurs or partners that were referred by the partner
 
-  const { data: user, isLoading } = api.user.getUser.useQuery();
+  const { data: user, isLoading } = api.user.getUser.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+  });
 
   // Debug log removed to prevent hydration mismatch
 

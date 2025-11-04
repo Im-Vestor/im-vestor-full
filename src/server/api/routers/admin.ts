@@ -173,8 +173,8 @@ export const adminRouter = createTRPCRouter({
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
-      // Check admin authorization with delete role
-      await checkAdminAuthorization(ctx, 'delete');
+      // Allow any admin to perform deletion (no specific role required)
+      await checkAdminAuthorization(ctx);
 
       // Check rate limiting
       checkRateLimit(ctx.auth.userId, 'user_deletion');
@@ -1033,18 +1033,24 @@ export const adminRouter = createTRPCRouter({
       const now = new Date();
 
       // OPTIMIZATION: Batch fetch all HyperTrain counts and Projects instead of N+1 queries
-      // Group users by type to batch queries
+      // Group users by type to batch queries (using type guards to avoid non-null assertions)
       const investorIds = users
-        .filter(u => u.userType === 'INVESTOR' && u.investor?.id)
-        .map(u => String(u.investor!.id));
+        .filter((u): u is typeof u & { investor: { id: string } } =>
+          u.userType === 'INVESTOR' && !!u.investor?.id
+        )
+        .map(u => String(u.investor.id));
 
       const vcGroupIds = users
-        .filter(u => u.userType === 'VC_GROUP' && u.vcGroup?.id)
-        .map(u => String(u.vcGroup!.id));
+        .filter((u): u is typeof u & { vcGroup: { id: string } } =>
+          u.userType === 'VC_GROUP' && !!u.vcGroup?.id
+        )
+        .map(u => String(u.vcGroup.id));
 
       const entrepreneurIds = users
-        .filter(u => u.userType === 'ENTREPRENEUR' && u.entrepreneur?.id)
-        .map(u => u.entrepreneur!.id);
+        .filter((u): u is typeof u & { entrepreneur: { id: string } } =>
+          u.userType === 'ENTREPRENEUR' && !!u.entrepreneur?.id
+        )
+        .map(u => u.entrepreneur.id);
 
       // Batch fetch all projects for entrepreneurs
       const allProjects = entrepreneurIds.length > 0
@@ -1072,24 +1078,24 @@ export const adminRouter = createTRPCRouter({
       const allProjectIds = Array.from(projectsByEntrepreneur.values()).flat();
       const allExternalIds = [...investorIds, ...vcGroupIds, ...allProjectIds.map(String)];
 
-      // Batch fetch all HyperTrain items for all external IDs in one query
-      const allHyperTrainItems = allExternalIds.length > 0
-        ? await ctx.db.hyperTrainItem.findMany({
+      // OPTIMIZATION: Use groupBy for efficient counting directly in the database
+      // This is more efficient than fetching all items and counting in memory
+      const hyperTrainCountMap = new Map<string, number>();
+      if (allExternalIds.length > 0) {
+        const groupedCounts = await ctx.db.hyperTrainItem.groupBy({
+          by: ['externalId'],
           where: {
             externalId: { in: allExternalIds },
             liveUntil: { gte: now },
           },
-          select: {
+          _count: {
             externalId: true,
           },
-        })
-        : [];
+        });
 
-      // Count HyperTrain items by externalId in memory (still much better than N+1 queries)
-      const hyperTrainCountMap = new Map<string, number>();
-      for (const item of allHyperTrainItems) {
-        const count = hyperTrainCountMap.get(item.externalId) || 0;
-        hyperTrainCountMap.set(item.externalId, count + 1);
+        for (const group of groupedCounts) {
+          hyperTrainCountMap.set(group.externalId, group._count.externalId);
+        }
       }
 
       // Map users with counts using the batch-fetched data
@@ -1114,6 +1120,26 @@ export const adminRouter = createTRPCRouter({
         // For now, return 0 as pitches are not stored in a dedicated table
         availablePitches = 0;
 
+        // Helper function to get user display name
+        const getUserDisplayName = () => {
+          if (user.entrepreneur) {
+            return `${user.entrepreneur.firstName} ${user.entrepreneur.lastName}`;
+          }
+          if (user.investor) {
+            return `${user.investor.firstName} ${user.investor.lastName}`;
+          }
+          if (user.incubator?.name) {
+            return user.incubator.name;
+          }
+          if (user.partner?.companyName) {
+            return user.partner.companyName;
+          }
+          if (user.vcGroup?.name) {
+            return user.vcGroup.name;
+          }
+          return 'N/A';
+        };
+
         return {
           id: user.id,
           email: user.email,
@@ -1123,17 +1149,7 @@ export const adminRouter = createTRPCRouter({
           availablePitches,
           availableHyperTrainTickets,
           imageUrl: user.imageUrl,
-          name: user.entrepreneur
-            ? `${user.entrepreneur.firstName} ${user.entrepreneur.lastName}`
-            : user.investor
-              ? `${user.investor.firstName} ${user.investor.lastName}`
-              : user.incubator?.name
-                ? user.incubator.name
-                : user.partner?.companyName
-                  ? user.partner.companyName
-                  : user.vcGroup?.name
-                    ? user.vcGroup.name
-                    : 'N/A',
+          name: getUserDisplayName(),
         };
       });
 
@@ -1250,10 +1266,6 @@ export const adminRouter = createTRPCRouter({
 
               if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
                 const project = fullUser.entrepreneur.projects[0];
-                if (!project) {
-                  errors.push({ email, error: 'Entrepreneur must have at least one project to use Hyper Train' });
-                  continue;
-                }
                 await ctx.db.hyperTrainItem.upsert({
                   where: { externalId: project.id },
                   update: { liveUntil: addDays(new Date(), 7) },
@@ -1423,9 +1435,6 @@ export const adminRouter = createTRPCRouter({
 
           if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
             const project = fullUser.entrepreneur.projects[0];
-            if (!project) {
-              throw new Error("Entrepreneur must have at least one project to use Hyper Train");
-            }
             await ctx.db.hyperTrainItem.upsert({
               where: { externalId: project.id },
               update: { liveUntil: addDays(new Date(), 7) },

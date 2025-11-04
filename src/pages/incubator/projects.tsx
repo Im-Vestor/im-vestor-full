@@ -1,7 +1,6 @@
 import {
   type Incubator,
   type Country,
-  type Entrepreneur,
   type Project,
   type State,
 } from '@prisma/client';

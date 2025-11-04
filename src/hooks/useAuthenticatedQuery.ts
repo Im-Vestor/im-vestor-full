@@ -19,9 +19,10 @@ export function useAuthenticatedQuery<T>(
 
   // Clear timeout on unmount
   useEffect(() => {
+    const timeoutId = retryTimeoutRef.current;
     return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
   }, []);

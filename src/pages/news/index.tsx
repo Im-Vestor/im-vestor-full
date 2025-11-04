@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { api } from '~/utils/api';
 import { Header } from '~/components/header';
 import { NewsGrid } from '~/components/news/NewsCard';
-import { getNewsDescription, type NewsUserType } from '~/types/news';
+import { getNewsDescription, type NewsUserType, toNewsUserType } from '~/types/news';
 
 export default function NewsPage() {
   const { user } = useUser();
@@ -15,15 +15,20 @@ export default function NewsPage() {
       }
     | undefined;
 
+  const userType = userMetadata?.userType;
+
   const {
     data: newsData,
     isLoading,
     error,
   } = api.news.getUserTypeNews.useQuery(
-    {},
+    {
+      userType: userType ? toNewsUserType(userType) : undefined,
+    },
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: !!userType, // Only fetch when user has a type
     }
   );
 

@@ -22,6 +22,8 @@ export function ActivityPanel() {
   });
   const { data: negotiations } = api.user.getUser.useQuery(undefined, {
     enabled: isLoaded && !!isSignedIn,
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
     retry: (failureCount, error) => {
       // Retry up to 3 times for auth errors
       if (error?.data?.code === 'UNAUTHORIZED' && failureCount < 3) {

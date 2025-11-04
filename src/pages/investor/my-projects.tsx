@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Header } from '~/components/header';
 import { api } from '~/utils/api';
 import { Badge } from '~/components/ui/badge';
@@ -17,13 +17,11 @@ import {
   DollarSign,
   MessageSquare,
   Clock,
-  Edit3,
-  Save,
-  X,
   Search
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 const NEGOTIATION_STAGE_LABELS = {
   PITCH: 'Pitch',
@@ -41,6 +39,232 @@ const NEGOTIATION_STAGE_COLORS = {
   CANCELLED: 'bg-red-100 text-red-800',
 };
 
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(date));
+};
+
+interface ProjectCardProps {
+  project: any;
+  projectType: 'negotiation' | 'favorite' | 'invested';
+  negotiationStage?: string | null;
+  meetings?: any[];
+  notes: Record<string, string>;
+  editingNotes: string | null;
+  onStartEditing: (projectId: string) => void;
+  onNotesChange: (projectId: string, value: string) => void;
+  onSaveNotes: (projectId: string) => void;
+  onCancelNotes: () => void;
+}
+
+const ProjectCard = ({
+  project,
+  projectType,
+  negotiationStage = null,
+  meetings = [],
+  notes,
+  editingNotes,
+  onStartEditing,
+  onNotesChange,
+  onSaveNotes,
+  onCancelNotes,
+}: ProjectCardProps) => {
+  const projectId = project.id;
+  const isEditingNotes = editingNotes === projectId;
+  const currentNotes = notes[projectId] || '';
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isEditingNotes && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isEditingNotes]);
+
+  const handleSaveNotes = useCallback(() => {
+    onSaveNotes(projectId);
+  }, [projectId, onSaveNotes]);
+
+  const handleCancelNotes = useCallback(() => {
+    onCancelNotes();
+  }, [onCancelNotes]);
+
+  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onNotesChange(projectId, e.target.value);
+  }, [projectId, onNotesChange]);
+
+  const getProjectTypeInfo = () => {
+    switch (projectType) {
+      case 'negotiation':
+        return {
+          label: 'Negotiation',
+          icon: <MessageSquare className="h-4 w-4" />,
+          color: 'bg-blue-100 text-blue-800',
+          stage: negotiationStage
+        };
+      case 'favorite':
+        return {
+          label: 'Favorite',
+          icon: <Heart className="h-4 w-4" />,
+          color: 'bg-pink-100 text-pink-800',
+          stage: null
+        };
+      case 'invested':
+        return {
+          label: 'Invested',
+          icon: <TrendingUp className="h-4 w-4" />,
+          color: 'bg-green-100 text-green-800',
+          stage: null
+        };
+      default:
+        return {
+          label: 'Project',
+          icon: <Building2 className="h-4 w-4" />,
+          color: 'bg-gray-100 text-gray-800',
+          stage: null
+        };
+    }
+  };
+
+  const typeInfo = getProjectTypeInfo();
+
+  return (
+    <Card className="rounded-xl border bg-card border-white/10 hover:border-white/20 transition-all">
+      <CardContent className="p-4 md:p-5">
+        <div className="flex flex-1 flex-col gap-4">
+          {/* Header */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {project.logo ? (
+                  <div className="relative h-12 w-12 md:h-14 md:w-14 flex-shrink-0 overflow-hidden rounded-lg ring-2 ring-white/10">
+                    <Image
+                      src={project.logo}
+                      alt={`${project.name} Logo`}
+                      width={56}
+                      height={56}
+                      className="h-full w-full rounded-md object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-12 w-12 md:h-14 md:w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-2 ring-white/10">
+                    <Building2 className="size-6 md:size-7 text-neutral-500" />
+                  </div>
+                )}
+                <Link href={`/companies/${project.id}`} className="block max-w-full min-w-0">
+                  <h3 title={project.name} className="truncate text-base md:text-lg font-semibold tracking-tight hover:text-white/90 transition-colors cursor-pointer">
+                    {project.name}
+                  </h3>
+                </Link>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-white/70">{project.likesCount}</span>
+                <Heart className={`size-4 ${project.likesCount > 0 ? 'fill-yellow-500 text-yellow-500' : 'fill-transparent'}`} />
+              </div>
+            </div>
+
+            {(project.Entrepreneur || project.country || project.sector) && (
+              <div className="text-xs text-white/60 flex flex-wrap items-center gap-1">
+                {project.Entrepreneur && (
+                  <span>
+                    {project.Entrepreneur.firstName} {project.Entrepreneur.lastName}
+                  </span>
+                )}
+                {project.country && (
+                  <>
+                    {project.Entrepreneur ? <span className="mx-1 text-white/30">•</span> : null}
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      <span>{project.country.name}</span>
+                    </span>
+                  </>
+                )}
+                {project.sector && (
+                  <>
+                    {(project.Entrepreneur || project.country) ? <span className="mx-1 text-white/30">•</span> : null}
+                    <span>{project.sector.name}</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            <p className="text-sm text-white/60 line-clamp-1">
+              {project.quickSolution || project.about || 'No description available'}
+            </p>
+          </div>
+
+          {/* Quick details */}
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {project.stage && (
+              <div className="flex items-center gap-1 rounded-full bg-white/5 px-2.5 py-1">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs text-white/70">{project.stage.replace('_', ' ')}</span>
+              </div>
+            )}
+
+            {project.investmentGoal && (
+              <div className="flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1">
+                <DollarSign className="h-3 w-3" />
+                <span className="truncate text-xs text-white/70">
+                  {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}{' '}
+                  {project.investmentGoal.toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Negotiation Stage */}
+          {negotiationStage && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/70">Negotiation:</span>
+              <Badge className={`text-[10px] ${NEGOTIATION_STAGE_COLORS[negotiationStage as keyof typeof NEGOTIATION_STAGE_COLORS]}`}>
+                {NEGOTIATION_STAGE_LABELS[negotiationStage as keyof typeof NEGOTIATION_STAGE_LABELS]}
+              </Badge>
+            </div>
+          )}
+
+          {/* Notes Section */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/70">Personal Notes</span>
+            </div>
+
+            {isEditingNotes ? (
+              <div className="flex flex-col gap-2">
+                <Textarea
+                  ref={textareaRef}
+                  value={currentNotes}
+                  onChange={handleNotesChange}
+                  onBlur={handleSaveNotes}
+                  placeholder="Add your personal notes about this project..."
+                  className="min-h-[44px] text-sm bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                />
+              </div>
+            ) : (
+              <div
+                className="min-h-[44px] p-2 rounded-lg bg-white/5 border border-white/10 cursor-text"
+                role="textbox"
+                tabIndex={0}
+                onClick={() => onStartEditing(projectId)}
+                onFocus={() => onStartEditing(projectId)}
+                aria-label="Personal Notes"
+              >
+                {currentNotes ? (
+                  <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-2">{currentNotes}</p>
+                ) : (
+                  <p className="text-xs text-white/50 italic">Click to add your notes about this project.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function MyProjects() {
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
@@ -53,6 +277,23 @@ export default function MyProjects() {
     { enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR' }
   );
 
+  const { data: projectNotes, refetch: refetchNotes } = api.investor.getProjectNotes.useQuery(
+    undefined,
+    {
+      enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR'
+    }
+  );
+
+  const saveNoteMutation = api.investor.saveProjectNote.useMutation({
+    onSuccess: () => {
+      toast.success('Note saved successfully');
+      void refetchNotes();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to save note');
+    },
+  });
+
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       void router.push('/login');
@@ -64,6 +305,40 @@ export default function MyProjects() {
       void router.push('/404');
     }
   }, [isLoaded, isSignedIn, user, router]);
+
+  // Load notes when projectNotes data is available
+  useEffect(() => {
+    if (projectNotes && !Array.isArray(projectNotes)) {
+      setNotes(projectNotes as Record<string, string>);
+    } else if (!projectNotes) {
+      setNotes({});
+    }
+  }, [projectNotes]);
+
+  const handleStartEditing = useCallback((projectId: string) => {
+    setEditingNotes(projectId);
+  }, []);
+
+  const handleNotesChange = useCallback((projectId: string, value: string) => {
+    setNotes(prev => ({ ...prev, [projectId]: value }));
+  }, []);
+
+  const handleSaveNotes = useCallback((projectId: string) => {
+    const noteToSave = notes[projectId] || '';
+    saveNoteMutation.mutate({
+      projectId,
+      notes: noteToSave,
+    });
+    setEditingNotes(null);
+  }, [notes, saveNoteMutation]);
+
+  const handleCancelNotes = useCallback(() => {
+    setEditingNotes(null);
+    // Optionally restore original notes from backend
+    if (projectNotes && !Array.isArray(projectNotes)) {
+      setNotes(projectNotes as Record<string, string>);
+    }
+  }, [projectNotes]);
 
   // Don't render anything if user is not an investor
   if (isLoaded && isSignedIn && user?.publicMetadata.userType !== 'INVESTOR') {
@@ -104,250 +379,6 @@ export default function MyProjects() {
   if (!isSignedIn) {
     return null;
   }
-
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(date));
-  };
-
-  const ProjectCard = ({ project, projectType, negotiationStage = null, meetings = [] }: {
-    project: any;
-    projectType: 'negotiation' | 'favorite' | 'invested';
-    negotiationStage?: string | null;
-    meetings?: any[];
-  }) => {
-    const projectId = project.id;
-    const isEditingNotes = editingNotes === projectId;
-    const currentNotes = notes[projectId] || '';
-
-    const handleSaveNotes = () => {
-      setNotes(prev => ({ ...prev, [projectId]: currentNotes }));
-      setEditingNotes(null);
-    };
-
-    const handleCancelNotes = () => {
-      setEditingNotes(null);
-    };
-
-    const getProjectTypeInfo = () => {
-      switch (projectType) {
-        case 'negotiation':
-          return {
-            label: 'Negotiation',
-            icon: <MessageSquare className="h-4 w-4" />,
-            color: 'bg-blue-100 text-blue-800',
-            stage: negotiationStage
-          };
-        case 'favorite':
-          return {
-            label: 'Favorite',
-            icon: <Heart className="h-4 w-4" />,
-            color: 'bg-pink-100 text-pink-800',
-            stage: null
-          };
-        case 'invested':
-          return {
-            label: 'Invested',
-            icon: <TrendingUp className="h-4 w-4" />,
-            color: 'bg-green-100 text-green-800',
-            stage: null
-          };
-        default:
-          return {
-            label: 'Project',
-            icon: <Building2 className="h-4 w-4" />,
-            color: 'bg-gray-100 text-gray-800',
-            stage: null
-          };
-      }
-    };
-
-    const typeInfo = getProjectTypeInfo();
-
-    return (
-      <Card className="rounded-xl border-2 bg-card border-white/10 hover:border-white/20 transition-all">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-            {project.logo ? (
-              <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg ring-2 ring-white/10">
-                <Image
-                  src={project.logo}
-                  alt={`${project.name} Logo`}
-                  width={72}
-                  height={72}
-                  className="h-full w-full rounded-md object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-2 ring-white/10">
-                <Building2 className="size-8 text-neutral-500" />
-              </div>
-            )}
-
-            <div className="flex flex-1 flex-col gap-4">
-              {/* Header */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Link href={`/companies/${project.id}`}>
-                      <h3 className="text-xl font-semibold tracking-tight hover:text-white/90 transition-colors cursor-pointer">
-                        {project.name}
-                      </h3>
-                    </Link>
-                    <Badge className={`text-xs ${typeInfo.color}`}>
-                      {typeInfo.icon}
-                      <span className="ml-1">{typeInfo.label}</span>
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-white/70">{project.likesCount}</span>
-                    <Heart className={`size-4 ${project.likesCount > 0 ? 'fill-yellow-500 text-yellow-500' : 'fill-transparent'}`} />
-                  </div>
-                </div>
-
-                {project.Entrepreneur && (
-                  <span className="text-sm text-white/70">
-                    {project.Entrepreneur.firstName} {project.Entrepreneur.lastName}
-                  </span>
-                )}
-
-                <p className="text-sm text-white/60 line-clamp-2">
-                  {project.quickSolution || project.about || 'No description available'}
-                </p>
-              </div>
-
-              {/* Project Information */}
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/70 sm:text-sm">
-                {project.stage && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{project.stage.replace('_', ' ')}</span>
-                  </div>
-                )}
-
-                {project.country && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{project.country.name}</span>
-                  </div>
-                )}
-
-                {project.investmentGoal && (
-                  <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5">
-                    <DollarSign className="h-3 w-3" />
-                    <span className="truncate text-xs text-white/70">
-                      {project.currency === 'USD' ? '$' : project.currency === 'EUR' ? '€' : 'R$'}{' '}
-                      {project.investmentGoal.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-
-                {project.sector && (
-                  <div className="flex items-center rounded-full bg-[#323645] px-3 py-1.5">
-                    <span className="truncate text-xs font-medium text-white/70">
-                      {project.sector.name}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Negotiation Stage */}
-              {negotiationStage && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-white/70">Negotiation Stage:</span>
-                  <Badge className={`text-xs ${NEGOTIATION_STAGE_COLORS[negotiationStage as keyof typeof NEGOTIATION_STAGE_COLORS]}`}>
-                    {NEGOTIATION_STAGE_LABELS[negotiationStage as keyof typeof NEGOTIATION_STAGE_LABELS]}
-                  </Badge>
-                </div>
-              )}
-
-              {/* Meetings History */}
-              {meetings.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-white/70" />
-                    <span className="text-sm text-white/70">Recent Meetings:</span>
-                  </div>
-                  <div className="space-y-1">
-                    {meetings.slice(0, 3).map((meeting) => (
-                      <div key={meeting.id} className="flex items-center gap-2 text-xs text-white/60">
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(meeting.startDate)}</span>
-                      </div>
-                    ))}
-                    {meetings.length > 3 && (
-                      <div className="text-xs text-white/50">
-                        +{meetings.length - 3} more meetings
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Notes Section */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70">Personal Notes:</span>
-                  {!isEditingNotes && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingNotes(projectId)}
-                      className="h-6 w-6 p-0 text-white/70 hover:text-white"
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-
-                {isEditingNotes ? (
-                  <div className="flex flex-col gap-2">
-                    <Textarea
-                      value={currentNotes}
-                      onChange={(e) => setNotes(prev => ({ ...prev, [projectId]: e.target.value }))}
-                      placeholder="Add your personal notes about this project..."
-                      className="min-h-[60px] text-sm bg-white/5 border-white/10 text-white placeholder:text-white/50"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveNotes}
-                        className="h-7 px-3 text-xs bg-green-600 hover:bg-green-700"
-                      >
-                        <Save className="h-3 w-3 mr-1" />
-                        Save
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleCancelNotes}
-                        className="h-7 px-3 text-xs text-white/70 hover:text-white"
-                      >
-                        <X className="h-3 w-3 mr-1" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="min-h-[60px] p-3 rounded-lg bg-white/5 border border-white/10">
-                    {currentNotes ? (
-                      <p className="text-sm text-white/80 whitespace-pre-wrap">{currentNotes}</p>
-                    ) : (
-                      <p className="text-sm text-white/50 italic">No notes yet. Click edit to add your thoughts about this project.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
 
   // Combine all projects into a single array with type information
   const allProjects = [
@@ -459,7 +490,7 @@ export default function MyProjects() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredProjects.map((project) => (
                 <ProjectCard
                   key={`${project.projectType}-${project.id}`}
@@ -467,6 +498,12 @@ export default function MyProjects() {
                   projectType={project.projectType}
                   negotiationStage={project.negotiationStage}
                   meetings={project.meetings}
+                  notes={notes}
+                  editingNotes={editingNotes}
+                  onStartEditing={handleStartEditing}
+                  onNotesChange={handleNotesChange}
+                  onSaveNotes={handleSaveNotes}
+                  onCancelNotes={handleCancelNotes}
                 />
               ))}
             </div>

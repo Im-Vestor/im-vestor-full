@@ -39,17 +39,19 @@ export const newsRouter = createTRPCRouter({
     }
   }),
 
-  // Get news specific to user type (gets user type from Clerk session or defaults to entrepreneur)
+  // Get news specific to user type (gets user type from input parameter or Clerk session or defaults to entrepreneur)
   getUserTypeNews: publicProcedure
     .input(
       z.object({
         cursor: z.string().optional(),
+        userType: z.enum(['ENTREPRENEUR', 'INVESTOR', 'PARTNER', 'VC_GROUP', 'INCUBATOR', 'ADMIN']).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       try {
-        // Get user type from Clerk's session metadata, fallback to entrepreneur for public access
-        const userType = (ctx.auth?.sessionClaims?.publicMetadata?.userType ??
+        // Get user type from input parameter first, then from Clerk's session metadata, fallback to entrepreneur for public access
+        const userType = (input.userType ??
+          ctx.auth?.sessionClaims?.publicMetadata?.userType ??
           'ENTREPRENEUR') as NewsUserType;
 
         console.log('User type being used:', userType);

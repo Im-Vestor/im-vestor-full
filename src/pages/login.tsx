@@ -5,13 +5,14 @@ import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { api } from '~/utils/api';
 import { isProfileCompleted } from '~/utils/profile-completion';
+import { logger } from '~/utils/logger';
 
 export default function Login() {
   const user = useUser();
@@ -26,15 +27,23 @@ export default function Login() {
   const { mutateAsync: checkUserStatus } = api.user.checkUserStatus.useMutation();
   const { data: userData } = api.user.getUser.useQuery(undefined, {
     enabled: user.isLoaded && user.isSignedIn,
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 
+  const hasRedirected = useRef(false);
+
   useEffect(() => {
+    // Prevent multiple redirects
+    if (hasRedirected.current) return;
+
     if (user.isLoaded && user.isSignedIn && userData) {
+      hasRedirected.current = true;
       const profileCompleted = isProfileCompleted(userData);
       if (profileCompleted) {
-        router.push('/home');
+        void router.push('/home');
       } else {
-        router.push('/profile');
+        void router.push('/profile');
       }
     }
   }, [user.isLoaded, user.isSignedIn, userData, router]);
@@ -88,14 +97,14 @@ export default function Login() {
         await setActive({ session: signInAttempt.createdSessionId });
         // We'll let the useEffect handle the redirect based on profile completion
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        logger.error('Sign in attempt incomplete:', signInAttempt);
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
         toast.error(err.errors[0]?.message ?? 'Failed to login. Please try again.');
       } else {
         toast.error('Failed to login. Please try again.');
-        console.error(JSON.stringify(err, null, 2));
+        logger.error('Login error:', err);
       }
     } finally {
       setIsPending(false);

@@ -1,15 +1,20 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Header } from '~/components/header';
 import Home from '~/components/home';
 
 export default function HomePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple redirects
+    if (hasRedirected.current) return;
+
     if (isLoaded && !isSignedIn) {
+      hasRedirected.current = true;
       void router.push('/login');
     }
   }, [isLoaded, isSignedIn, router]);

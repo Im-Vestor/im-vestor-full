@@ -83,6 +83,7 @@ function GiftProductsPage() {
       staleTime: 30000, // 30 seconds - data stays fresh for 30s
       refetchOnWindowFocus: false, // Don't refetch on window focus
       refetchOnMount: false, // Don't refetch on component remount if data is fresh
+      placeholderData: (previousData) => previousData, // Keep previous data while loading to avoid flicker
     }
   );
 
@@ -137,7 +138,7 @@ function GiftProductsPage() {
 
     giftProductMutation.mutate({
       userId: selectedUser.id,
-      productType: selectedProduct as ProductType,
+      productType: selectedProduct,
       quantity,
       reason: reason || undefined,
     });
@@ -171,7 +172,7 @@ function GiftProductsPage() {
 
     bulkGiftProductMutation.mutate({
       emails,
-      productType: bulkProductType as ProductType,
+      productType: bulkProductType,
       quantity: bulkQuantity,
       reason: bulkReason || undefined,
     });

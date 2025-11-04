@@ -31,6 +31,7 @@ import { Marquee } from '~/components/ui/marquee';
 import { api } from '~/utils/api';
 import { useRouter } from 'next/router';
 import { isProfileCompleted } from '~/utils/profile-completion';
+import { logger } from '~/utils/logger';
 
 const fadeIn = {
   initial: {
@@ -129,6 +130,7 @@ export default function Home() {
   const t = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
+  const hasRedirected = useRef(false);
 
   const { isLoaded, signIn, setActive } = useSignIn();
   const { user, isLoaded: isUserLoaded } = useUser();
@@ -137,6 +139,8 @@ export default function Home() {
   const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
   const { data: userData } = api.user.getUser.useQuery(undefined, {
     enabled: isUserLoaded && !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 
   const handleLogin = async () => {
@@ -154,14 +158,14 @@ export default function Home() {
         await setActive({ session: signInAttempt.createdSessionId });
         // We'll let the useEffect handle the redirect based on profile completion
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        logger.error('Sign in attempt incomplete:', signInAttempt);
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
         toast.error(err.errors[0]?.message ?? 'Failed to login. Please try again.');
       } else {
         toast.error('Failed to login. Please try again.');
-        console.error(JSON.stringify(err, null, 2));
+        logger.error('Login error:', err);
       }
     } finally {
       setIsPending(false);
@@ -182,7 +186,11 @@ export default function Home() {
 
   // Redirect logged-in users with completed profiles to dashboard
   useEffect(() => {
+    // Prevent multiple redirects
+    if (hasRedirected.current) return;
+
     if (isUserLoaded && user && userData) {
+      hasRedirected.current = true;
       const profileCompleted = isProfileCompleted(userData);
       if (profileCompleted) {
         void router.push('/home');
@@ -926,64 +934,64 @@ export default function Home() {
                     <Marquee className="py-8" pauseOnHover={true} repeat={6}>
                       {isLoadingPartners
                         ? // Loading skeleton
-                          Array.from({ length: 8 }).map((_, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
-                            >
-                              <div className="w-24 h-4 bg-white/20 rounded"></div>
-                            </div>
-                          ))
+                        Array.from({ length: 8 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
+                          >
+                            <div className="w-24 h-4 bg-white/20 rounded"></div>
+                          </div>
+                        ))
                         : partners && partners.length > 0
                           ? // Real partner data
-                            partners.map(partner => (
-                              <div
-                                key={partner.id}
-                                className="flex items-center justify-center w-40 h-20  rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                              >
-                                {partner.companyLogoUrl ? (
-                                  // Show company logo if available
-                                  <div className="relative w-32 h-12">
-                                    <Image
-                                      src={partner.companyLogoUrl}
-                                      alt={
-                                        partner.companyName ??
-                                        `${partner.firstName} ${partner.lastName}`
-                                      }
-                                      fill
-                                      className="object-contain"
-                                      sizes="128px"
-                                    />
-                                  </div>
-                                ) : (
-                                  // Fallback to company name
-                                  <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
-                                    {partner.companyName ??
-                                      `${partner.firstName} ${partner.lastName}`}
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          : // Fallback to default partners if no data
-                            [
-                              { name: 'SEQUOIA' },
-                              { name: 'ANDREESSEN' },
-                              { name: 'Y COMBINATOR' },
-                              { name: 'ACCEL' },
-                              { name: 'KLEINER PERKINS' },
-                              { name: 'GREYLOCK' },
-                              { name: 'INDEX VENTURES' },
-                              { name: 'FIRST ROUND' },
-                            ].map((partner, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                              >
-                                <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
-                                  {partner.name}
+                          partners.map(partner => (
+                            <div
+                              key={partner.id}
+                              className="flex items-center justify-center w-40 h-20  rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                            >
+                              {partner.companyLogoUrl ? (
+                                // Show company logo if available
+                                <div className="relative w-32 h-12">
+                                  <Image
+                                    src={partner.companyLogoUrl}
+                                    alt={
+                                      partner.companyName ??
+                                      `${partner.firstName} ${partner.lastName}`
+                                    }
+                                    fill
+                                    className="object-contain"
+                                    sizes="128px"
+                                  />
                                 </div>
+                              ) : (
+                                // Fallback to company name
+                                <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
+                                  {partner.companyName ??
+                                    `${partner.firstName} ${partner.lastName}`}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                          : // Fallback to default partners if no data
+                          [
+                            { name: 'SEQUOIA' },
+                            { name: 'ANDREESSEN' },
+                            { name: 'Y COMBINATOR' },
+                            { name: 'ACCEL' },
+                            { name: 'KLEINER PERKINS' },
+                            { name: 'GREYLOCK' },
+                            { name: 'INDEX VENTURES' },
+                            { name: 'FIRST ROUND' },
+                          ].map((partner, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                            >
+                              <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
+                                {partner.name}
                               </div>
-                            ))}
+                            </div>
+                          ))}
                     </Marquee>
                   </div>
                 </motion.div>

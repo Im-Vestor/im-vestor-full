@@ -1,16 +1,25 @@
+import { useUser } from '@clerk/nextjs';
+import { type UserType } from '@prisma/client';
 import { api } from '~/utils/api';
 import { Skeleton } from '~/components/ui/skeleton';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Button } from '~/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { toNewsUserType } from '~/types/news';
 
 export function NewsPanel() {
+  const { user, isLoaded } = useUser();
+  const userType = user?.publicMetadata.userType as UserType;
+
   const { data: newsData, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
-    {},
+    {
+      userType: userType ? toNewsUserType(userType) : undefined,
+    },
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: isLoaded && !!userType, // Only fetch when user is loaded and has a type
     }
   );
 

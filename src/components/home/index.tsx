@@ -11,12 +11,14 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMemo } from 'react';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
 import { PartnersSection } from '~/components/ui/partners-section';
 import { api } from '~/utils/api';
 import { useTranslation } from '~/hooks/use-translation';
 import { Hypertrain } from '../hypertrain/hypertrain';
+import { toNewsUserType } from '~/types/news';
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -25,12 +27,17 @@ export default function Home() {
 
   const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery(undefined, {
     enabled: isLoaded && !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
   const { data: news, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
-    {},
+    {
+      userType: userType ? toNewsUserType(userType) : undefined,
+    },
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: isLoaded && !!userType, // Only fetch when user is loaded and has a type
     }
   );
 
@@ -77,8 +84,8 @@ export default function Home() {
     }
   };
 
-  // Get the referrer's name based on their type
-  const getReferrerName = () => {
+  // Get the referrer's name based on their type (memoized to avoid recalculation)
+  const referrerName = useMemo(() => {
     const referral = userData?.referralsAsReferred?.[0];
     if (!referral?.referrer) return null;
 
@@ -105,9 +112,7 @@ export default function Home() {
       default:
         return null;
     }
-  };
-
-  const referrerName = getReferrerName();
+  }, [userData?.referralsAsReferred]);
 
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];

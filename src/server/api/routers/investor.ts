@@ -440,4 +440,83 @@ export const investorRouter = createTRPCRouter({
         },
       });
     }),
+  saveProjectNote: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        notes: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // First check if the user is an investor
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        select: { userType: true }
+      });
+
+      if (!user || user.userType !== 'INVESTOR') {
+        throw new Error('Unauthorized: Only investors can save project notes');
+      }
+
+      const investor = await ctx.db.investor.findUnique({
+        where: { userId: ctx.auth.userId },
+        select: { id: true }
+      });
+
+      if (!investor) {
+        throw new Error('Investor not found');
+      }
+
+      // Upsert the note (create or update)
+      return ctx.db.investorProjectNote.upsert({
+        where: {
+          investorId_projectId: {
+            investorId: investor.id,
+            projectId: input.projectId,
+          },
+        },
+        update: {
+          notes: input.notes,
+        },
+        create: {
+          investorId: investor.id,
+          projectId: input.projectId,
+          notes: input.notes,
+        },
+      });
+    }),
+  getProjectNotes: protectedProcedure.query(async ({ ctx }) => {
+    // First check if the user is an investor
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      select: { userType: true }
+    });
+
+    if (!user || user.userType !== 'INVESTOR') {
+      throw new Error('Unauthorized: Only investors can access project notes');
+    }
+
+    const investor = await ctx.db.investor.findUnique({
+      where: { userId: ctx.auth.userId },
+      select: { id: true }
+    });
+
+    if (!investor) {
+      return [];
+    }
+
+    const notes = await ctx.db.investorProjectNote.findMany({
+      where: { investorId: investor.id },
+      select: {
+        projectId: true,
+        notes: true,
+      },
+    });
+
+    // Convert to a map for easy lookup
+    return notes.reduce((acc, note) => {
+      acc[note.projectId] = note.notes;
+      return acc;
+    }, {} as Record<string, string>);
+  }),
 });

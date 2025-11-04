@@ -2,6 +2,8 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { type Context } from '../context';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape }) {
@@ -13,12 +15,14 @@ const t = initTRPC.context<Context>().create({
 const isAuthed = t.middleware(({ next, ctx }) => {
   // Add more robust checking for auth state
   if (!ctx.auth?.userId) {
-    // Log the auth state for debugging
-    console.warn('Auth middleware: Missing auth or userId', {
-      hasAuth: !!ctx.auth,
-      hasUserId: !!ctx.auth?.userId,
-      hasSessionId: !!ctx.auth?.sessionId,
-    });
+    // Log the auth state for debugging (only in development)
+    if (isDevelopment) {
+      console.warn('Auth middleware: Missing auth or userId', {
+        hasAuth: !!ctx.auth,
+        hasUserId: !!ctx.auth?.userId,
+        hasSessionId: !!ctx.auth?.sessionId,
+      });
+    }
 
     throw new TRPCError({
       code: 'UNAUTHORIZED',

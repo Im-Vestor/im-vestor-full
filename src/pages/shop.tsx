@@ -96,7 +96,10 @@ export default function Shop() {
   });
 
   // Get user data including available pokes
-  const { data: userData, isPending: isUserDataPending } = api.user.getUser.useQuery();
+  const { data: userData, isPending: isUserDataPending } = api.user.getUser.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+  });
 
   // Get entrepreneur projects for project selection
   const { data: entrepreneurData, isPending: isEntrepreneurDataPending } =

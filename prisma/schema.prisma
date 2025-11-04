@@ -209,6 +209,7 @@ model Investor {
   favoriteProjects   Project[]     @relation("FavoriteInvestors")
   investedProjects   Project[]     @relation("InvestedInvestors")
   meetings           Meeting[]     @relation("MeetingInvestors")
+  projectNotes       InvestorProjectNote[]
 }
 
 model Meeting {
@@ -269,6 +270,7 @@ model Project {
   foundationDate            DateTime?
   stage                     ProjectStage?
   about                     String?
+  actionPlan                String?
   status                    ProjectStatus           @default(ACTIVE)
   startInvestment           Float?
   investorSlots             Int?
@@ -318,6 +320,7 @@ model Project {
   favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
   investedInvestors         Investor[]              @relation("InvestedInvestors")
   investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
+  investorNotes             InvestorProjectNote[]
 }
 
 model IncubatorEntrepreneur {
@@ -437,6 +440,19 @@ model SupportTicketReply {
   ticketId  String
   admin     User          @relation("AdminReplies", fields: [adminId], references: [id])
   ticket    SupportTicket @relation(fields: [ticketId], references: [id])
+}
+
+model InvestorProjectNote {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  notes      String
+  investorId String
+  projectId  String
+  investor   Investor @relation(fields: [investorId], references: [id])
+  project    Project  @relation(fields: [projectId], references: [id])
+
+  @@unique([investorId, projectId])
 }
 
 model PotentialUser {

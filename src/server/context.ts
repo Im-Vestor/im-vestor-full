@@ -4,6 +4,8 @@ import { getAuth } from '@clerk/nextjs/server';
 import { db } from './db';
 import type { UserType } from '@prisma/client';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 // Define the session claims type
 type SessionClaims = {
   publicMetadata?: {
@@ -44,7 +46,9 @@ export const createContext = async (opts: trpcNext.CreateNextContextOptions) => 
   } catch (error) {
     // If there's an error getting auth, return empty auth object
     // This prevents the entire request from failing due to auth issues
-    console.warn('Auth context creation failed:', error);
+    if (isDevelopment) {
+      console.warn('Auth context creation failed:', error);
+    }
     return {
       auth: {
         userId: null,
