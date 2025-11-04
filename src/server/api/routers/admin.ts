@@ -1266,6 +1266,10 @@ export const adminRouter = createTRPCRouter({
 
               if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
                 const project = fullUser.entrepreneur.projects[0];
+                if (!project) {
+                  errors.push({ email, error: 'Entrepreneur must have at least one project to use Hyper Train' });
+                  continue;
+                }
                 await ctx.db.hyperTrainItem.upsert({
                   where: { externalId: project.id },
                   update: { liveUntil: addDays(new Date(), 7) },
@@ -1435,6 +1439,9 @@ export const adminRouter = createTRPCRouter({
 
           if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
             const project = fullUser.entrepreneur.projects[0];
+            if (!project) {
+              throw new Error("Entrepreneur must have at least one project to use Hyper Train");
+            }
             await ctx.db.hyperTrainItem.upsert({
               where: { externalId: project.id },
               update: { liveUntil: addDays(new Date(), 7) },

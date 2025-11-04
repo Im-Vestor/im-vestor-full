@@ -16,7 +16,6 @@ import {
   Calendar,
   DollarSign,
   MessageSquare,
-  Clock,
   Search
 } from 'lucide-react';
 import Image from 'next/image';
@@ -39,14 +38,6 @@ const NEGOTIATION_STAGE_COLORS = {
   CANCELLED: 'bg-red-100 text-red-800',
 };
 
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(date));
-};
-
 interface ProjectCardProps {
   project: any;
   projectType: 'negotiation' | 'favorite' | 'invested';
@@ -64,13 +55,13 @@ const ProjectCard = ({
   project,
   projectType,
   negotiationStage = null,
-  meetings = [],
+  meetings: _meetings = [],
   notes,
   editingNotes,
   onStartEditing,
   onNotesChange,
   onSaveNotes,
-  onCancelNotes,
+  onCancelNotes: _onCancelNotes,
 }: ProjectCardProps) => {
   const projectId = project.id;
   const isEditingNotes = editingNotes === projectId;
@@ -87,48 +78,10 @@ const ProjectCard = ({
     onSaveNotes(projectId);
   }, [projectId, onSaveNotes]);
 
-  const handleCancelNotes = useCallback(() => {
-    onCancelNotes();
-  }, [onCancelNotes]);
 
   const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onNotesChange(projectId, e.target.value);
   }, [projectId, onNotesChange]);
-
-  const getProjectTypeInfo = () => {
-    switch (projectType) {
-      case 'negotiation':
-        return {
-          label: 'Negotiation',
-          icon: <MessageSquare className="h-4 w-4" />,
-          color: 'bg-blue-100 text-blue-800',
-          stage: negotiationStage
-        };
-      case 'favorite':
-        return {
-          label: 'Favorite',
-          icon: <Heart className="h-4 w-4" />,
-          color: 'bg-pink-100 text-pink-800',
-          stage: null
-        };
-      case 'invested':
-        return {
-          label: 'Invested',
-          icon: <TrendingUp className="h-4 w-4" />,
-          color: 'bg-green-100 text-green-800',
-          stage: null
-        };
-      default:
-        return {
-          label: 'Project',
-          icon: <Building2 className="h-4 w-4" />,
-          color: 'bg-gray-100 text-gray-800',
-          stage: null
-        };
-    }
-  };
-
-  const typeInfo = getProjectTypeInfo();
 
   return (
     <Card className="rounded-xl border bg-card border-white/10 hover:border-white/20 transition-all">
@@ -309,7 +262,7 @@ export default function MyProjects() {
   // Load notes when projectNotes data is available
   useEffect(() => {
     if (projectNotes && !Array.isArray(projectNotes)) {
-      setNotes(projectNotes as Record<string, string>);
+      setNotes(projectNotes);
     } else if (!projectNotes) {
       setNotes({});
     }
@@ -336,7 +289,7 @@ export default function MyProjects() {
     setEditingNotes(null);
     // Optionally restore original notes from backend
     if (projectNotes && !Array.isArray(projectNotes)) {
-      setNotes(projectNotes as Record<string, string>);
+      setNotes(projectNotes);
     }
   }, [projectNotes]);
 

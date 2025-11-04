@@ -45,6 +45,37 @@ export default function Home() {
     enabled: isLoaded && !!user,
   });
 
+  // Get the referrer's name based on their type (memoized to avoid recalculation)
+  // This must be called before any conditional returns to satisfy React Hooks rules
+  const referrerName = useMemo(() => {
+    const referral = userData?.referralsAsReferred?.[0];
+    if (!referral?.referrer) return null;
+
+    const referrer = referral.referrer;
+    const referrerType = referrer.userType;
+
+    switch (referrerType) {
+      case 'ENTREPRENEUR':
+        return referrer.entrepreneur
+          ? `${referrer.entrepreneur.firstName} ${referrer.entrepreneur.lastName}`
+          : null;
+      case 'INVESTOR':
+        return referrer.investor
+          ? `${referrer.investor.firstName} ${referrer.investor.lastName}`
+          : null;
+      case 'PARTNER':
+        return referrer.partner
+          ? `${referrer.partner.firstName} ${referrer.partner.lastName}`
+          : null;
+      case 'INCUBATOR':
+        return referrer.incubator ? referrer.incubator.name : null;
+      case 'VC_GROUP':
+        return referrer.vcGroup ? referrer.vcGroup.name : null;
+      default:
+        return null;
+    }
+  }, [userData?.referralsAsReferred]);
+
   // Don't render until authentication is loaded
   if (!isLoaded) {
     return (
@@ -83,36 +114,6 @@ export default function Home() {
         return '';
     }
   };
-
-  // Get the referrer's name based on their type (memoized to avoid recalculation)
-  const referrerName = useMemo(() => {
-    const referral = userData?.referralsAsReferred?.[0];
-    if (!referral?.referrer) return null;
-
-    const referrer = referral.referrer;
-    const referrerType = referrer.userType;
-
-    switch (referrerType) {
-      case 'ENTREPRENEUR':
-        return referrer.entrepreneur
-          ? `${referrer.entrepreneur.firstName} ${referrer.entrepreneur.lastName}`
-          : null;
-      case 'INVESTOR':
-        return referrer.investor
-          ? `${referrer.investor.firstName} ${referrer.investor.lastName}`
-          : null;
-      case 'PARTNER':
-        return referrer.partner
-          ? `${referrer.partner.firstName} ${referrer.partner.lastName}`
-          : null;
-      case 'INCUBATOR':
-        return referrer.incubator ? referrer.incubator.name : null;
-      case 'VC_GROUP':
-        return referrer.vcGroup ? referrer.vcGroup.name : null;
-      default:
-        return null;
-    }
-  }, [userData?.referralsAsReferred]);
 
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];
