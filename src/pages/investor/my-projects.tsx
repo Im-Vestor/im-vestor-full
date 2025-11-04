@@ -53,7 +53,7 @@ interface ProjectCardProps {
 
 const ProjectCard = ({
   project,
-  projectType,
+  projectType: _projectType,
   negotiationStage = null,
   meetings: _meetings = [],
   notes,

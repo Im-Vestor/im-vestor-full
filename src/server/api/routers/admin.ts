@@ -247,8 +247,8 @@ export const adminRouter = createTRPCRouter({
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
-      // Check admin authorization with delete role
-      await checkAdminAuthorization(ctx, 'delete');
+      // Allow any admin to perform permanent deletion
+      await checkAdminAuthorization(ctx);
 
       // Check rate limiting
       checkRateLimit(ctx.auth.userId, 'permanent_user_deletion');
@@ -568,8 +568,8 @@ export const adminRouter = createTRPCRouter({
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
-      // Check admin authorization with delete role
-      await checkAdminAuthorization(ctx, 'delete');
+      // Allow any admin to perform force deletion
+      await checkAdminAuthorization(ctx);
 
       // Check rate limiting
       checkRateLimit(ctx.auth.userId, 'force_user_deletion');
