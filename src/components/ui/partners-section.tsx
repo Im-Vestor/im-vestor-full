@@ -91,7 +91,7 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
                 Array.from({ length: 8 }).map((_, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-center w-32 h-16 mx-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
+                    className="flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
                   >
                     <div className="w-20 h-3 bg-white/20 rounded"></div>
                   </div>
@@ -101,7 +101,7 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
                   partners.map(partner => (
                     <div
                       key={partner.id}
-                      className="flex items-center justify-center w-32 h-16 mx-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                      className="flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
                     >
                       {partner.companyLogoUrl ? (
                         // Show company logo if available
@@ -139,7 +139,7 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
                   ].map((partner, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-center w-32 h-16 mx-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                      className="flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
                     >
                       <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-xs tracking-wider">
                         {partner.name}
