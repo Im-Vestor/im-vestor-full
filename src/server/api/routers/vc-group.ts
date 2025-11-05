@@ -112,7 +112,7 @@ export const vcGroupRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.VC_GROUP,
-          status: UserStatus.PENDING_EMAIL_VERIFICATION,
+          status: UserStatus.ACTIVE,
         },
       });
 

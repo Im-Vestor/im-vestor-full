@@ -187,7 +187,7 @@ export const entrepreneurRouter = createTRPCRouter({
           referralCode: generateCode(),
           userType: UserType.ENTREPRENEUR,
           availablePokes: input.referralToken ? 2 : 0,
-          status: UserStatus.PENDING_EMAIL_VERIFICATION,
+          status: UserStatus.ACTIVE,
         },
       });
 

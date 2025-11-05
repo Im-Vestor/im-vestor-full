@@ -116,7 +116,7 @@ export const incubatorRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.INCUBATOR,
-          status: UserStatus.PENDING_EMAIL_VERIFICATION,
+          status: UserStatus.ACTIVE,
         },
       });
 

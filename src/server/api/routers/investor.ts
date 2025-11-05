@@ -348,7 +348,7 @@ export const investorRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.INVESTOR,
-          status: UserStatus.PENDING_EMAIL_VERIFICATION,
+          status: UserStatus.ACTIVE,
         },
       });
 

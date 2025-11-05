@@ -106,7 +106,7 @@ export const partnerRouter = createTRPCRouter({
           email: input.email,
           referralCode: generateCode(),
           userType: UserType.PARTNER,
-          status: UserStatus.PENDING_EMAIL_VERIFICATION,
+          status: UserStatus.ACTIVE,
         },
       });
 
