@@ -15,7 +15,9 @@ export const partnerRouter = createTRPCRouter({
     return ctx.db.partner.findMany({
       where: {
         user: {
-          status: 'ACTIVE',
+          status: {
+            in: ['ACTIVE', 'PENDING_EMAIL_VERIFICATION'],
+          },
         },
         companyName: {
           not: null,
