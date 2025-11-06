@@ -31,7 +31,7 @@ export function CookieConsent() {
   if (!isOpen) return null;
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-[400px] w-auto z-50 bg-[rgb(29,26,44)] light:bg-[hsl(var(--background-card))] backdrop-blur-sm border-ui-border shadow-lg">
+    <Card className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-[400px] w-auto z-50 bg-cookie-consent backdrop-blur-sm border-ui-border shadow-lg">
       <CardHeader>
         <CardTitle>Cookie Preferences</CardTitle>
         <CardDescription>Manage your cookie settings</CardDescription>

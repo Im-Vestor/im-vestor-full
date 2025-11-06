@@ -156,7 +156,6 @@
 }
 
 @layer utilities {
-
   /* Primary Color Utilities */
   .bg-primary {
     @apply bg-primary-gradient;
@@ -205,6 +204,15 @@
 
   .light .border-ui-border {
     border-color: hsl(var(--border));
+  }
+
+  /* Cookie consent solid background */
+  .bg-cookie-consent {
+    background-color: rgb(29, 26, 44);
+  }
+
+  .light .bg-cookie-consent {
+    background-color: hsl(var(--background-card));
   }
 
   /* Line clamp utilities for text truncation */
@@ -275,7 +283,6 @@
 
 /* Additional print styles */
 @media print {
-
   /* Reset the page margins and background */
   @page {
     size: 8.5in 11in;
