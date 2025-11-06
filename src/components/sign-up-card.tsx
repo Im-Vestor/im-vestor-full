@@ -28,14 +28,14 @@ export const SignUpCard = ({
 
         {/* Price Section */}
         <div className="mb-4 pt-8 text-center">
-          <span className="text-3xl font-bold text-[#DCDDE0]">€ </span>
-          <span className="text-5xl font-bold text-white">0</span>
+          <Image
+            src="/images/price-crossed.svg"
+            alt="Preço original €99 riscado, novo preço €0"
+            width={200}
+            height={100}
+            className="mx-auto"
+          />
           <span className="text-xl font-bold text-[#DCDDE0]">/ first year</span>
-          <div className="mt-2">
-            <span className="rounded-full bg-[#DCDDE0] px-4 py-1 text-sm text-[#3A3B44]">
-              + IVA
-            </span>
-          </div>
         </div>
 
         {/* Features List */}
