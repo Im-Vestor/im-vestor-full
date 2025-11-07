@@ -22,12 +22,12 @@ const getTypeColor = (type: string) => {
   }
 };
 
-const weeklyPitchLinkHypertrainItem = {
-  id: 'weekly-pitch-link',
-  name: 'Weekly Pitch',
-  description: 'Check out the projects in the weekly pitch',
+const publicPitchLinkHypertrainItem = {
+  id: 'public-pitch-link',
+  name: 'public Pitch',
+  description: 'Check out the projects in the public pitch',
   link: '/pitch-of-the-week',
-  type: 'WEEKLY_PITCH',
+  type: 'PUBLIC_PITCH',
   image: null,
 };
 
@@ -36,8 +36,8 @@ export function Hypertrain() {
     api.hypertrain.getHyperTrainItems.useQuery();
 
   const baseItems = hypertrainItems
-    ? [...hypertrainItems, weeklyPitchLinkHypertrainItem]
-    : [weeklyPitchLinkHypertrainItem];
+    ? [...hypertrainItems, publicPitchLinkHypertrainItem]
+    : [publicPitchLinkHypertrainItem];
 
   if (isHypertrainItemsPending) {
     return (

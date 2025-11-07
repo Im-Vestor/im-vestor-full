@@ -37,7 +37,7 @@ const products = [
   {
     id: 'pitch-of-the-week-ticket',
     name: 'Pitch of the Week Ticket',
-    description: 'Gain access to 2 public weekly pitches.',
+    description: 'Gain access to 2 public pitches.',
     value: 20,
     availableUserTypes: ['ENTREPRENEUR'],
   },
@@ -469,13 +469,13 @@ function GiftProductsPage() {
 
       {/* Single Gift Dialog - Moved outside loop */}
       <Dialog open={isGiftDialogOpen} onOpenChange={(open) => {
-        setIsGiftDialogOpen(open);
-        if (!open) {
-          setSelectedUser(null);
-          setSelectedProduct('');
-          setQuantity(1);
-          setReason('');
-        }
+          setIsGiftDialogOpen(open);
+          if (!open) {
+            setSelectedUser(null);
+            setSelectedProduct('');
+            setQuantity(1);
+            setReason('');
+          }
       }}>
         <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
