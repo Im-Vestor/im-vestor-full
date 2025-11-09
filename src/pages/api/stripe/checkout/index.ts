@@ -35,7 +35,7 @@ const products: Record<string, Product> = {
   },
   'pitch-of-the-week-ticket': {
     id: 'pitch-of-the-week-ticket',
-    name: 'Pitch of the Week Ticket',
+    name: 'Public PitchTicket',
     price: env.STRIPE_DAILY_PITCH_TICKET_PRICE_ID,
     description:
       'Access to 2 public publick pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',

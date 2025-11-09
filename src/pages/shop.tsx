@@ -41,7 +41,7 @@ const products = [
   },
   {
     id: 'pitch-of-the-week-ticket',
-    name: 'Pitch of the Week Ticket',
+    name: 'Public Pitch Ticket',
     description:
       'Gain access to 2 public pitches, open to all investors and VCs. By purchasing this add-on, you can schedule your own Public Pitch, which will be presented by you or a member of your team. Each pitch includes an optional Q&A session with investors. Access can be paid or allocated to selected entrepreneurial projects.',
     value: 20,

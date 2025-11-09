@@ -24,7 +24,7 @@ const getTypeColor = (type: string) => {
 
 const publicPitchLinkHypertrainItem = {
   id: 'public-pitch-link',
-  name: 'public Pitch',
+  name: 'Public Pitch',
   description: 'Check out the projects in the public pitch',
   link: '/pitch-of-the-week',
   type: 'PUBLIC_PITCH',
