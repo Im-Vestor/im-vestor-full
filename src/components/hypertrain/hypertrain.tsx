@@ -83,9 +83,17 @@ export function Hypertrain() {
                   >
                     <div className="flex items-start gap-4">
                       {item.image ? (
-                        <div className="size-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
-                        </div>
+                        /\.(mp4|webm|ogg|mov)$/i.exec(item.image) ? (
+                          <div
+                            className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                          >
+                            <Building2 className="size-6" />
+                          </div>
+                        ) : (
+                          <div className="size-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
+                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          </div>
+                        )
                       ) : item.type === 'NEWS' ? (
                         <div
                           className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
