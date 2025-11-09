@@ -26,7 +26,7 @@ const publicPitchLinkHypertrainItem = {
   id: 'public-pitch-link',
   name: 'Public Pitch',
   description: 'Check out the projects in the public pitch',
-  link: '/pitch-of-the-week',
+  link: '/public-pitch',
   type: 'PUBLIC_PITCH',
   image: null,
 };

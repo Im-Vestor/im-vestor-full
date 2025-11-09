@@ -35,8 +35,8 @@ const products = [
     availableUserTypes: ['ENTREPRENEUR'],
   },
   {
-    id: 'pitch-of-the-week-ticket',
-    name: 'Public PitchTicket',
+    id: 'public-pitch-ticket',
+    name: 'Public Pitch Ticket',
     description: 'Gain access to 2 public pitches.',
     value: 20,
     availableUserTypes: ['ENTREPRENEUR'],

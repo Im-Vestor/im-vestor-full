@@ -33,9 +33,9 @@ const products: Record<string, Product> = {
       'Places your project at the top of business sector searches, increasing visibility to potential investors.',
     onlyEntrepreneur: true,
   },
-  'pitch-of-the-week-ticket': {
-    id: 'pitch-of-the-week-ticket',
-    name: 'Public PitchTicket',
+  'public-pitch-ticket': {
+    id: 'public-pitch-ticket',
+    name: 'Public Pitch Ticket',
     price: env.STRIPE_DAILY_PITCH_TICKET_PRICE_ID,
     description:
       'Access to 2 public publick pitches open to all investors, hosted by our team, with optional Q&A session. Can be paid access or assigned to entrepreneur projects.',
@@ -119,7 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       customer: customerId,
       price: product.price,
       productId: product.id,
-      projectId
+      projectId,
     });
 
     const redirectTo =
