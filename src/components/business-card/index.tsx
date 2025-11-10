@@ -215,7 +215,7 @@ export function BusinessCardDialog({
                   unoptimized
                 />
                 <h3 className="text-2xl font-bold tracking-wider text-center text-white">
-                  Im-Vestor
+                  Im-Vestor.com
                 </h3>
               </div>
             </div>
