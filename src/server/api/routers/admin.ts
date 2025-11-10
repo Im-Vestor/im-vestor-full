@@ -130,26 +130,26 @@ export const adminRouter = createTRPCRouter({
         projectViews: user.investor ? await ctx.db.projectView.count({ where: { investorId: user.investor.id } }) : 0,
         negotiationsAsInvestor: user.investor ? await ctx.db.negotiation.count({ where: { investorId: user.investor.id } }) : 0,
         negotiationsAsEntrepreneur: user.entrepreneur ? await ctx.db.negotiation.count({
-          where: {
-            project: {
+              where: {
+                project: {
               entrepreneurId: user.entrepreneur.id
             }
           }
         }) : 0,
         meetingsAsEntrepreneur: user.entrepreneur ? await ctx.db.meeting.count({ where: { entrepreneurId: user.entrepreneur.id } }) : 0,
         meetingsAsInvestor: user.investor ? await ctx.db.meeting.count({
-          where: {
-            negotiation: {
-              investorId: user.investor.id,
-            },
-          },
+              where: {
+                negotiation: {
+                  investorId: user.investor.id,
+                },
+              },
         }) : 0,
         files: user.entrepreneur ? await ctx.db.file.count({
-          where: {
-            Project: {
-              entrepreneurId: user.entrepreneur.id,
-            },
-          },
+              where: {
+                Project: {
+                  entrepreneurId: user.entrepreneur.id,
+                },
+              },
         }) : 0,
         projects: user.entrepreneur ? await ctx.db.project.count({ where: { entrepreneurId: user.entrepreneur.id } }) : 0,
       };
@@ -168,8 +168,8 @@ export const adminRouter = createTRPCRouter({
 
   deleteUserByAdmin: protectedProcedure
     .input(z.object({
-      userId: z.string(),
-      confirmationToken: z.string().optional(),
+        userId: z.string(),
+        confirmationToken: z.string().optional(),
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
@@ -242,8 +242,8 @@ export const adminRouter = createTRPCRouter({
   // Direct account deletion without email confirmation - PERMANENT DELETION
   deleteUserAccountDirectly: protectedProcedure
     .input(z.object({
-      userId: z.string(),
-      confirmationToken: z.string(),
+        userId: z.string(),
+        confirmationToken: z.string(),
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
@@ -563,8 +563,8 @@ export const adminRouter = createTRPCRouter({
   // Force delete user with transaction and cascade
   forceDeleteUser: protectedProcedure
     .input(z.object({
-      userId: z.string(),
-      confirmationToken: z.string(),
+        userId: z.string(),
+        confirmationToken: z.string(),
       reason: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
@@ -778,33 +778,33 @@ export const adminRouter = createTRPCRouter({
 
       const where = input.search
         ? {
-          OR: [
-            {
-              project: {
-                name: {
-                  contains: input.search,
+            OR: [
+              {
+                project: {
+                  name: {
+                    contains: input.search,
                   mode: "insensitive" as const,
+                  },
                 },
               },
-            },
-            {
-              investor: {
-                firstName: {
-                  contains: input.search,
+              {
+                investor: {
+                  firstName: {
+                    contains: input.search,
                   mode: "insensitive" as const,
+                  },
                 },
               },
-            },
-            {
-              investor: {
-                lastName: {
-                  contains: input.search,
+              {
+                investor: {
+                  lastName: {
+                    contains: input.search,
                   mode: "insensitive" as const,
+                  },
                 },
               },
-            },
-          ],
-        }
+            ],
+          }
         : {};
 
       const [projectViews, total] = await Promise.all([
@@ -1036,34 +1036,34 @@ export const adminRouter = createTRPCRouter({
       // Group users by type to batch queries (using type guards to avoid non-null assertions)
       const investorIds = users
         .filter((u): u is typeof u & { investor: { id: string } } =>
-          u.userType === 'INVESTOR' && !!u.investor?.id
+            u.userType === 'INVESTOR' && !!u.investor?.id
         )
         .map(u => String(u.investor.id));
 
       const vcGroupIds = users
         .filter((u): u is typeof u & { vcGroup: { id: string } } =>
-          u.userType === 'VC_GROUP' && !!u.vcGroup?.id
+            u.userType === 'VC_GROUP' && !!u.vcGroup?.id
         )
         .map(u => String(u.vcGroup.id));
 
       const entrepreneurIds = users
         .filter((u): u is typeof u & { entrepreneur: { id: string } } =>
-          u.userType === 'ENTREPRENEUR' && !!u.entrepreneur?.id
+            u.userType === 'ENTREPRENEUR' && !!u.entrepreneur?.id
         )
         .map(u => u.entrepreneur.id);
 
       // Batch fetch all projects for entrepreneurs
       const allProjects = entrepreneurIds.length > 0
-        ? await ctx.db.project.findMany({
-          where: {
-            entrepreneurId: { in: entrepreneurIds },
-          },
-          select: {
-            id: true,
-            entrepreneurId: true,
-          },
-        })
-        : [];
+          ? await ctx.db.project.findMany({
+              where: {
+                entrepreneurId: { in: entrepreneurIds },
+              },
+              select: {
+                id: true,
+                entrepreneurId: true,
+              },
+            })
+          : [];
 
       // Group projects by entrepreneur (filter out null entrepreneurIds)
       const projectsByEntrepreneur = new Map<string, string[]>();
@@ -1161,7 +1161,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         emails: z.array(z.string().email()).min(1, "At least one email is required"),
-        productType: z.enum(['poke', 'boost', 'pitch-of-the-week-ticket', 'hyper-train-ticket']),
+        productType: z.enum(['poke', 'boost', 'public-pitch-ticket', 'hyper-train-ticket']),
         quantity: z.number().min(1).max(10),
         reason: z.string().optional(),
       })
@@ -1188,7 +1188,7 @@ export const adminRouter = createTRPCRouter({
           const productEligibility = {
             'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
             'boost': ['ENTREPRENEUR'],
-            'pitch-of-the-week-ticket': ['ENTREPRENEUR'],
+            'public-pitch-ticket': ['ENTREPRENEUR'],
             'hyper-train-ticket': ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
           };
 
@@ -1291,8 +1291,8 @@ export const adminRouter = createTRPCRouter({
           }
 
           const updatedUser = Object.keys(updateData).length > 0
-            ? await ctx.db.user.update({ where: { id: user.id }, data: updateData })
-            : user;
+              ? await ctx.db.user.update({ where: { id: user.id }, data: updateData })
+              : user;
 
           // Create a notification for the user
           await ctx.db.notification.create({
@@ -1338,7 +1338,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        productType: z.enum(['poke', 'boost', 'pitch-of-the-week-ticket', 'hyper-train-ticket']),
+        productType: z.enum(['poke', 'boost', 'public-pitch-ticket', 'hyper-train-ticket']),
         quantity: z.number().min(1).max(10).default(1),
         reason: z.string().optional(),
       })
@@ -1363,7 +1363,7 @@ export const adminRouter = createTRPCRouter({
       const productValidation = {
         'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
         'boost': ['ENTREPRENEUR'],
-        'pitch-of-the-week-ticket': ['ENTREPRENEUR'],
+        'public-pitch-ticket': ['ENTREPRENEUR'],
         'hyper-train-ticket': ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
       };
 
@@ -1462,8 +1462,8 @@ export const adminRouter = createTRPCRouter({
       }
 
       const updatedUser = Object.keys(updateData).length > 0
-        ? await ctx.db.user.update({ where: { id: input.userId }, data: updateData })
-        : user;
+          ? await ctx.db.user.update({ where: { id: input.userId }, data: updateData })
+          : user;
 
       // Create a notification for the user
       await ctx.db.notification.create({

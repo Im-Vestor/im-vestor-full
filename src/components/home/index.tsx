@@ -186,12 +186,12 @@ export default function Home() {
           </Link>
         )}
 
-        <Link href="/pitch-of-the-week">
+        <Link href="/public-pitch">
           <div className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20 cursor-pointer">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <BookOpen className="w-6 h-6 text-white" />
-                <span className="text-lg font-medium text-white">Pitch of the Week</span>
+                <span className="text-lg font-medium text-white">Public Pitch</span>
               </div>
               <ArrowRight className="w-5 h-5 text-white/70" />
             </div>

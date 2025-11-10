@@ -50,6 +50,7 @@ export default function HypertrainEdit() {
   // Get the hypertrain item if it exists
   const { data: hypertrainItem, isLoading: isLoadingHypertrain } =
     api.hypertrain.getHyperTrainItemByExternalId.useQuery(projectId as string, {
+      refetchOnWindowFocus: false,
       enabled: !!projectId,
     });
 

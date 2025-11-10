@@ -80,7 +80,7 @@ const ProjectCard = ({
 
 
   const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onNotesChange(projectId, e.target.value);
+      onNotesChange(projectId, e.target.value);
   }, [projectId, onNotesChange]);
 
   return (
@@ -277,12 +277,12 @@ export default function MyProjects() {
   }, []);
 
   const handleSaveNotes = useCallback((projectId: string) => {
-    const noteToSave = notes[projectId] || '';
-    saveNoteMutation.mutate({
-      projectId,
-      notes: noteToSave,
-    });
-    setEditingNotes(null);
+      const noteToSave = notes[projectId] || '';
+      saveNoteMutation.mutate({
+        projectId,
+        notes: noteToSave,
+      });
+      setEditingNotes(null);
   }, [notes, saveNoteMutation]);
 
   const handleCancelNotes = useCallback(() => {
@@ -357,8 +357,8 @@ export default function MyProjects() {
 
   // Filter projects based on search query
   const filteredProjects = allProjects.filter(project =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (project.Entrepreneur &&
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (project.Entrepreneur &&
       `${project.Entrepreneur.firstName} ${project.Entrepreneur.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
@@ -372,9 +372,9 @@ export default function MyProjects() {
       <div className="mt-12">
         <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">My Projects</h1>
+            <h1 className="text-3xl font-bold mb-2">Involved in</h1>
             <p className="text-muted-foreground">
-              Manage your project investments, negotiations, and favorites
+              Projects you are involved in through investments, negotiations, and favorites
             </p>
             <div className="mt-4 flex gap-4 text-sm text-white/70">
               <div className="flex items-center gap-1">

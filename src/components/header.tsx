@@ -64,8 +64,8 @@ const INVESTOR_MENUS = [
     href: '/home',
   },
   {
-    label: 'My Projects',
-    href: '/investor/my-projects',
+    label: 'Involved in',
+    href: '/investor/involved-in',
   },
   {
     label: 'Projects',
@@ -76,8 +76,8 @@ const INVESTOR_MENUS = [
     href: '/meetings',
   },
   {
-    label: 'Pitch of the Week',
-    href: '/pitch-of-the-week',
+    label: 'Public Pitch',
+    href: '/public-pitch',
   },
   {
     label: 'News',
@@ -103,8 +103,8 @@ const VC_MENUS = [
     href: '/meetings',
   },
   {
-    label: 'Pitch of the Week',
-    href: '/pitch-of-the-week',
+    label: 'Public Pitch',
+    href: '/public-pitch',
   },
   {
     label: 'News',

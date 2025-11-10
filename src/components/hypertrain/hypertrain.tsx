@@ -15,19 +15,19 @@ const getTypeColor = (type: string) => {
       return 'bg-green-500/10 text-green-400 border-green-500/30';
     case 'NEWS':
       return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
-    case 'WEEKLY_PITCH':
+    case 'PUBLIC_PITCH':
       return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
     default:
       return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
   }
 };
 
-const weeklyPitchLinkHypertrainItem = {
-  id: 'weekly-pitch-link',
-  name: 'Weekly Pitch',
-  description: 'Check out the projects in the weekly pitch',
-  link: '/pitch-of-the-week',
-  type: 'WEEKLY_PITCH',
+const publicPitchLinkHypertrainItem = {
+  id: 'public-pitch-link',
+  name: 'Public Pitch',
+  description: 'Check out the projects in the public pitch',
+  link: '/public-pitch',
+  type: 'PUBLIC_PITCH',
   image: null,
 };
 
@@ -36,8 +36,8 @@ export function Hypertrain() {
     api.hypertrain.getHyperTrainItems.useQuery();
 
   const baseItems = hypertrainItems
-    ? [...hypertrainItems, weeklyPitchLinkHypertrainItem]
-    : [weeklyPitchLinkHypertrainItem];
+    ? [...hypertrainItems, publicPitchLinkHypertrainItem]
+    : [publicPitchLinkHypertrainItem];
 
   if (isHypertrainItemsPending) {
     return (
@@ -83,9 +83,17 @@ export function Hypertrain() {
                   >
                     <div className="flex items-start gap-4">
                       {item.image ? (
-                        <div className="size-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
-                        </div>
+                        /\.(mp4|webm|ogg|mov)$/i.exec(item.image) ? (
+                          <div
+                            className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
+                          >
+                            <Building2 className="size-6" />
+                          </div>
+                        ) : (
+                          <div className="size-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden relative">
+                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          </div>
+                        )
                       ) : item.type === 'NEWS' ? (
                         <div
                           className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
@@ -104,7 +112,7 @@ export function Hypertrain() {
                         >
                           <Building2 className="size-6" />
                         </div>
-                      ) : item.type === 'WEEKLY_PITCH' ? (
+                      ) : item.type === 'PUBLIC_PITCH' ? (
                         <div
                           className={`size-16 flex items-center justify-center rounded-lg flex-shrink-0 overflow-hidden relative ${getTypeColor(item.type)}`}
                         >
@@ -114,7 +122,7 @@ export function Hypertrain() {
                       <div className="flex flex-col min-w-0 w-full">
                         <div className="flex justify-between w-full p-1 overflow-hidden">
                           <h3 className="font-medium text-white truncate">{item.name}</h3>
-                          {item.type === 'WEEKLY_PITCH' ? (
+                          {item.type === 'PUBLIC_PITCH' ? (
                             <span className="px-2 py-1 w-fit text-xs font-bold rounded border bg-blue-500/10 text-blue-400 border-blue-500/30">
                               PITCH
                             </span>
