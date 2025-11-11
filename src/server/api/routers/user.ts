@@ -213,6 +213,11 @@ export const userRouter = createTRPCRouter({
             take: limit,
             orderBy,
             include: {
+              _count: {
+                select: {
+                  referralsAsReferrer: true,
+                },
+              },
               entrepreneur: {
                 select: {
                   firstName: true,
@@ -266,6 +271,7 @@ export const userRouter = createTRPCRouter({
           projectsCount: (u.entrepreneur?.projects?.length ?? 0) + (u.incubator?.projects?.length ?? 0),
           referralCode: u.referralCode,
           createdAt: u.createdAt,
+          referralsCount: u._count?.referralsAsReferrer ?? 0,
         }));
 
         return {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
+import { api } from '~/utils/api';
 
 export default function SignUp() {
   const [accountType, setAccountType] = useState<
@@ -12,6 +13,12 @@ export default function SignUp() {
 
   const router = useRouter();
   const { referralToken } = router.query;
+
+  const { data: referrerName, isLoading: isLoadingReferrer } =
+    api.referral.getReferrerNameByToken.useQuery(
+      { referralToken: referralToken as string },
+      { enabled: !!referralToken && typeof referralToken === 'string' }
+    );
 
   const handleNext = async () => {
     if (accountType === 'entrepreneur') {
@@ -40,26 +47,37 @@ export default function SignUp() {
           <h2 className="mt-4 text-center text-4xl font-semibold">
             Choose your <span className="text-[#E5CD82]">account type</span>
           </h2>
+          {referralToken && (
+            <p className="mt-4 text-center text-[#E5CD82]">
+              {isLoadingReferrer
+                ? 'Checking referral...'
+                : referrerName
+                  ? (
+                    <>
+                      You were referred by <span className="font-semibold">{referrerName}</span>
+                    </>
+                  )
+                  : 'Invalid referral code'}
+            </p>
+          )}
           <p className="mt-4 text-center">Select the type of account that best fits your needs.</p>
           <div className="mt-10 grid max-w-4xl grid-cols-2 items-center justify-center gap-4">
             <button
               onClick={() => setAccountType('entrepreneur')}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
-                accountType === 'entrepreneur'
-                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
-                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === 'entrepreneur'
+                ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
+                : 'border border-white/10 hover:border-white/30 hover:opacity-75'
+                }`}
             >
               <Image src="images/individual.svg" alt="entrepreneur" width={64} height={64} />
               <h3 className="mt-2 text-center text-xl font-semibold">Entrepreneur</h3>
             </button>
             <button
               onClick={() => setAccountType('investor')}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
-                accountType === 'investor'
-                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
-                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === 'investor'
+                ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
+                : 'border border-white/10 hover:border-white/30 hover:opacity-75'
+                }`}
             >
               <Image
                 src="images/individual.svg"
@@ -73,11 +91,10 @@ export default function SignUp() {
 
             <button
               onClick={() => setAccountType('incubator')}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
-                accountType === 'incubator'
-                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
-                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === 'incubator'
+                ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
+                : 'border border-white/10 hover:border-white/30 hover:opacity-75'
+                }`}
             >
               <Image
                 src="images/vc-group.svg"
@@ -91,11 +108,10 @@ export default function SignUp() {
 
             <button
               onClick={() => setAccountType('vc-group')}
-              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${
-                accountType === 'vc-group'
-                  ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
-                  : 'border border-white/10 hover:border-white/30 hover:opacity-75'
-              }`}
+              className={`flex h-40 w-full flex-col items-center justify-center rounded-2xl border bg-background bg-opacity-30 p-6 backdrop-blur-md transition-all duration-300 ${accountType === 'vc-group'
+                ? 'border-2 border-[#E5CD82] scale-105 shadow-lg shadow-[#E5CD82]/20'
+                : 'border border-white/10 hover:border-white/30 hover:opacity-75'
+                }`}
             >
               <Image
                 src="images/vc-group.svg"

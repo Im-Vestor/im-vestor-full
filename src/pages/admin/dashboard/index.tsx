@@ -287,6 +287,7 @@ export function Dashboard() {
                     </button>
                   </TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Projects</TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">Referrals</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Business Card</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Actions</TableHead>
                 </TableRow>
@@ -325,6 +326,11 @@ export function Dashboard() {
                     <TableCell>
                       <Badge className="bg-primary/20 text-primary border-primary/30">
                         {user.projectsCount ?? 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-white/10 text-ui-text/90 border-white/20">
+                        {user.referralsCount ?? 0}
                       </Badge>
                     </TableCell>
                     <TableCell>
