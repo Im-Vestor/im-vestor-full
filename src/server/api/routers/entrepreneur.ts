@@ -1,4 +1,5 @@
 import { clerkClient } from '@clerk/nextjs/server';
+import { TRPCError } from '@trpc/server';
 import { ProjectStatus, UserType, UserStatus } from '@prisma/client';
 import { z } from 'zod';
 
@@ -164,21 +165,44 @@ export const entrepreneurRouter = createTRPCRouter({
       });
 
       if (userToCheck) {
-        throw new Error('User already exists');
+        throw new Error('Email already in use');
+      }
+
+      const phone = input.mobileFone?.trim();
+      if (phone) {
+        const [existingInvestor, existingEntrepreneur, existingPartner] = await Promise.all([
+          ctx.db.investor.findFirst({ where: { mobileFone: phone } }),
+          ctx.db.entrepreneur.findFirst({ where: { mobileFone: phone } }),
+          ctx.db.partner.findFirst({ where: { mobileFone: phone } }),
+        ]);
+        if (existingInvestor || existingEntrepreneur || existingPartner) {
+          throw new Error('Mobile phone already in use');
+        }
       }
 
       const client = await clerkClient();
 
-      const clerkUser = await client.users.createUser({
-        emailAddress: [input.email],
-        firstName: input.firstName,
-        lastName: input.lastName,
-        publicMetadata: {
-          userType: UserType.ENTREPRENEUR,
-        },
-        password: input.password,
-        skipPasswordChecks: true,
-      });
+      let clerkUser;
+      try {
+        clerkUser = await client.users.createUser({
+          emailAddress: [input.email],
+          firstName: input.firstName,
+          lastName: input.lastName,
+          publicMetadata: {
+            userType: UserType.ENTREPRENEUR,
+          },
+          password: input.password,
+          skipPasswordChecks: true,
+        });
+      } catch (error: any) {
+        console.error('Clerk createUser failed (entrepreneur.create):', error);
+        const message =
+          error?.errors?.[0]?.message ??
+          error?.response?.data?.errors?.[0]?.message ??
+          error?.message ??
+          'Unprocessable Entity';
+        throw new TRPCError({ code: 'BAD_REQUEST', message });
+      }
 
       const user = await ctx.db.user.create({
         data: {

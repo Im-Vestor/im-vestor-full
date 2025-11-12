@@ -4,7 +4,8 @@ import { format } from 'date-fns';
 import { ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -23,8 +24,14 @@ import { api } from '~/utils/api';
 
 const formSchema = z
   .object({
-    firstName: z.string().min(2, 'First name must be at least 2 characters'),
-    lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+    firstName: z
+      .string()
+      .trim()
+      .regex(/^\p{L}{2,}$/u, 'First name must contain only letters and be at least 2 characters'),
+    lastName: z
+      .string()
+      .trim()
+      .regex(/^\p{L}{2,}$/u, 'Last name must contain only letters and be at least 2 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
@@ -46,6 +53,13 @@ const formSchema = z
 export default function SignupEntrepreneur() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const { isLoaded: isAuthLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    if (isAuthLoaded && isSignedIn) {
+      void router.replace('/home');
+    }
+  }, [isAuthLoaded, isSignedIn, router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,6 +89,7 @@ export default function SignupEntrepreneur() {
         console.error('Registration error:', error);
       },
     });
+  const validateSignup = api.validation.validateSignUp.useMutation();
 
   return (
     <main className="flex min-h-screen flex-col items-center pb-12">
@@ -371,6 +386,26 @@ export default function SignupEntrepreneur() {
                         'birthDate',
                         'linkedinUrl',
                       ]);
+                      if (isValid) {
+                        const values = form.getValues();
+                        const result = await validateSignup.mutateAsync({
+                          email: values.email,
+                          password: values.password,
+                          mobileFone: values.mobileFone,
+                        });
+                        if (!result.valid) {
+                          if (result.fieldErrors.email) {
+                            form.setError('email', { type: 'manual', message: result.fieldErrors.email });
+                          }
+                          if (result.fieldErrors.password) {
+                            form.setError('password', { type: 'manual', message: result.fieldErrors.password });
+                          }
+                          if (result.fieldErrors.mobileFone) {
+                            form.setError('mobileFone', { type: 'manual', message: result.fieldErrors.mobileFone });
+                          }
+                          isValid = false;
+                        }
+                      }
                       break;
                     case 2:
                       isValid = true; // Referral token is optional

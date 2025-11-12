@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -44,6 +45,13 @@ const VcGroupSignUp: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [country, setCountry] = useState<string>('');
   const { referralToken } = router.query;
+  const { isLoaded: isAuthLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    if (isAuthLoaded && isSignedIn) {
+      void router.replace('/home');
+    }
+  }, [isAuthLoaded, isSignedIn, router]);
 
   const form = useForm<VcGroupFormData>({
     resolver: zodResolver(vcGroupSchema),

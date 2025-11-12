@@ -21,32 +21,38 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPending, setIsPending] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const { mutateAsync: checkUserStatus } = api.user.checkUserStatus.useMutation();
-  const { data: userData } = api.user.getUser.useQuery(undefined, {
-    enabled: user.isLoaded && user.isSignedIn,
-    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
-  });
+  // Avoid mounting the user.getUser query until we know the user is signed in.
+  // This prevents unnecessary 401s on the login page.
+  function AuthRedirector() {
+    const { data: userData } = api.user.getUser.useQuery(undefined, {
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: false,
+    });
+    const hasRedirected = useRef(false);
 
-  const hasRedirected = useRef(false);
-
-  useEffect(() => {
-    // Prevent multiple redirects
-    if (hasRedirected.current) return;
-
-    if (user.isLoaded && user.isSignedIn && userData) {
-      hasRedirected.current = true;
-      const profileCompleted = isProfileCompleted(userData);
-      if (profileCompleted) {
-        void router.push('/home');
-      } else {
-        void router.push('/profile');
+    useEffect(() => {
+      if (hasRedirected.current) return;
+      if (user.isLoaded && user.isSignedIn && userData) {
+        hasRedirected.current = true;
+        const profileCompleted = isProfileCompleted(userData);
+        if (profileCompleted) {
+          void router.push('/home');
+        } else {
+          void router.push('/profile');
+        }
       }
-    }
-  }, [user.isLoaded, user.isSignedIn, userData, router]);
+    }, [user.isLoaded, user.isSignedIn, userData, router]);
+
+    return null;
+  }
 
   useEffect(() => {
     // Check if user was redirected after account deletion
@@ -62,10 +68,55 @@ export default function Login() {
     }
   }, [router.query.deleted, router.query.message]);
 
+  const mapClerkErrorToMessage = (code?: string, fallback?: string) => {
+    switch (code) {
+      case 'form_password_incorrect':
+      case 'invalid_password':
+        return 'Incorrect password. Please try again.';
+      case 'form_identifier_not_found':
+      case 'identifier_not_found':
+        return 'Email not found. Please check and try again.';
+      case 'too_many_attempts':
+        return 'Too many attempts. Please wait a moment and try again.';
+      case 'not_allowed_to_sign_in':
+        return 'You are not allowed to sign in.';
+      case 'user_locked':
+        return 'Your account is temporarily locked. Please try again later.';
+      default:
+        return fallback ?? 'Failed to login. Please try again.';
+    }
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    setEmailError(null);
+    setPasswordError(null);
+    setFormError(null);
+
+    const emailRegex =
+      // Simple RFC 5322-compliant-ish email regex for client validation
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address.');
+      isValid = false;
+    }
+    if (!password || password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      isValid = false;
+    }
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isLoaded) return;
+
+    if (!validateForm()) {
+      setFormError('Please fix the errors below and try again.');
+      toast.error('Please fix the errors in the form.');
+      return;
+    }
 
     setIsPending(true);
 
@@ -95,13 +146,25 @@ export default function Login() {
 
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        // We'll let the useEffect handle the redirect based on profile completion
+        toast.success('Logged in successfully. Redirecting...');
+        // Redirect immediately to /home
+        void router.push('/home');
       } else {
         logger.error('Sign in attempt incomplete:', signInAttempt);
+        toast.error('Login could not be completed. Please try again.');
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
-        toast.error(err.errors[0]?.message ?? 'Failed to login. Please try again.');
+        const first = err.errors?.[0];
+        const message = mapClerkErrorToMessage(first?.code, first?.message);
+        // Try to map inline errors too
+        if (first?.code === 'form_identifier_not_found' || first?.code === 'identifier_not_found') {
+          setEmailError('Email not found.');
+        } else if (first?.code === 'form_password_incorrect' || first?.code === 'invalid_password') {
+          setPasswordError('Incorrect password.');
+        }
+        setFormError(message);
+        toast.error(message);
       } else {
         toast.error('Failed to login. Please try again.');
         logger.error('Login error:', err);
@@ -113,6 +176,7 @@ export default function Login() {
 
   return (
     <>
+      {user.isLoaded && user.isSignedIn ? <AuthRedirector /> : null}
       <main className="flex min-h-screen">
         {/* Left side - Image */}
         <div className="hidden lg:block lg:w-1/2">
@@ -147,6 +211,9 @@ export default function Login() {
                     placeholder="example@email.com"
                     disabled={isPending}
                   />
+                  {emailError ? (
+                    <p className="text-sm text-red-400">{emailError}</p>
+                  ) : null}
                 </div>
                 <div className="space-y-2">
                   <Label className="font-normal text-neutral-200">Password*</Label>
@@ -160,6 +227,9 @@ export default function Login() {
                     placeholder="••••••••"
                     disabled={isPending}
                   />
+                  {passwordError ? (
+                    <p className="text-sm text-red-400">{passwordError}</p>
+                  ) : null}
                 </div>
               </div>
 
@@ -175,6 +245,12 @@ export default function Login() {
                   </Button>
                 </Link>
               </div>
+
+              {formError ? (
+                <div className="rounded-md border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-300">
+                  {formError}
+                </div>
+              ) : null}
 
               <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? (
