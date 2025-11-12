@@ -103,7 +103,7 @@ export const vcGroupRouter = createTRPCRouter({
           userType: UserType.VC_GROUP,
         },
         password: input.password,
-        skipPasswordChecks: true,
+        skipPasswordChecks: false,
       });
 
       const user = await ctx.db.user.create({

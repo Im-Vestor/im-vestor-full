@@ -108,7 +108,7 @@ export const partnerRouter = createTRPCRouter({
             userType: UserType.PARTNER,
           },
           password: input.password,
-          skipPasswordChecks: true,
+          skipPasswordChecks: false,
         });
       } catch (error: any) {
         console.error('Clerk createUser failed (partner.create):', error);

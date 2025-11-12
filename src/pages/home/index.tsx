@@ -3,11 +3,18 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 import { Header } from '~/components/header';
 import Home from '~/components/home';
+import { api } from '~/utils/api';
+import { isProfileCompleted } from '~/utils/profile-completion';
 
 export default function HomePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   const hasRedirected = useRef(false);
+  const { data: userData } = api.user.getUser.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     // Prevent multiple redirects
@@ -18,6 +25,17 @@ export default function HomePage() {
       void router.push('/login');
     }
   }, [isLoaded, isSignedIn, router]);
+
+  useEffect(() => {
+    if (hasRedirected.current) return;
+    if (isLoaded && isSignedIn && userData) {
+      const profileCompleted = isProfileCompleted(userData);
+      if (!profileCompleted) {
+        hasRedirected.current = true;
+        void router.replace('/profile');
+      }
+    }
+  }, [isLoaded, isSignedIn, userData, router]);
 
   // Don't render anything until authentication is loaded
   if (!isLoaded) {

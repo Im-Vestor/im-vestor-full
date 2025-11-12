@@ -32,16 +32,10 @@ export const validationRouter = createTRPCRouter({
         // ignore Clerk lookup failures for validation; don't block user
       }
 
-      // Password strength (basic)
+      // Password rule aligned to current forms (min 8). Clerk will enforce stricter policies if configured.
       const password = input.password ?? '';
-      const hasMinLength = password.length >= 8;
-      const hasUpper = /[A-Z]/.test(password);
-      const hasLower = /[a-z]/.test(password);
-      const hasDigit = /\d/.test(password);
-      const hasSpecial = /[^A-Za-z0-9]/.test(password);
-      if (!(hasMinLength && hasUpper && hasLower && hasDigit && hasSpecial)) {
-        fieldErrors.password =
-          'Password must be 8+ chars and include upper, lower, number, and special character';
+      if (password.length < 8) {
+        fieldErrors.password = 'Password must be at least 8 characters';
       }
 
       // Mobile phone uniqueness across profiles

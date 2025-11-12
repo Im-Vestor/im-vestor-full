@@ -350,7 +350,7 @@ export const investorRouter = createTRPCRouter({
             userType: UserType.INVESTOR,
           },
           password: input.password,
-          skipPasswordChecks: true,
+          skipPasswordChecks: false,
         });
       } catch (error: any) {
         console.error('Clerk createUser failed (investor.create):', error);

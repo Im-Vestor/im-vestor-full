@@ -107,7 +107,7 @@ export const incubatorRouter = createTRPCRouter({
           userType: UserType.INCUBATOR,
         },
         password: input.password,
-        skipPasswordChecks: true,
+        skipPasswordChecks: false,
       });
 
       const user = await ctx.db.user.create({

@@ -192,7 +192,7 @@ export const entrepreneurRouter = createTRPCRouter({
             userType: UserType.ENTREPRENEUR,
           },
           password: input.password,
-          skipPasswordChecks: true,
+        skipPasswordChecks: false,
         });
       } catch (error: any) {
         console.error('Clerk createUser failed (entrepreneur.create):', error);
