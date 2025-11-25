@@ -1,4 +1,5 @@
 import { useUser } from '@clerk/nextjs';
+import { Hand, Megaphone, Train, Zap, ShoppingCart, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
@@ -20,6 +21,7 @@ interface ProductProps {
   onBuy?: () => void;
   isLoading?: boolean;
   value: number;
+  icon: LucideIcon;
 }
 
 const products = [
@@ -30,6 +32,7 @@ const products = [
       'Sends an personalized introduction note to other user about your profile, helping you make that crucial first connection.',
     value: 25,
     availableUserTypes: ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
+    icon: Hand,
   },
   {
     id: 'boost',
@@ -38,14 +41,16 @@ const products = [
       'Places your project at the top of business sector searches, increasing visibility to potential investors.',
     value: 20,
     availableUserTypes: ['ENTREPRENEUR'],
+    icon: Zap,
   },
   {
     id: 'public-pitch-ticket',
     name: 'Public Pitch Ticket',
     description:
-      'Gain access to 2 public pitches, open to all investors and VCs. By purchasing this add-on, you can schedule your own Public Pitch, which will be presented by you or a member of your team. Each pitch includes an optional Q&A session with investors. Access can be paid or allocated to selected entrepreneurial projects.',
+      'Gain access to 2 public pitches, open to all investors and VCs. By purchasing this add-on, you can schedule your own Public Pitch.',
     value: 20,
     availableUserTypes: ['ENTREPRENEUR'],
+    icon: Megaphone,
   },
   {
     id: 'hyper-train-ticket',
@@ -53,28 +58,51 @@ const products = [
     description: 'Get featured in the Hyper Train feed to increase visibility and connect with potential partners, investors, or entrepreneurs.',
     value: 35,
     availableUserTypes: ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
+    icon: Train,
   },
 ];
 
-const Product = ({ title, description, onBuy, isLoading, value }: ProductProps) => {
+const Product = ({ title, description, onBuy, isLoading, value, icon: Icon }: ProductProps) => {
   return (
-    <Card className="flex h-full flex-col transition-all hover:shadow-md">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+    <Card className="group relative flex h-full flex-col overflow-hidden border-2 border-white/5 bg-gradient-to-br from-card to-card/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary-solid/50 hover:shadow-2xl hover:shadow-primary-solid/10">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-solid/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <CardHeader className="relative z-10 pb-4">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-solid/10 text-primary-solid transition-colors duration-300 group-hover:bg-primary-solid group-hover:text-black">
+          <Icon className="h-6 w-6" />
+        </div>
+        <CardTitle className="text-xl font-bold text-white transition-colors duration-300 group-hover:text-primary">
+          {title}
+        </CardTitle>
+        <CardDescription className="text-base leading-relaxed text-white/60">
+          {description}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-grow w-full items-center justify-center">
-        <p className="text-2xl font-bold">
-          {value}€ <span className="text-sm text-neutral-500">+ IVA</span>
-        </p>
+
+      <CardContent className="relative z-10 flex w-full flex-grow flex-col justify-end py-6">
+        <div className="flex items-baseline gap-1">
+          <p className="text-4xl font-bold tracking-tight text-white group-hover:text-primary transition-colors duration-300">
+            {value}€
+          </p>
+          <span className="text-sm font-medium uppercase tracking-wider text-white/40">
+            + IVA
+          </span>
+        </div>
       </CardContent>
-      <CardFooter>
+
+      <CardFooter className="relative z-10 pt-0">
         <Button
           onClick={onBuy ?? (() => toast.error('Coming Soon'))}
-          className="w-full"
+          className="w-full gap-2 font-bold shadow-lg shadow-primary-solid/5 transition-all hover:shadow-primary-solid/20"
           disabled={isLoading}
         >
-          {isLoading ? 'Processing...' : 'Buy Now'}
+          {isLoading ? (
+            'Processing...'
+          ) : (
+            <>
+              Buy Now <ShoppingCart className="h-4 w-4" />
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
@@ -257,6 +285,7 @@ export default function Shop() {
                 onBuy={() => handlePurchase(product.id)}
                 isLoading={isProcessing}
                 value={product.value}
+                icon={product.icon}
               />
             ))}
         </div>

@@ -225,7 +225,7 @@ export default function Home() {
           </div>
         ) : hasNews ? (
           <div className="w-full">
-            <NewsGrid blocks={news.blocks.slice(0, 1)} title="" description="" />
+            <NewsGrid blocks={news.blocks} title="" description="" />
           </div>
         ) : (
           <div className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">

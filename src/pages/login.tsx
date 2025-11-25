@@ -68,25 +68,6 @@ export default function Login() {
     }
   }, [router.query.deleted, router.query.message]);
 
-  const mapClerkErrorToMessage = (code?: string, fallback?: string) => {
-    switch (code) {
-      case 'form_password_incorrect':
-      case 'invalid_password':
-        return 'Incorrect password. Please try again.';
-      case 'form_identifier_not_found':
-      case 'identifier_not_found':
-        return 'Email not found. Please check and try again.';
-      case 'too_many_attempts':
-        return 'Too many attempts. Please wait a moment and try again.';
-      case 'not_allowed_to_sign_in':
-        return 'You are not allowed to sign in.';
-      case 'user_locked':
-        return 'Your account is temporarily locked. Please try again later.';
-      default:
-        return fallback ?? 'Failed to login. Please try again.';
-    }
-  };
-
   const validateForm = () => {
     let isValid = true;
     setEmailError(null);
@@ -156,15 +137,13 @@ export default function Login() {
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
         const first = err.errors?.[0];
-        const message = mapClerkErrorToMessage(first?.code, first?.message);
-        // Try to map inline errors too
         if (first?.code === 'form_identifier_not_found' || first?.code === 'identifier_not_found') {
           setEmailError('Email not found.');
         } else if (first?.code === 'form_password_incorrect' || first?.code === 'invalid_password') {
           setPasswordError('Incorrect password.');
         }
-        setFormError(message);
-        toast.error(message);
+        setFormError(first?.message ?? 'Failed to login. Please try again.');
+        toast.error(first?.message ?? 'Failed to login. Please try again.');
       } else {
         toast.error('Failed to login. Please try again.');
         logger.error('Login error:', err);

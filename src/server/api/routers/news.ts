@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { Client } from '@notionhq/client';
+import { type BlockObjectResponse, type PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { env } from '~/env';
 import { type NewsUserType, getNewsSectionTitle } from '~/types/news';
@@ -40,6 +41,7 @@ export const newsRouter = createTRPCRouter({
   }),
 
   // Get news specific to user type (gets user type from input parameter or Clerk session or defaults to entrepreneur)
+  // Returns posts from GERAL page + posts from user type specific page
   getUserTypeNews: publicProcedure
     .input(
       z.object({
@@ -56,49 +58,34 @@ export const newsRouter = createTRPCRouter({
 
         console.log('User type being used:', userType);
 
-        let pageId: string | undefined;
+        let userTypePageId: string | undefined;
         const sectionTitle = getNewsSectionTitle(userType);
 
+        // Get the user type specific page ID - each user type has its own page with the same name
         switch (userType) {
           case 'ENTREPRENEUR':
-            pageId = env.NOTION_PAGE_ID_ENTREPRENEUR;
+            userTypePageId = env.NOTION_PAGE_ID_ENTREPRENEUR;
             break;
           case 'INVESTOR':
-            pageId = env.NOTION_PAGE_ID_INVESTOR;
+            userTypePageId = env.NOTION_PAGE_ID_INVESTOR;
             break;
           case 'PARTNER':
-            pageId = env.NOTION_PAGE_ID_PARTNER;
+            userTypePageId = env.NOTION_PAGE_ID_PARTNER;
             break;
           case 'VC_GROUP':
-            // VC Groups get investor content as they're investment-focused
-            pageId = env.NOTION_PAGE_ID_INVESTOR;
+            userTypePageId = env.NOTION_PAGE_ID_VC_GROUP;
             break;
           case 'INCUBATOR':
-            // Incubators get partner content as they work with partnerships
-            pageId = env.NOTION_PAGE_ID_PARTNER;
+            userTypePageId = env.NOTION_PAGE_ID_INCUBATOR;
             break;
           case 'ADMIN':
-            // Admins get general news
-            pageId = env.NOTION_NEWS_PAGE_ID;
+            // Admins don't have a specific page, will only get general news
+            userTypePageId = undefined;
             break;
           default:
             // Fallback to entrepreneur content
-            pageId = env.NOTION_PAGE_ID_ENTREPRENEUR;
+            userTypePageId = env.NOTION_PAGE_ID_ENTREPRENEUR;
             break;
-        }
-
-        if (!pageId) {
-          // Fallback to general news if specific page not configured
-          pageId = env.NOTION_NEWS_PAGE_ID;
-        }
-
-        console.log('Using page ID:', pageId);
-
-        if (!pageId) {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: `News page not configured for user type: ${userType}`,
-          });
         }
 
         // Check if Notion API key is configured
@@ -109,20 +96,71 @@ export const newsRouter = createTRPCRouter({
           });
         }
 
-        console.log('Making Notion API call...');
+        const allBlocks: Array<BlockObjectResponse | PartialBlockObjectResponse> = [];
+        const seenPageIds = new Set<string>();
 
-        const response = await notion.blocks.children.list({
-          block_id: pageId,
-          page_size: 50,
-          start_cursor: input.cursor,
+        // Fetch posts from GERAL page (NOTION_PAGE_ID_GERAL)
+        if (env.NOTION_PAGE_ID_GERAL) {
+          try {
+            console.log('Fetching posts from GERAL page:', env.NOTION_PAGE_ID_GERAL);
+            const generalResponse = await notion.blocks.children.list({
+              block_id: env.NOTION_PAGE_ID_GERAL,
+              page_size: 50,
+            });
+
+            // Add general posts to the list
+            for (const block of generalResponse.results) {
+              if ('type' in block && block.type === 'child_page' && !seenPageIds.has(block.id)) {
+                allBlocks.push(block);
+                seenPageIds.add(block.id);
+              }
+            }
+
+            console.log('GERAL posts fetched:', generalResponse.results.length);
+          } catch (error) {
+            console.error('Error fetching GERAL posts:', error);
+            // Continue even if GERAL page fails
+          }
+        }
+
+        // Fetch posts from user type specific page
+        if (userTypePageId) {
+          try {
+            console.log('Fetching posts from user type page:', userTypePageId);
+            const userTypeResponse = await notion.blocks.children.list({
+              block_id: userTypePageId,
+              page_size: 50,
+              start_cursor: input.cursor,
+            });
+
+            // Add user type specific posts to the list
+            for (const block of userTypeResponse.results) {
+              if ('type' in block && block.type === 'child_page' && !seenPageIds.has(block.id)) {
+                allBlocks.push(block);
+                seenPageIds.add(block.id);
+              }
+            }
+
+            console.log('User type posts fetched:', userTypeResponse.results.length);
+          } catch (error) {
+            console.error('Error fetching user type posts:', error);
+            // Continue even if user type page fails
+          }
+        }
+
+        // Sort blocks by created_time (newest first) if available
+        allBlocks.sort((a, b) => {
+          const timeA = a.created_time ? new Date(a.created_time).getTime() : 0;
+          const timeB = b.created_time ? new Date(b.created_time).getTime() : 0;
+          return timeB - timeA;
         });
 
-        console.log('Notion API response received, blocks count:', response.results.length);
+        console.log('Total combined posts:', allBlocks.length);
 
         return {
-          blocks: response.results,
-          hasMore: response.has_more,
-          nextCursor: response.next_cursor,
+          blocks: allBlocks,
+          hasMore: false, // We're fetching all posts, so no pagination needed for now
+          nextCursor: undefined,
           userType, // Return the user type for reference
           sectionTitle, // Return the appropriate section title
         };

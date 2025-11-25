@@ -27,7 +27,10 @@ export const env = createEnv({
     NOTION_PAGE_ID_ENTREPRENEUR: z.string().optional(),
     NOTION_PAGE_ID_INVESTOR: z.string().optional(),
     NOTION_PAGE_ID_PARTNER: z.string().optional(),
+    NOTION_PAGE_ID_VC_GROUP: z.string().optional(),
+    NOTION_PAGE_ID_INCUBATOR: z.string().optional(),
     NOTION_NEWS_PAGE_ID: z.string().optional(),
+    NOTION_PAGE_ID_GERAL: z.string().optional(),
   },
 
   /**
@@ -70,7 +73,10 @@ export const env = createEnv({
     NOTION_PAGE_ID_ENTREPRENEUR: process.env.NOTION_PAGE_ID_ENTREPRENEUR,
     NOTION_PAGE_ID_INVESTOR: process.env.NOTION_PAGE_ID_INVESTOR,
     NOTION_PAGE_ID_PARTNER: process.env.NOTION_PAGE_ID_PARTNER,
+    NOTION_PAGE_ID_VC_GROUP: process.env.NOTION_PAGE_ID_VC_GROUP,
+    NOTION_PAGE_ID_INCUBATOR: process.env.NOTION_PAGE_ID_INCUBATOR,
     NOTION_NEWS_PAGE_ID: process.env.NOTION_NEWS_PAGE_ID,
+    NOTION_PAGE_ID_GERAL: process.env.NOTION_PAGE_ID_GERAL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },

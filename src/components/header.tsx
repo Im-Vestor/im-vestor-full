@@ -16,6 +16,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { toNewsUserType } from '~/types/news';
 import { api } from '~/utils/api';
 import { FloatingSupportButton } from './FloatingSupportButton';
 import { Notifications } from './notifications';
@@ -182,6 +183,42 @@ export const Header = () => {
 
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hasNewNews, setHasNewNews] = useState(false);
+
+  // Fetch news to check for updates
+  const { data: newsData } = api.news.getUserTypeNews.useQuery(
+    {
+      userType: userType ? toNewsUserType(userType) : undefined,
+    },
+    {
+      enabled: !!userType,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
+
+  useEffect(() => {
+    if (newsData?.blocks && newsData.blocks.length > 0) {
+      const latestNews = newsData.blocks[0];
+      // Check if it has created_time and is a full block response
+      if (latestNews && 'created_time' in latestNews) {
+        const latestTime = new Date(latestNews.created_time).getTime();
+        const lastSeenTime = parseInt(localStorage.getItem('lastSeenNewsTime') ?? '0');
+
+        if (latestTime > lastSeenTime) {
+          setHasNewNews(true);
+        } else {
+          setHasNewNews(false);
+        }
+      }
+    }
+  }, [newsData]);
+
+  useEffect(() => {
+    if (path?.startsWith('/news')) {
+      setHasNewNews(false);
+      localStorage.setItem('lastSeenNewsTime', Date.now().toString());
+    }
+  }, [path]);
 
   useEffect(() => {
     if (user && isLoaded) {
@@ -200,12 +237,20 @@ export const Header = () => {
   };
 
   // Handle navigation
-  const handleNavigation = async (href: string) => {
+  const handleNavigation = async (href: string, label?: string) => {
+    if (label === 'News') {
+      setHasNewNews(false);
+      localStorage.setItem('lastSeenNewsTime', Date.now().toString());
+    }
     await router.push(href);
   };
 
   // Handle mobile navigation
-  const handleMobileNavigation = async (href: string) => {
+  const handleMobileNavigation = async (href: string, label?: string) => {
+    if (label === 'News') {
+      setHasNewNews(false);
+      localStorage.setItem('lastSeenNewsTime', Date.now().toString());
+    }
     await router.push(href);
     setIsMobileMenuOpen(false);
   };
@@ -230,10 +275,13 @@ export const Header = () => {
                 key={menu.href}
                 variant="ghost"
                 size="sm"
-                className={`${path === menu.href ? 'text-[#EFD687]' : ''}`}
-                onClick={() => void handleNavigation(menu.href)}
+                className={`${path === menu.href ? 'text-[#EFD687]' : ''} relative`}
+                onClick={() => void handleNavigation(menu.href, menu.label)}
               >
                 {menu.label}
+                {menu.label === 'News' && hasNewNews && (
+                  <span className="absolute top-1.5 right-1 h-2 w-2 rounded-full bg-red-500" />
+                )}
               </Button>
             ))}
           </div>
@@ -361,9 +409,12 @@ export const Header = () => {
               variant="ghost"
               size="sm"
               className={`justify-start ${path === menu.href ? 'text-[#EFD687]' : ''}`}
-              onClick={() => void handleMobileNavigation(menu.href)}
+              onClick={() => void handleMobileNavigation(menu.href, menu.label)}
             >
               {menu.label}
+              {menu.label === 'News' && hasNewNews && (
+                <span className="ml-2 h-2 w-2 rounded-full bg-red-500" />
+              )}
             </Button>
           ))}
           <Button
