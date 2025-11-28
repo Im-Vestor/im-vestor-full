@@ -19,15 +19,19 @@ import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
 import { EntrepreneurForm } from './entrepreneur-form';
 import { UpdateEmailButton } from '~/components/update-email-button';
+import { useUser } from '@clerk/nextjs';
 
 export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const { isLoaded, isSignedIn } = useUser();
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: entrepreneur, isPending: isLoading } = userId
     ? api.entrepreneur.getByUserIdForAdmin.useQuery({ userId })
-    : api.entrepreneur.getByUserId.useQuery();
+    : api.entrepreneur.getByUserId.useQuery(undefined, {
+      enabled: isLoaded && isSignedIn,
+    });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;

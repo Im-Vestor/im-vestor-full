@@ -112,7 +112,7 @@ const Product = ({ title, description, onBuy, isLoading, value, icon: Icon }: Pr
 export default function Shop() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showProjectSelection, setShowProjectSelection] = useState(false);
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const userType = user?.publicMetadata.userType as string;
 
   // Debug logs
@@ -125,6 +125,7 @@ export default function Shop() {
 
   // Get user data including available pokes
   const { data: userData, isPending: isUserDataPending } = api.user.getUser.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn,
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
@@ -132,7 +133,7 @@ export default function Shop() {
   // Get entrepreneur projects for project selection
   const { data: entrepreneurData, isPending: isEntrepreneurDataPending } =
     api.entrepreneur.getByUserId.useQuery(undefined, {
-      enabled: userType === 'ENTREPRENEUR',
+      enabled: isLoaded && isSignedIn && userType === 'ENTREPRENEUR',
     });
 
   // For entrepreneurs, we'll check for existing hypertrain items when they try to purchase

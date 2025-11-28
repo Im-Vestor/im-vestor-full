@@ -92,7 +92,7 @@ const STAGE_TO_STEP_MAP = {
 };
 
 export default function CompanyDetails() {
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const utils = api.useUtils();
   const { projectId } = router.query;
@@ -130,11 +130,11 @@ export default function CompanyDetails() {
     user?.id === project?.Entrepreneur?.userId || user?.id === project?.Incubator?.userId;
 
   const { data: investor } = api.investor.getByUserId.useQuery(undefined, {
-    enabled: !!isInvestor,
+    enabled: isLoaded && isSignedIn && !!isInvestor && !!user,
   });
 
   const { data: vcGroup } = api.vcGroup.getByUserId.useQuery(undefined, {
-    enabled: !!isVc,
+    enabled: isLoaded && isSignedIn && !!isVc && !!user,
   });
 
   const { data: negotiation } =
@@ -197,6 +197,12 @@ export default function CompanyDetails() {
   const favoriteOrUnfavoriteMutation = api.project.favoriteOrUnfavorite.useMutation({
     onSuccess: async () => {
       await utils.project.getById.invalidate();
+      if (isInvestor) {
+        await utils.investor.getByUserId.invalidate();
+      }
+      if (isVc) {
+        await utils.vcGroup.getByUserId.invalidate();
+      }
       toast.success(`${isFavorite ? 'Removed from' : 'Added to'} favorites!`);
     },
     onError: () => {
@@ -324,23 +330,22 @@ export default function CompanyDetails() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-semibold sm:text-3xl">{project.name}</h1>
-                  {isInvestor ||
-                    (isVc && (
-                      <button
-                        onClick={handleFavoriteClick}
-                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
-                        aria-label={
-                          isFavorite
-                            ? `Remove ${project.name} from favorites`
-                            : `Add ${project.name} to favorites`
-                        }
-                        disabled={favoriteOrUnfavoriteMutation.isPending}
-                      >
-                        <Heart
-                          className={`h-5 w-5 transition-all ${favoriteOrUnfavoriteMutation.isPending ? 'opacity-50' : ''} duration-300 ${isFavorite ? 'fill-[#EFD687] text-[#EFD687]' : 'fill-transparent'}`}
-                        />
-                      </button>
-                    ))}
+                  {(isInvestor || isVc) && (
+                    <button
+                      onClick={handleFavoriteClick}
+                      className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
+                      aria-label={
+                        isFavorite
+                          ? `Remove ${project.name} from favorites`
+                          : `Add ${project.name} to favorites`
+                      }
+                      disabled={favoriteOrUnfavoriteMutation.isPending}
+                    >
+                      <Heart
+                        className={`h-5 w-5 transition-all ${favoriteOrUnfavoriteMutation.isPending ? 'opacity-50' : ''} duration-300 ${isFavorite ? 'fill-[#EFD687] text-[#EFD687]' : 'fill-transparent'}`}
+                      />
+                    </button>
+                  )}
                 </div>
                 <p className="text-sm text-white/60 sm:text-base">
                   {project.quickSolution ?? 'No description available'}

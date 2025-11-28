@@ -40,86 +40,20 @@ export const investorRouter = createTRPCRouter({
 
   getMyProjects: protectedProcedure.query(async ({ ctx }) => {
     // First check if the user is an investor
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.auth.userId },
-      select: { userType: true }
-    });
+    const [user, investor] = await Promise.all([
+      ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        select: { userType: true },
+      }),
+      ctx.db.investor.findUnique({
+        where: { userId: ctx.auth.userId },
+        select: { id: true },
+      }),
+    ]);
 
     if (!user || user.userType !== 'INVESTOR') {
       throw new Error('Unauthorized: Only investors can access this resource');
     }
-
-    const investor = await ctx.db.investor.findUnique({
-      where: { userId: ctx.auth.userId },
-      include: {
-        negotiations: {
-          include: {
-            project: {
-              include: {
-                Entrepreneur: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  },
-                },
-                sector: true,
-                country: true,
-                state: true,
-                _count: {
-                  select: {
-                    favoriteInvestors: true,
-                    favoriteVcGroups: true,
-                  },
-                },
-              },
-            },
-            meetings: {
-              orderBy: {
-                startDate: 'desc',
-              },
-            },
-          },
-        },
-        favoriteProjects: {
-          include: {
-            Entrepreneur: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-            sector: true,
-            country: true,
-            state: true,
-            _count: {
-              select: {
-                favoriteInvestors: true,
-                favoriteVcGroups: true,
-              },
-            },
-          },
-        },
-        investedProjects: {
-          include: {
-            Entrepreneur: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-            sector: true,
-            country: true,
-            state: true,
-            _count: {
-              select: {
-                favoriteInvestors: true,
-                favoriteVcGroups: true,
-              },
-            },
-          },
-        },
-      },
-    });
 
     if (!investor) {
       return {
@@ -129,19 +63,105 @@ export const investorRouter = createTRPCRouter({
       };
     }
 
+    const [negotiations, favoriteProjects, investedProjects] = await Promise.all([
+      ctx.db.negotiation.findMany({
+        where: { investorId: investor.id },
+        include: {
+          project: {
+            include: {
+              Entrepreneur: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              sector: true,
+              country: true,
+              state: true,
+              _count: {
+                select: {
+                  favoriteInvestors: true,
+                  favoriteVcGroups: true,
+                },
+              },
+            },
+          },
+          meetings: {
+            orderBy: {
+              startDate: 'desc',
+            },
+          },
+        },
+      }),
+      ctx.db.project.findMany({
+        where: {
+          favoriteInvestors: {
+            some: {
+              id: investor.id,
+            },
+          },
+        },
+        include: {
+          Entrepreneur: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          sector: true,
+          country: true,
+          state: true,
+          _count: {
+            select: {
+              favoriteInvestors: true,
+              favoriteVcGroups: true,
+            },
+          },
+        },
+      }),
+      ctx.db.project.findMany({
+        where: {
+          investedInvestors: {
+            some: {
+              id: investor.id,
+            },
+          },
+        },
+        include: {
+          Entrepreneur: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          sector: true,
+          country: true,
+          state: true,
+          _count: {
+            select: {
+              favoriteInvestors: true,
+              favoriteVcGroups: true,
+            },
+          },
+        },
+      }),
+    ]);
+
     return {
-      negotiations: investor.negotiations.map(negotiation => ({
+      negotiations: negotiations.map(negotiation => ({
         ...negotiation,
         project: {
           ...negotiation.project,
-          likesCount: negotiation.project._count.favoriteInvestors + negotiation.project._count.favoriteVcGroups,
+          likesCount:
+            negotiation.project._count.favoriteInvestors +
+            negotiation.project._count.favoriteVcGroups,
         },
       })),
-      favoriteProjects: investor.favoriteProjects.map(project => ({
+      favoriteProjects: favoriteProjects.map(project => ({
         ...project,
         likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
       })),
-      investedProjects: investor.investedProjects.map(project => ({
+      investedProjects: investedProjects.map(project => ({
         ...project,
         likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
       })),

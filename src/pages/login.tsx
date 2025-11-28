@@ -32,6 +32,7 @@ export default function Login() {
   // This prevents unnecessary 401s on the login page.
   function AuthRedirector() {
     const { data: userData } = api.user.getUser.useQuery(undefined, {
+      enabled: user.isLoaded && user.isSignedIn,
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: false,

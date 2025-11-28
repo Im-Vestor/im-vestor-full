@@ -2,13 +2,16 @@ import { Copy, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { api } from '~/utils/api';
+import { useUser } from '@clerk/nextjs';
 
 export default function PartnerDashboard() {
   // const [page, setPage] = useState(0);
+  const { isLoaded, isSignedIn } = useUser();
 
   // in this page we will need to fetch all the projects from entrepreneurs or partners that were referred by the partner
 
   const { data: user, isLoading } = api.user.getUser.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn,
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });

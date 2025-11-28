@@ -21,16 +21,21 @@ import { toast } from 'sonner';
 
 export default function InvestorDetails() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const { investorId } = router.query;
   const [isPokeDialogOpen, setIsPokeDialogOpen] = useState(false);
   const [pokeMessage, setPokeMessage] = useState('Hello, I am interested in connecting with you!');
 
   const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
 
-  const { data: loggedInUser, refetch: refetchUser } = api.user.getUserById.useQuery({
-    userId: user?.id ?? '',
-  });
+  const { data: loggedInUser, refetch: refetchUser } = api.user.getUserById.useQuery(
+    {
+      userId: user?.id ?? '',
+    },
+    {
+      enabled: isLoaded && isSignedIn && !!user?.id,
+    }
+  );
 
   const { data: investor, isLoading } = api.investor.getById.useQuery(
     { id: investorId as string },

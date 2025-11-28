@@ -21,12 +21,12 @@ import { Hypertrain } from '../hypertrain/hypertrain';
 import { toNewsUserType } from '~/types/news';
 
 export default function Home() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const userType = user?.publicMetadata.userType as UserType;
   const t = useTranslation();
 
   const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery(undefined, {
-    enabled: isLoaded && !!user,
+    enabled: isLoaded && isSignedIn && !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });

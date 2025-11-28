@@ -218,6 +218,23 @@ export const userRouter = createTRPCRouter({
                   referralsAsReferrer: true,
                 },
               },
+              referralsAsReferred: {
+                include: {
+                  referrer: {
+                    include: {
+                      entrepreneur: true,
+                      investor: true,
+                      partner: true,
+                      incubator: true,
+                      vcGroup: true,
+                    },
+                  },
+                },
+                take: 1,
+                orderBy: {
+                  joinedAt: 'desc',
+                },
+              },
               entrepreneur: {
                 select: {
                   firstName: true,
@@ -260,19 +277,42 @@ export const userRouter = createTRPCRouter({
           ctx.db.user.count({ where }),
         ]);
 
-        const items = users.map(u => ({
-          id: u.id,
-          email: u.email,
-          phone: u.entrepreneur?.mobileFone ?? u.investor?.mobileFone ?? u.partner?.mobileFone ?? u.incubator?.phone ?? u.vcGroup?.phone ?? 'N/A',
-          userType: u.userType,
-          firstName: u.entrepreneur?.firstName ?? u.investor?.firstName ?? u.partner?.firstName ?? '',
-          lastName: u.entrepreneur?.lastName ?? u.investor?.lastName ?? u.partner?.lastName ?? '',
-          name: u.incubator?.name ?? u.vcGroup?.name ?? '',
-          projectsCount: (u.entrepreneur?.projects?.length ?? 0) + (u.incubator?.projects?.length ?? 0),
-          referralCode: u.referralCode,
-          createdAt: u.createdAt,
-          referralsCount: u._count?.referralsAsReferrer ?? 0,
-        }));
+        const items = users.map(u => {
+          const referral = u.referralsAsReferred[0];
+          let referredBy = null;
+
+          if (referral?.referrer) {
+            const refUser = referral.referrer;
+            if (refUser.userType === 'ENTREPRENEUR' && refUser.entrepreneur) {
+              referredBy = `${refUser.entrepreneur.firstName} ${refUser.entrepreneur.lastName}`;
+            } else if (refUser.userType === 'INVESTOR' && refUser.investor) {
+              referredBy = `${refUser.investor.firstName} ${refUser.investor.lastName}`;
+            } else if (refUser.userType === 'PARTNER' && refUser.partner) {
+              referredBy = `${refUser.partner.firstName} ${refUser.partner.lastName}`;
+            } else if (refUser.userType === 'INCUBATOR' && refUser.incubator) {
+              referredBy = refUser.incubator.name;
+            } else if (refUser.userType === 'VC_GROUP' && refUser.vcGroup) {
+              referredBy = refUser.vcGroup.name;
+            } else {
+              referredBy = refUser.email;
+            }
+          }
+
+          return {
+            id: u.id,
+            email: u.email,
+            phone: u.entrepreneur?.mobileFone ?? u.investor?.mobileFone ?? u.partner?.mobileFone ?? u.incubator?.phone ?? u.vcGroup?.phone ?? 'N/A',
+            userType: u.userType,
+            firstName: u.entrepreneur?.firstName ?? u.investor?.firstName ?? u.partner?.firstName ?? '',
+            lastName: u.entrepreneur?.lastName ?? u.investor?.lastName ?? u.partner?.lastName ?? '',
+            name: u.incubator?.name ?? u.vcGroup?.name ?? '',
+            projectsCount: (u.entrepreneur?.projects?.length ?? 0) + (u.incubator?.projects?.length ?? 0),
+            referralCode: u.referralCode,
+            createdAt: u.createdAt,
+            referralsCount: u._count?.referralsAsReferrer ?? 0,
+            referredBy,
+          };
+        });
 
         return {
           items,

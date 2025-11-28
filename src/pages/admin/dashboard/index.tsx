@@ -288,13 +288,14 @@ export function Dashboard() {
                   </TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Projects</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Referrals</TableHead>
+                  <TableHead className="text-ui-text/80 font-medium">Referred By</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Business Card</TableHead>
                   <TableHead className="text-ui-text/80 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingRegistered ? (
-                  <TableSkeleton columns={8} />
+                  <TableSkeleton columns={10} />
                 ) : registeredUsers?.items.map((user) => (
                   <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors">
                     <TableCell>
@@ -332,6 +333,9 @@ export function Dashboard() {
                       <Badge className="bg-white/10 text-ui-text/90 border-white/20">
                         {user.referralsCount ?? 0}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-ui-text/70 text-sm">
+                      {user.referredBy || '-'}
                     </TableCell>
                     <TableCell>
                       <BusinessCardDialog

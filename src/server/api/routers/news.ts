@@ -150,8 +150,8 @@ export const newsRouter = createTRPCRouter({
 
         // Sort blocks by created_time (newest first) if available
         allBlocks.sort((a, b) => {
-          const timeA = a.created_time ? new Date(a.created_time).getTime() : 0;
-          const timeB = b.created_time ? new Date(b.created_time).getTime() : 0;
+          const timeA = 'created_time' in a ? new Date(a.created_time).getTime() : 0;
+          const timeB = 'created_time' in b ? new Date(b.created_time).getTime() : 0;
           return timeB - timeA;
         });
 

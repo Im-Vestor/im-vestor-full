@@ -1,6 +1,7 @@
 import { MapPin, Pencil, User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
@@ -10,11 +11,14 @@ import { UpdateEmailButton } from '~/components/update-email-button';
 
 export const InvestorProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const { isLoaded, isSignedIn } = useUser();
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: investor, isPending: isLoading } = userId
     ? api.investor.getByUserIdForAdmin.useQuery({ userId })
-    : api.investor.getByUserId.useQuery();
+    : api.investor.getByUserId.useQuery(undefined, {
+      enabled: isLoaded && isSignedIn,
+    });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;

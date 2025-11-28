@@ -78,23 +78,24 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where: Prisma.ProjectWhereInput = {};
 
-      const investor = await ctx.db.investor.findUnique({
-        where: {
-          userId: ctx.auth.userId,
-        },
-        include: {
-          favoriteProjects: true,
-        },
-      });
-
-      const vc = await ctx.db.vcGroup.findUnique({
-        where: {
-          userId: ctx.auth.userId,
-        },
-        include: {
-          favoriteProjects: true,
-        },
-      });
+      const [investor, vc] = await Promise.all([
+        ctx.db.investor.findUnique({
+          where: {
+            userId: ctx.auth.userId,
+          },
+          include: {
+            favoriteProjects: true,
+          },
+        }),
+        ctx.db.vcGroup.findUnique({
+          where: {
+            userId: ctx.auth.userId,
+          },
+          include: {
+            favoriteProjects: true,
+          },
+        }),
+      ]);
 
       where.visibility = ProjectVisibility.PUBLIC;
       where.status = ProjectStatus.ACTIVE;
@@ -168,40 +169,41 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-      const total = await ctx.db.project.count({
-        where,
-      });
-
-      const projects = await ctx.db.project.findMany({
-        where,
-        include: {
-          Entrepreneur: {
-            select: {
-              firstName: true,
-              lastName: true,
+      const [total, projects] = await Promise.all([
+        ctx.db.project.count({
+          where,
+        }),
+        ctx.db.project.findMany({
+          where,
+          include: {
+            Entrepreneur: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            country: true,
+            state: true,
+            sector: true,
+            _count: {
+              select: {
+                favoriteInvestors: true,
+                favoriteVcGroups: true,
+              },
             },
           },
-          country: true,
-          state: true,
-          sector: true,
-          _count: {
-            select: {
-              favoriteInvestors: true,
-              favoriteVcGroups: true,
+          orderBy: [
+            {
+              boostedUntil: 'desc',
             },
-          },
-        },
-        orderBy: [
-          {
-            boostedUntil: 'desc',
-          },
-          {
-            createdAt: 'desc',
-          },
-        ],
-        skip: (input.page ?? 1) * 20,
-        take: 20,
-      });
+            {
+              createdAt: 'desc',
+            },
+          ],
+          skip: (input.page ?? 1) * 20,
+          take: 20,
+        }),
+      ]);
 
       return {
         projects: projects.map(project => ({
@@ -576,46 +578,48 @@ export const projectRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const project = await ctx.db.project.findUnique({
-        where: {
-          id: input.projectId,
-        },
-        include: {
-          Entrepreneur: true,
-          Incubator: true,
-        },
-      });
+      const [project, investor] = await Promise.all([
+        ctx.db.project.findUnique({
+          where: {
+            id: input.projectId,
+          },
+          include: {
+            Entrepreneur: true,
+            Incubator: true,
+          },
+        }),
+        ctx.db.investor.findUnique({
+          where: {
+            userId: ctx.auth.userId,
+          },
+        }),
+      ]);
 
       if (!project) {
         console.error('Project not found');
         return;
       }
 
-      const investor = await ctx.db.investor.findUnique({
-        where: {
-          userId: ctx.auth.userId,
-        },
-      });
-
       if (!investor) {
         console.error('Investor not found');
         return;
       }
 
-      await ctx.db.notification.create({
-        data: {
-          userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',
-          type: NotificationType.PROJECT_VIEW,
-          investorId: investor.id,
-        },
-      });
-
-      const projectView = await ctx.db.projectView.create({
-        data: {
-          projectId: input.projectId,
-          investorId: investor.id,
-        },
-      });
+      const [_, projectView] = await Promise.all([
+        ctx.db.notification.create({
+          data: {
+            userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',
+            type: NotificationType.PROJECT_VIEW,
+            investorId: investor.id,
+          },
+        }),
+        ctx.db.projectView.create({
+          data: {
+            projectId: input.projectId,
+            investorId: investor.id,
+          },
+        }),
+      ]);
 
       return projectView;
     }),
@@ -697,18 +701,22 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.userId;
 
-      const user = await ctx.db.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (user.userType === 'INVESTOR') {
-        const investor = await ctx.db.investor.findUniqueOrThrow({
+      const [investor, vc] = await Promise.all([
+        ctx.db.investor.findUnique({
           where: { userId: userId },
           include: {
             favoriteProjects: true,
           },
-        });
+        }),
+        ctx.db.vcGroup.findUnique({
+          where: { userId: userId },
+          include: {
+            favoriteProjects: true,
+          },
+        }),
+      ]);
 
+      if (investor) {
         const existingFavorite =
           investor.favoriteProjects.find(favorite => favorite.id === input.projectId) ?? null;
 
@@ -729,16 +737,7 @@ export const projectRouter = createTRPCRouter({
             },
           });
         }
-      }
-
-      if (user.userType === 'VC_GROUP') {
-        const vc = await ctx.db.vcGroup.findUniqueOrThrow({
-          where: { userId: userId },
-          include: {
-            favoriteProjects: true,
-          },
-        });
-
+      } else if (vc) {
         const existingFavorite =
           vc.favoriteProjects.find(favorite => favorite.id === input.projectId) ?? null;
 
