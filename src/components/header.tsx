@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { LanguageSwitcher } from './ui/language-switcher';
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -387,7 +388,7 @@ export const Header = () => {
             </Button>
           </div>
         ) : (
-          <div></div> // Empty div for non-signed in state
+          <LanguageSwitcher />
         )}
       </div>
 
