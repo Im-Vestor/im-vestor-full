@@ -39,7 +39,7 @@ export function RecommendationsPanel() {
                 </>
               ) : (
                 recommendations?.hyperTrainProjects?.map((project) => (
-                  <Link key={project.id} href={`/companies/${project.id}`}>
+                  <Link key={project.id} href={`/projects/${project.id}`}>
                     <div className="group relative overflow-hidden rounded-xl bg-card/30 p-6 transition-all hover:bg-card/50">
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                       <div className="relative flex items-center gap-4">

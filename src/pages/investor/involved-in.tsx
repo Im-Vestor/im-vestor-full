@@ -106,7 +106,7 @@ const ProjectCard = ({
                     <Building2 className="size-6 md:size-7 text-neutral-500" />
                   </div>
                 )}
-                <Link href={`/companies/${project.id}`} className="block max-w-full min-w-0">
+                <Link href={`/projects/${project.id}`} className="block max-w-full min-w-0">
                   <h3 title={project.name} className="truncate text-base md:text-lg font-semibold tracking-tight hover:text-white/90 transition-colors cursor-pointer">
                     {project.name}
                   </h3>
