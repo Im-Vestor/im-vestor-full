@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { sendEmail } from '~/utils/email';
+import { createNotifications } from './notifications';
 
 export const projectRouter = createTRPCRouter({
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -268,6 +269,7 @@ export const projectRouter = createTRPCRouter({
         photo4: z.string().optional(),
         photo4Caption: z.string().optional(),
         videoUrl: z.string().optional(),
+        videoPitchUrl: z.string().optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -335,6 +337,7 @@ export const projectRouter = createTRPCRouter({
         photo4: input.photo4,
         photo4Caption: input.photo4Caption,
         videoUrl: input.videoUrl,
+        videoPitchUrl: input.videoPitchUrl,
         currency: input.currency,
         faqs: {
           create: input.faqs,
@@ -433,6 +436,7 @@ export const projectRouter = createTRPCRouter({
         photo4: z.string().optional(),
         photo4Caption: z.string().optional(),
         videoUrl: z.string().optional(),
+        videoPitchUrl: z.string().optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -496,6 +500,7 @@ export const projectRouter = createTRPCRouter({
           photo4: input.photo4,
           photo4Caption: input.photo4Caption,
           videoUrl: input.videoUrl,
+          videoPitchUrl: input.videoPitchUrl,
           currency: input.currency,
           faqs: {
             create: input.faqs,
@@ -684,6 +689,106 @@ export const projectRouter = createTRPCRouter({
       );
 
       return { success: true, videoUrl: project.videoUrl };
+    }),
+
+  requestPitchVideo: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUnique({
+        where: {
+          id: input.projectId,
+        },
+        include: {
+          Entrepreneur: {
+            select: {
+              id: true,
+              firstName: true,
+              userId: true,
+              user: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+          Incubator: {
+            select: {
+              id: true,
+              name: true,
+              userId: true,
+              user: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!project) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      }
+
+      const requestingUser = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        include: {
+          investor: true,
+          vcGroup: true,
+        },
+      });
+
+      if (!requestingUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      const requestingUserName = requestingUser.investor
+        ? `${requestingUser.investor.firstName} ${requestingUser.investor.lastName}`
+        : requestingUser.vcGroup
+          ? requestingUser.vcGroup.name
+          : 'An investor';
+
+      if (project.Entrepreneur) {
+        await createNotifications(
+          ctx.db,
+          [project.Entrepreneur.userId],
+          NotificationType.PITCH_REQUEST
+        );
+
+        await sendEmail(
+          project.Entrepreneur.firstName,
+          'Pitch Video Requested',
+          `${requestingUserName} is interested in your project "${project.name}" and has requested a pitch video. Upload a pitch video to your project to increase your chances of securing investment!`,
+          [project.Entrepreneur.user.email],
+          'Pitch Video Requested'
+        );
+      } else if (project.Incubator) {
+        await createNotifications(
+          ctx.db,
+          [project.Incubator.userId],
+          NotificationType.PITCH_REQUEST
+        );
+
+        await sendEmail(
+          project.Incubator.name,
+          'Pitch Video Requested',
+          `${requestingUserName} is interested in the project "${project.name}" and has requested a pitch video. Upload a pitch video to the project to increase its chances of securing investment!`,
+          [project.Incubator.user.email],
+          'Pitch Video Requested'
+        );
+      }
+
+      return { success: true };
     }),
 
   updateStatus: protectedProcedure
