@@ -73,6 +73,10 @@ const NotificationTextMap: Record<string, { text: string; link: string }> = {
     text: 'Your support ticket has been received and will be reviewed soon',
     link: '/support-tickets',
   },
+  [NotificationType.PITCH_REQUEST]: {
+    text: 'An investor has requested a pitch video for your project',
+    link: '/projects',
+  },
 };
 
 type UserDetails = {
@@ -81,7 +85,9 @@ type UserDetails = {
 
 export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => {
   const { isSignedIn, isLoaded } = useUser();
-  const [negotiationNotifications, setNegotiationNotifications] = useState<NotificationWithInvestorId[]>([]);
+  const [negotiationNotifications, setNegotiationNotifications] = useState<
+    NotificationWithInvestorId[]
+  >([]);
   const [notifications, setNotifications] = useState<NotificationWithInvestorId[]>([]);
   const router = useRouter();
 
@@ -91,14 +97,15 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
     retryDelay: 1000,
   });
 
-  const { data: notificationsFromQuery, error: notificationsError, refetch } = api.notifications.getUnreadNotifications.useQuery(
-    undefined,
-    {
-      staleTime: 600000, // 10 minutes in milliseconds
-      refetchInterval: 600000, // 10 minutes in milliseconds
-      ...authQueryOptions,
-    }
-  );
+  const {
+    data: notificationsFromQuery,
+    error: notificationsError,
+    refetch,
+  } = api.notifications.getUnreadNotifications.useQuery(void 0, {
+    staleTime: 600000, // 10 minutes in milliseconds
+    refetchInterval: 600000, // 10 minutes in milliseconds
+    ...authQueryOptions,
+  });
 
   const { mutateAsync: readNotification } = api.notifications.readNotification.useMutation({
     onMutate: data => {

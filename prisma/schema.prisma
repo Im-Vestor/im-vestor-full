@@ -304,6 +304,7 @@ model Project {
   photo2Caption             String?
   photo3Caption             String?
   photo4Caption             String?
+  videoPitchUrl             String?
   boostedUntil              DateTime?
   files                     File[]
   incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
@@ -565,4 +566,5 @@ enum NotificationType {
   SUPPORT_TICKET_STATUS_UPDATED
   SUPPORT_TICKET_CREATED
   SUPPORT_TICKET_RECEIVED
+  PITCH_REQUEST
 }
