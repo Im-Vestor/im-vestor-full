@@ -62,6 +62,7 @@ const companyFormSchema = z.object({
   photo4: z.string().optional(),
   photo4Caption: z.string().max(50, 'Caption must be at most 50 characters').optional(),
   videoUrl: z.string().optional(),
+  videoPitchUrl: z.string().optional(),
   faqs: z
     .array(
       z.object({
@@ -160,6 +161,7 @@ export default function CreateCompany() {
       photo4: '',
       photo4Caption: '',
       videoUrl: '',
+      videoPitchUrl: '',
       faqs: [{ question: '', answer: '' }],
       socialImpactDescription: '',
       socialImpactBeneficiaries: 0,
@@ -1108,6 +1110,79 @@ export default function CreateCompany() {
                                 <p className="text-xs text-white/30">
                                   Max 50MB, 1 minute recommended
                                 </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {value && (
+                          <button
+                            type="button"
+                            onClick={() => onChange('')}
+                            className="text-red-500 hover:text-red-600 text-sm"
+                          >
+                            Remove video
+                          </button>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <h3 className="mt-2 text-lg">Pitch Video</h3>
+              <p className="text-sm text-white/60">Upload a pitch video (optional, max 50MB)</p>
+              <FormField
+                control={form.control}
+                name="videoPitchUrl"
+                render={({ field: { onChange, value, ...field } }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <div className="relative h-40 w-full hover:opacity-75 border-2 border-dashed border-white/20 rounded-lg">
+                          <input
+                            type="file"
+                            accept="video/*"
+                            onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (!file.type.startsWith('video/')) {
+                                  toast.error('Please select a video file');
+                                  return;
+                                }
+                                if (file.size > 1024 * 1024 * 50) {
+                                  toast.error('Video file must be under 50MB');
+                                  return;
+                                }
+                                setUploadingPhotos(prev => ({ ...prev, videoPitch: true }));
+                                const videoUrl = await sendImageToBackend(file, user?.id ?? '');
+                                setUploadingPhotos(prev => ({ ...prev, videoPitch: false }));
+                                if (videoUrl) {
+                                  onChange(videoUrl);
+                                }
+                              }
+                            }}
+                            className="absolute inset-0 cursor-pointer opacity-0"
+                            {...field}
+                          />
+                          <div className="flex h-full w-full items-center justify-center rounded-lg bg-white/5">
+                            {value ? (
+                              <div className="text-center">
+                                <video
+                                  src={value}
+                                  className="h-32 w-auto rounded-lg mx-auto mb-2"
+                                  controls
+                                >
+                                  <track kind="captions" />
+                                </video>
+                                <p className="text-xs text-white/70">Pitch video uploaded</p>
+                              </div>
+                            ) : uploadingPhotos.videoPitch ? (
+                              <Loader2 className="h-6 w-6 animate-spin text-white" />
+                            ) : (
+                              <div className="text-center">
+                                <PlusIcon className="h-8 w-8 text-white/50 mx-auto mb-2" />
+                                <p className="text-sm text-white/50">Upload Pitch Video</p>
+                                <p className="text-xs text-white/30">Max 50MB</p>
                               </div>
                             )}
                           </div>
