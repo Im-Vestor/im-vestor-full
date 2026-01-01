@@ -15,6 +15,7 @@ export const partnerRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.partner.findMany({
       where: {
+        isFeatured: true,
         user: {
           status: {
             in: ['ACTIVE', 'PENDING_EMAIL_VERIFICATION'],
@@ -30,6 +31,7 @@ export const partnerRouter = createTRPCRouter({
         lastName: true,
         companyName: true,
         companyLogoUrl: true,
+        website: true,
       },
     });
   }),
@@ -73,6 +75,12 @@ export const partnerRouter = createTRPCRouter({
         referralToken: z.string().optional(),
         email: z.string().email(),
         password: z.string().min(8),
+        website: z.string().optional(),
+        linkedinUrl: z.string().optional(),
+        facebook: z.string().optional(),
+        instagram: z.string().optional(),
+        twitter: z.string().optional(),
+        companyLogoUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -163,6 +171,12 @@ export const partnerRouter = createTRPCRouter({
           mobileFone: input.mobileFone,
           companyName: input.companyName,
           userId: user.id,
+          website: input.website,
+          linkedinUrl: input.linkedinUrl,
+          facebook: input.facebook,
+          instagram: input.instagram,
+          twitter: input.twitter,
+          companyLogoUrl: input.companyLogoUrl,
         },
       });
     }),
@@ -175,6 +189,11 @@ export const partnerRouter = createTRPCRouter({
         companyName: z.string().min(1),
         photo: z.string().optional(),
         companyLogoUrl: z.string().optional(),
+        website: z.string().optional(),
+        linkedinUrl: z.string().optional(),
+        facebook: z.string().optional(),
+        instagram: z.string().optional(),
+        twitter: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -183,4 +202,207 @@ export const partnerRouter = createTRPCRouter({
         data: input,
       });
     }),
+
+  adminGetAll: protectedProcedure.query(async ({ ctx }) => {
+    // Check if current user is admin using Clerk metadata
+    const client = await clerkClient();
+    const currentUser = await client.users.getUser(ctx.auth.userId);
+    const userMetadata = currentUser.publicMetadata as {
+      userIsAdmin?: boolean;
+    };
+
+    if (!userMetadata?.userIsAdmin) {
+      throw new Error('Unauthorized: Only admins can manage partners');
+    }
+
+    return ctx.db.partner.findMany({
+      include: {
+        user: {
+          include: {
+            _count: {
+              select: {
+                referralsAsReferrer: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        companyName: 'asc',
+      },
+    });
+  }),
+
+  adminGetPartnerReferrals: protectedProcedure
+    .input(z.object({ partnerUserId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Check if current user is admin
+      const client = await clerkClient();
+      const currentUser = await client.users.getUser(ctx.auth.userId);
+      const userMetadata = currentUser.publicMetadata as {
+        userIsAdmin?: boolean;
+      };
+
+      if (!userMetadata?.userIsAdmin) {
+        throw new Error('Unauthorized');
+      }
+
+      const referrals = await ctx.db.referral.findMany({
+        where: { referrerId: input.partnerUserId },
+        include: {
+          referred: {
+            include: {
+              entrepreneur: {
+                include: {
+                  projects: {
+                    include: {
+                      negotiations: {
+                        where: { stage: 'CLOSED' },
+                      },
+                    },
+                  },
+                },
+              },
+              investor: {
+                include: {
+                  negotiations: {
+                    where: { stage: 'CLOSED' },
+                  },
+                },
+              },
+              vcGroup: {
+                include: {
+                  negotiations: {
+                    where: { stage: 'CLOSED' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { joinedAt: 'desc' },
+      });
+
+      return referrals.map(r => {
+        let hasClosedDeal = false;
+        const u = r.referred;
+
+        if (u.userType === 'ENTREPRENEUR' && u.entrepreneur) {
+          hasClosedDeal = u.entrepreneur.projects.some(p => p.negotiations.length > 0);
+        } else if (u.userType === 'INVESTOR' && u.investor) {
+          hasClosedDeal = u.investor.negotiations.length > 0;
+        } else if (u.userType === 'VC_GROUP' && u.vcGroup) {
+          hasClosedDeal = u.vcGroup.negotiations.length > 0;
+        }
+
+        return {
+          id: r.id,
+          name: r.name,
+          email: u.email,
+          userType: u.userType,
+          joinedAt: r.joinedAt,
+          hasClosedDeal,
+        };
+      });
+    }),
+
+  toggleFeatured: protectedProcedure
+    .input(z.object({ id: z.string(), isFeatured: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if current user is admin
+      const client = await clerkClient();
+      const currentUser = await client.users.getUser(ctx.auth.userId);
+      const userMetadata = currentUser.publicMetadata as {
+        userIsAdmin?: boolean;
+      };
+
+      if (!userMetadata?.userIsAdmin) {
+        throw new Error('Unauthorized: Only admins can manage partners');
+      }
+
+      return ctx.db.partner.update({
+        where: { id: input.id },
+        data: { isFeatured: input.isFeatured },
+      });
+    }),
+
+  adminUpdateLogo: protectedProcedure
+    .input(z.object({ id: z.string(), companyLogoUrl: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if current user is admin
+      const client = await clerkClient();
+      const currentUser = await client.users.getUser(ctx.auth.userId);
+      const userMetadata = currentUser.publicMetadata as {
+        userIsAdmin?: boolean;
+      };
+
+      if (!userMetadata?.userIsAdmin) {
+        throw new Error('Unauthorized: Only admins can manage partners');
+      }
+
+      return ctx.db.partner.update({
+        where: { id: input.id },
+        data: { companyLogoUrl: input.companyLogoUrl },
+      });
+    }),
+
+  getReferralStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.auth.userId;
+
+    const referrals = await ctx.db.referral.findMany({
+      where: { referrerId: userId },
+      include: {
+        referred: {
+          select: {
+            userType: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    const totalReferrals = referrals.length;
+    const activeReferrals = referrals.filter(
+      r => r.referred.status === 'ACTIVE'
+    ).length;
+
+    // Logic for estimated earnings (example: 10€ per active referral)
+    const estimatedEarnings = activeReferrals * 10;
+
+    return {
+      totalReferrals,
+      activeReferrals,
+      estimatedEarnings,
+    };
+  }),
+
+  getReferralList: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.auth.userId;
+
+    const referrals = await ctx.db.referral.findMany({
+      where: { referrerId: userId },
+      include: {
+        referred: {
+          include: {
+            entrepreneur: true,
+            investor: true,
+            partner: true,
+            incubator: true,
+            vcGroup: true,
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: 'desc',
+      },
+    });
+
+    return referrals.map(r => ({
+      id: r.id,
+      name: r.name,
+      joinedAt: r.joinedAt,
+      userType: r.referred.userType,
+      status: r.referred.status,
+    }));
+  }),
 });

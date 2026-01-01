@@ -76,6 +76,7 @@ model User {
   entrepreneur         Entrepreneur?
   incubator            Incubator?
   investor             Investor?
+  NewsLike             NewsLike[]
   Notification         Notification[]
   partner              Partner?
   referralsAsReferred  Referral[]           @relation("ReferredToUser")
@@ -179,11 +180,17 @@ model Partner {
   userId         String  @unique
   companyLogoUrl String?
   photo          String?
+  facebook       String?
+  instagram      String?
+  linkedinUrl    String?
+  twitter        String?
+  website        String?
+  isFeatured     Boolean @default(false)
   user           User    @relation(fields: [userId], references: [id])
 }
 
 model Investor {
-  id                 String        @id @default(uuid())
+  id                 String                @id @default(uuid())
   firstName          String
   lastName           String
   mobileFone         String?
@@ -194,22 +201,22 @@ model Investor {
   photo              String?
   banner             String?
   about              String?
-  currency           Currency      @default(USD)
-  userId             String        @unique
+  currency           Currency              @default(USD)
+  userId             String                @unique
   stateId            Int?
   countryId          Int?
   personalPitchUrl   String?
   linkedinUrl        String?
-  country            Country?      @relation(fields: [countryId], references: [id])
-  state              State?        @relation(fields: [stateId], references: [id])
-  user               User          @relation(fields: [userId], references: [id])
+  country            Country?              @relation(fields: [countryId], references: [id])
+  state              State?                @relation(fields: [stateId], references: [id])
+  user               User                  @relation(fields: [userId], references: [id])
+  projectNotes       InvestorProjectNote[]
   negotiations       Negotiation[]
   projectViews       ProjectView[]
-  areas              Area[]        @relation("AreaToInvestor")
-  favoriteProjects   Project[]     @relation("FavoriteInvestors")
-  investedProjects   Project[]     @relation("InvestedInvestors")
-  meetings           Meeting[]     @relation("MeetingInvestors")
-  projectNotes       InvestorProjectNote[]
+  areas              Area[]                @relation("AreaToInvestor")
+  favoriteProjects   Project[]             @relation("FavoriteInvestors")
+  investedProjects   Project[]             @relation("InvestedInvestors")
+  meetings           Meeting[]             @relation("MeetingInvestors")
 }
 
 model Meeting {
@@ -270,7 +277,6 @@ model Project {
   foundationDate            DateTime?
   stage                     ProjectStage?
   about                     String?
-  actionPlan                String?
   status                    ProjectStatus           @default(ACTIVE)
   startInvestment           Float?
   investorSlots             Int?
@@ -305,8 +311,11 @@ model Project {
   photo3Caption             String?
   photo4Caption             String?
   boostedUntil              DateTime?
+  actionPlan                String?
+  videoPitchUrl             String?
   files                     File[]
   incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
+  investorNotes             InvestorProjectNote[]
   knowYourNumbers           KnowYourNumbers?
   negotiations              Negotiation[]
   country                   Country?                @relation(fields: [countryId], references: [id])
@@ -320,7 +329,6 @@ model Project {
   favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
   investedInvestors         Investor[]              @relation("InvestedInvestors")
   investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
-  investorNotes             InvestorProjectNote[]
 }
 
 model IncubatorEntrepreneur {
@@ -478,12 +486,24 @@ model HyperTrainItem {
 }
 
 model SiteContent {
-  id          String   @id @default(uuid())
-  key         String   @unique
-  title       String
-  contentHtml String
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
+  id            String   @id @default(uuid())
+  key           String   @unique
+  title         String
+  contentHtml   String
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  contentHtmlEn String?
+  titleEn       String?
+}
+
+model NewsLike {
+  id           String   @id
+  notionPageId String
+  userId       String
+  createdAt    DateTime @default(now())
+  User         User     @relation(fields: [userId], references: [id])
+
+  @@unique([notionPageId, userId])
 }
 
 enum Currency {
@@ -565,4 +585,5 @@ enum NotificationType {
   SUPPORT_TICKET_STATUS_UPDATED
   SUPPORT_TICKET_CREATED
   SUPPORT_TICKET_RECEIVED
+  PITCH_REQUEST
 }

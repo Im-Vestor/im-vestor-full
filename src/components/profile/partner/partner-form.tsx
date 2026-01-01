@@ -32,6 +32,26 @@ const partnerFormSchema = z.object({
   mobileFone: z.string().min(1, 'Mobile phone is required'),
   photo: z.string().optional(),
   companyLogoUrl: z.string().optional(),
+  website: z
+    .union([z.string().url('Invalid website URL'), z.literal('')])
+    .optional()
+    .transform(val => (val === '' ? undefined : val)),
+  linkedinUrl: z
+    .union([z.string().url('Invalid LinkedIn URL'), z.literal('')])
+    .optional()
+    .transform(val => (val === '' ? undefined : val)),
+  facebook: z
+    .union([z.string().url('Invalid Facebook URL'), z.literal('')])
+    .optional()
+    .transform(val => (val === '' ? undefined : val)),
+  instagram: z
+    .union([z.string().url('Invalid Instagram URL'), z.literal('')])
+    .optional()
+    .transform(val => (val === '' ? undefined : val)),
+  twitter: z
+    .union([z.string().url('Invalid Twitter URL'), z.literal('')])
+    .optional()
+    .transform(val => (val === '' ? undefined : val)),
 });
 
 interface PartnerFormProps {
@@ -78,6 +98,11 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
       mobileFone: partner?.mobileFone ?? '',
       photo: partner?.photo ?? undefined,
       companyLogoUrl: partner?.companyLogoUrl ?? undefined,
+      website: partner?.website ?? '',
+      linkedinUrl: partner?.linkedinUrl ?? '',
+      facebook: partner?.facebook ?? '',
+      instagram: partner?.instagram ?? '',
+      twitter: partner?.twitter ?? '',
     },
   });
 
@@ -164,6 +189,102 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
                 <Label className="font-normal text-neutral-200">Mobile Phone*</Label>
                 <FormControl>
                   <PhoneInput {...field} placeholder="999 999 999" disabled={isUpdatingPartner} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mx-6 grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="website"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">Website</Label>
+                <FormControl>
+                  <Input
+                    placeholder="https://example.com"
+                    {...field}
+                    disabled={isUpdatingPartner}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="linkedinUrl"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">LinkedIn</Label>
+                <FormControl>
+                  <Input
+                    placeholder="https://linkedin.com/company/example"
+                    {...field}
+                    disabled={isUpdatingPartner}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mx-6 grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="facebook"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">Facebook</Label>
+                <FormControl>
+                  <Input
+                    placeholder="https://facebook.com/example"
+                    {...field}
+                    disabled={isUpdatingPartner}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="instagram"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">Instagram</Label>
+                <FormControl>
+                  <Input
+                    placeholder="https://instagram.com/example"
+                    {...field}
+                    disabled={isUpdatingPartner}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mx-6 grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="twitter"
+            render={({ field }) => (
+              <FormItem>
+                <Label className="font-normal text-neutral-200">Twitter</Label>
+                <FormControl>
+                  <Input
+                    placeholder="https://twitter.com/example"
+                    {...field}
+                    disabled={isUpdatingPartner}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

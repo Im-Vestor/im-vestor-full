@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -17,6 +18,7 @@ import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { PhoneInput } from '~/components/ui/phone-input';
 import { useTranslation } from '~/hooks/use-translation';
 import { api } from '~/utils/api';
+import { sendImageToBackend } from '~/utils/file';
 
 const formSchema = z
   .object({
@@ -34,6 +36,26 @@ const formSchema = z
     confirmPassword: z.string(),
     mobileFone: z.string().min(1, 'Mobile phone is required'),
     referralToken: z.string().optional(),
+    website: z
+      .union([z.string().url('Invalid website URL'), z.literal('')])
+      .optional()
+      .transform(val => (val === '' ? undefined : val)),
+    linkedinUrl: z
+      .union([z.string().url('Invalid LinkedIn URL'), z.literal('')])
+      .optional()
+      .transform(val => (val === '' ? undefined : val)),
+    facebook: z
+      .union([z.string().url('Invalid Facebook URL'), z.literal('')])
+      .optional()
+      .transform(val => (val === '' ? undefined : val)),
+    instagram: z
+      .union([z.string().url('Invalid Instagram URL'), z.literal('')])
+      .optional()
+      .transform(val => (val === '' ? undefined : val)),
+    twitter: z
+      .union([z.string().url('Invalid Twitter URL'), z.literal('')])
+      .optional()
+      .transform(val => (val === '' ? undefined : val)),
     acceptTerms: z.boolean().refine(val => val === true, {
       message: 'You must accept the terms and conditions',
     }),
@@ -48,6 +70,9 @@ export default function SignupPartner() {
   const [step, setStep] = useState(1);
   const t = useTranslation();
   const { isLoaded: isAuthLoaded, isSignedIn } = useUser();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (isAuthLoaded && isSignedIn) {
@@ -66,14 +91,37 @@ export default function SignupPartner() {
       mobileFone: '',
       companyName: '',
       referralToken: (router.query.referralToken as string) ?? '',
+      website: '',
+      linkedinUrl: '',
+      facebook: '',
+      instagram: '',
+      twitter: '',
       acceptTerms: false,
     },
   });
 
   const { mutateAsync: registerPartner, isPending: isRegistering } = api.partner.create.useMutation(
     {
-      onSuccess: () => {
+      onSuccess: async (partner) => {
         toast.success(t('accountCreatedSuccessfully'));
+        
+        // Upload logo if provided (async, won't block redirect)
+        // Note: Logo will be saved after user logs in and updates profile
+        if (logoFile && partner?.userId) {
+          setIsUploadingLogo(true);
+          sendImageToBackend(logoFile, partner.userId)
+            .then(() => {
+              toast.info('Logo uploaded! Update your profile after logging in to save it.');
+            })
+            .catch((error) => {
+              console.error('Failed to upload logo:', error);
+              toast.info('You can add your logo in your profile after logging in.');
+            })
+            .finally(() => {
+              setIsUploadingLogo(false);
+            });
+        }
+        
         void router.push('/login');
       },
       onError: error => {
@@ -180,6 +228,81 @@ export default function SignupPartner() {
                     )}
                   />
 
+                  {/* Company Logo Upload */}
+                  <div className="space-y-2">
+                    <Label className="font-normal text-neutral-200">Company Logo (Optional)</Label>
+                    <div className="relative">
+                      <label htmlFor="logo-upload" className="cursor-pointer">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                          {isUploadingLogo ? (
+                            <Loader2 className="h-8 w-8 animate-spin text-white" />
+                          ) : logoPreview ? (
+                            <Image
+                              src={logoPreview}
+                              alt="Company Logo Preview"
+                              width={96}
+                              height={96}
+                              className="h-24 w-24 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <Building2 className="h-8 w-8 text-white/70" />
+                          )}
+                        </div>
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+
+                            setLogoFile(file);
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setLogoPreview(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          disabled={isRegistering || isUploadingLogo}
+                        />
+                      </label>
+                      {logoPreview && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLogoFile(null);
+                            setLogoPreview(null);
+                          }}
+                          className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 hover:bg-red-600 transition-colors"
+                          disabled={isRegistering || isUploadingLogo}
+                        >
+                          <span className="text-white text-xs">×</span>
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-white/60">Upload your company logo (optional)</p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Website</Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://example.com"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -231,6 +354,82 @@ export default function SignupPartner() {
                             {...field}
                             type="password"
                             placeholder="••••••••"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="linkedinUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">LinkedIn</Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://linkedin.com/company/example"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="facebook"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Facebook</Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://facebook.com/example"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="instagram"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Instagram</Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://instagram.com/example"
+                            disabled={isRegistering}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="twitter"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label className="font-normal text-neutral-200">Twitter</Label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://twitter.com/example"
                             disabled={isRegistering}
                           />
                         </FormControl>
@@ -300,7 +499,7 @@ export default function SignupPartner() {
             <Button
               type={'button'}
               className="mt-12 w-full"
-              disabled={isRegistering || !form.formState.isValid}
+              disabled={isRegistering || isUploadingLogo || !form.formState.isValid}
               onClick={async () => {
                 // Step 1: pre-validate with server (Clerk/email/phone/password) before advancing
                 if (step === 1) {

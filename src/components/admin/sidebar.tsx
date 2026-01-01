@@ -12,7 +12,8 @@ import {
   Calendar,
   Eye,
   Gift,
-  FileText
+  FileText,
+  Users
 } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -33,6 +34,13 @@ const routes = [
     icon: Home,
     href: '/admin/dashboard',
     color: 'text-sky-500',
+    disabled: false,
+  },
+  {
+    label: 'Partners',
+    icon: Users,
+    href: '/admin/partners',
+    color: 'text-orange-500',
     disabled: false,
   },
   {
