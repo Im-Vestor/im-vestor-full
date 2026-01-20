@@ -25,39 +25,41 @@ const formSchema = z
     firstName: z
       .string()
       .trim()
-      .regex(/^\p{L}{2,}$/u, 'First name must contain only letters and be at least 2 characters'),
+      .min(1, 'First name is required')
+      .regex(/^\p{L}{2,}$/u, 'Invalid name'),
     lastName: z
       .string()
       .trim()
-      .regex(/^\p{L}{2,}$/u, 'Last name must contain only letters and be at least 2 characters'),
-    companyName: z.string().min(2, 'Company name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string(),
-    mobileFone: z.string().min(1, 'Mobile phone is required'),
+      .min(1, 'Last name is required')
+      .regex(/^\p{L}{2,}$/u, 'Invalid name'),
+    companyName: z.string().min(1, 'Company name is required').min(2, 'Too short'),
+    email: z.string().min(1, 'Email is required').email('Invalid email'),
+    password: z.string().min(1, 'Password is required').min(8, 'Min 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm password'),
+    mobileFone: z.string().min(1, 'Phone is required'),
     referralToken: z.string().optional(),
     website: z
-      .union([z.string().url('Invalid website URL'), z.literal('')])
+      .union([z.string().url('Invalid URL'), z.literal('')])
       .optional()
       .transform(val => (val === '' ? undefined : val)),
     linkedinUrl: z
-      .union([z.string().url('Invalid LinkedIn URL'), z.literal('')])
+      .union([z.string().url('Invalid URL'), z.literal('')])
       .optional()
       .transform(val => (val === '' ? undefined : val)),
     facebook: z
-      .union([z.string().url('Invalid Facebook URL'), z.literal('')])
+      .union([z.string().url('Invalid URL'), z.literal('')])
       .optional()
       .transform(val => (val === '' ? undefined : val)),
     instagram: z
-      .union([z.string().url('Invalid Instagram URL'), z.literal('')])
+      .union([z.string().url('Invalid URL'), z.literal('')])
       .optional()
       .transform(val => (val === '' ? undefined : val)),
     twitter: z
-      .union([z.string().url('Invalid Twitter URL'), z.literal('')])
+      .union([z.string().url('Invalid URL'), z.literal('')])
       .optional()
       .transform(val => (val === '' ? undefined : val)),
     acceptTerms: z.boolean().refine(val => val === true, {
-      message: 'You must accept the terms and conditions',
+      message: 'Accept terms to continue',
     }),
   })
   .refine(data => data.password === data.confirmPassword, {
@@ -104,7 +106,7 @@ export default function SignupPartner() {
     {
       onSuccess: async (partner) => {
         toast.success(t('accountCreatedSuccessfully'));
-        
+
         // Upload logo if provided (async, won't block redirect)
         // Note: Logo will be saved after user logs in and updates profile
         if (logoFile && partner?.userId) {
@@ -121,7 +123,7 @@ export default function SignupPartner() {
               setIsUploadingLogo(false);
             });
         }
-        
+
         void router.push('/login');
       },
       onError: error => {
@@ -367,7 +369,7 @@ export default function SignupPartner() {
                     name="linkedinUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">LinkedIn</Label>
+                        <Label className="font-normal text-neutral-200">LinkedIn (Optional)</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -386,7 +388,7 @@ export default function SignupPartner() {
                     name="facebook"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Facebook</Label>
+                        <Label className="font-normal text-neutral-200">Facebook (Optional)</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -405,7 +407,7 @@ export default function SignupPartner() {
                     name="instagram"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Instagram</Label>
+                        <Label className="font-normal text-neutral-200">Instagram (Optional)</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -424,7 +426,7 @@ export default function SignupPartner() {
                     name="twitter"
                     render={({ field }) => (
                       <FormItem>
-                        <Label className="font-normal text-neutral-200">Twitter</Label>
+                        <Label className="font-normal text-neutral-200">Twitter (Optional)</Label>
                         <FormControl>
                           <Input
                             {...field}
@@ -499,10 +501,26 @@ export default function SignupPartner() {
             <Button
               type={'button'}
               className="mt-12 w-full"
-              disabled={isRegistering || isUploadingLogo || !form.formState.isValid}
+              disabled={isRegistering || isUploadingLogo}
               onClick={async () => {
-                // Step 1: pre-validate with server (Clerk/email/phone/password) before advancing
+                // Step 1: validate form fields before advancing
                 if (step === 1) {
+                  const isValid = await form.trigger([
+                    'firstName',
+                    'lastName',
+                    'email',
+                    'password',
+                    'confirmPassword',
+                    'mobileFone',
+                    'companyName',
+                    'acceptTerms',
+                  ]);
+
+                  if (!isValid) {
+                    return;
+                  }
+
+                  // Pre-validate with server (Clerk/email/phone/password) before advancing
                   const values = form.getValues();
                   const result = await validateSignup.mutateAsync({
                     email: values.email,
@@ -530,7 +548,7 @@ export default function SignupPartner() {
                 }
               }}
             >
-              {step === 3
+              {step === 2
                 ? t('takeYourPass')
                 : form.formState.isValid
                   ? t('continue')
