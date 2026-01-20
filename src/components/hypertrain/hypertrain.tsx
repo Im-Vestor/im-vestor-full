@@ -33,7 +33,10 @@ const publicPitchLinkHypertrainItem = {
 
 export function Hypertrain() {
   const { data: hypertrainItems, isPending: isHypertrainItemsPending } =
-    api.hypertrain.getHyperTrainItems.useQuery();
+    api.hypertrain.getHyperTrainItems.useQuery(undefined, {
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+    });
 
   const baseItems = hypertrainItems
     ? [...hypertrainItems, publicPitchLinkHypertrainItem]

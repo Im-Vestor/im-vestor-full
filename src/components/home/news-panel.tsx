@@ -19,7 +19,7 @@ export function NewsPanel() {
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      enabled: isLoaded && !!userType, // Only fetch when user is loaded and has a type
+      enabled: isLoaded, // Backend can infer userType from session; still returns GERAL for everyone
     }
   );
 

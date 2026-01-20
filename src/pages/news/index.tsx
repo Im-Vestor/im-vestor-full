@@ -7,7 +7,7 @@ import { NewsGrid } from '~/components/news/NewsCard';
 import { getNewsDescription, type NewsUserType, toNewsUserType } from '~/types/news';
 
 export default function NewsPage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   const userMetadata = user?.publicMetadata as
     | {
@@ -28,7 +28,7 @@ export default function NewsPage() {
     {
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      enabled: !!userType, // Only fetch when user has a type
+      enabled: isLoaded, // Fetch once Clerk is loaded; backend can infer userType from session if needed
     }
   );
 

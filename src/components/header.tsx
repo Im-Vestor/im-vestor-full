@@ -171,12 +171,13 @@ export const Header = () => {
 
   const isSignUpRoute = path?.startsWith('/sign-up');
 
+  // Share the same query key as Home component to use cached data
   const { data: userDetails, isLoading: isLoadingUserDetails } = api.user.getUser.useQuery(
     undefined,
     {
       enabled: !isSignUpRoute && !!isSignedIn && isLoaded,
-      staleTime: 600000, // 10 minutes in milliseconds
-      refetchInterval: 600000, // 10 minutes in milliseconds
+      staleTime: 5 * 60 * 1000, // 5 minutes - match Home component
+      refetchOnWindowFocus: false, // Don't refetch on focus
     }
   );
 
@@ -186,14 +187,15 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasNewNews, setHasNewNews] = useState(false);
 
-  // Fetch news to check for updates
+  // Fetch news to check for updates - defer until user type is available
   const { data: newsData } = api.news.getUserTypeNews.useQuery(
     {
       userType: userType ? toNewsUserType(userType) : undefined,
     },
     {
-      enabled: !!userType,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: !!userType && isLoaded && isSignedIn,
+      staleTime: 10 * 60 * 1000, // 10 minutes - increased cache time
+      refetchOnWindowFocus: false, // Don't refetch on focus
     }
   );
 

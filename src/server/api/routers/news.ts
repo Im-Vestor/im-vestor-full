@@ -1,7 +1,11 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { Client } from '@notionhq/client';
-import { type BlockObjectResponse, type PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import {
+  type BlockObjectResponse,
+  type PartialBlockObjectResponse,
+  type PageObjectResponse,
+} from '@notionhq/client/build/src/api-endpoints';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { env } from '~/env';
 import { type NewsUserType, getNewsSectionTitle } from '~/types/news';
@@ -9,6 +13,155 @@ import { type NewsUserType, getNewsSectionTitle } from '~/types/news';
 const notion = new Client({
   auth: env.NOTION_API_KEY,
 });
+
+type NewsItem = BlockObjectResponse | PartialBlockObjectResponse | PageObjectResponse;
+
+function isFullBlock(block: BlockObjectResponse | PartialBlockObjectResponse): block is BlockObjectResponse {
+  return 'type' in block;
+}
+
+function isPageObject(item: NewsItem): item is PageObjectResponse {
+  return 'object' in item && item.object === 'page';
+}
+
+async function listAllBlockChildren(blockId: string) {
+  const results: Array<BlockObjectResponse | PartialBlockObjectResponse> = [];
+  let cursor: string | undefined = undefined;
+
+  // Defensive pagination: Notion returns max 100, we use 50 to keep payloads smaller
+  for (;;) {
+    const resp = await notion.blocks.children.list({
+      block_id: blockId,
+      page_size: 50,
+      start_cursor: cursor,
+    });
+    results.push(...resp.results);
+    if (!resp.has_more || !resp.next_cursor) break;
+    cursor = resp.next_cursor;
+  }
+
+  return results;
+}
+
+async function queryAllDatabasePages(databaseId: string) {
+  const pages: PageObjectResponse[] = [];
+  let cursor: string | undefined = undefined;
+
+  for (;;) {
+    const resp = await notion.databases.query({
+      database_id: databaseId,
+      page_size: 50,
+      start_cursor: cursor,
+    });
+
+    for (const item of resp.results) {
+      // Notion typings: resp.results are PageObjectResponse | PartialPageObjectResponse
+      if ('object' in item && item.object === 'page') {
+        pages.push(item as PageObjectResponse);
+      }
+    }
+
+    if (!resp.has_more || !resp.next_cursor) break;
+    cursor = resp.next_cursor;
+  }
+
+  return pages;
+}
+
+async function resolveGeneralPageIdFromNewsRoot() {
+  if (!env.NOTION_NEWS_PAGE_ID) return undefined;
+
+  const children = await listAllBlockChildren(env.NOTION_NEWS_PAGE_ID);
+  const general = children.find((b) => {
+    if (!isFullBlock(b) || b.type !== 'child_page') return false;
+    const title = (b as any).child_page?.title as string | undefined;
+    return title?.trim().toLowerCase() === 'geral';
+  });
+  return general?.id;
+}
+
+async function collectNewsItemsFromContainer(containerId: string) {
+  const items: NewsItem[] = [];
+  const seenIds = new Set<string>();
+
+  // BFS through blocks to find child pages, databases, and links, even if nested (columns/toggles/etc.)
+  const queue: Array<{ id: string; depth: number }> = [{ id: containerId, depth: 0 }];
+  const MAX_DEPTH = 6;
+
+  while (queue.length) {
+    const current = queue.shift();
+    if (!current) continue;
+    if (current.depth > MAX_DEPTH) continue;
+
+    const children = await listAllBlockChildren(current.id);
+
+    for (const child of children) {
+      if (isFullBlock(child) && child.type === 'child_page') {
+        if (!seenIds.has(child.id)) {
+          items.push(child);
+          seenIds.add(child.id);
+        }
+        continue;
+      }
+
+      if (isFullBlock(child) && child.type === 'child_database') {
+        try {
+          const pages = await queryAllDatabasePages(child.id);
+          for (const page of pages) {
+            if (!seenIds.has(page.id)) {
+              items.push(page);
+              seenIds.add(page.id);
+            }
+          }
+        } catch (e) {
+          // ignore databases we can't access
+        }
+        continue;
+      }
+
+      if (isFullBlock(child) && child.type === 'link_to_page') {
+        const link = (child as any).link_to_page as
+          | { type: 'page_id'; page_id: string }
+          | { type: 'database_id'; database_id: string };
+        if (link.type === 'page_id') {
+          const pageId = link.page_id;
+          if (!seenIds.has(pageId)) {
+            try {
+              const page = await notion.pages.retrieve({ page_id: pageId });
+              if ('object' in page && page.object === 'page') {
+                items.push(page as PageObjectResponse);
+                seenIds.add(pageId);
+              }
+            } catch (e) {
+              // ignore broken links / missing access
+            }
+          }
+        } else if (link.type === 'database_id') {
+          const dbId = link.database_id;
+          try {
+            const pages = await queryAllDatabasePages(dbId);
+            for (const page of pages) {
+              if (!seenIds.has(page.id)) {
+                items.push(page);
+                seenIds.add(page.id);
+              }
+            }
+          } catch (e) {
+            // ignore databases we can't access
+          }
+        }
+        continue;
+      }
+
+      // Recurse into nested structures (columns, toggles, etc.)
+      if (isFullBlock(child) && child.has_children) {
+        queue.push({ id: child.id, depth: current.depth + 1 });
+      }
+    }
+  }
+
+  return items;
+}
 
 export const newsRouter = createTRPCRouter({
   // Get general news (for all users or public)
@@ -96,52 +249,49 @@ export const newsRouter = createTRPCRouter({
           });
         }
 
-        const allBlocks: Array<BlockObjectResponse | PartialBlockObjectResponse> = [];
-        const seenPageIds = new Set<string>();
+        const allItems: NewsItem[] = [];
+        const seenIds = new Set<string>();
 
         // Fetch posts from GERAL page (NOTION_PAGE_ID_GERAL)
-        if (env.NOTION_PAGE_ID_GERAL) {
-          try {
-            console.log('Fetching posts from GERAL page:', env.NOTION_PAGE_ID_GERAL);
-            const generalResponse = await notion.blocks.children.list({
-              block_id: env.NOTION_PAGE_ID_GERAL,
-              page_size: 50,
-            });
+        const generalContainerId =
+          env.NOTION_PAGE_ID_GERAL ?? (await resolveGeneralPageIdFromNewsRoot());
 
-            // Add general posts to the list
-            for (const block of generalResponse.results) {
-              if ('type' in block && block.type === 'child_page' && !seenPageIds.has(block.id)) {
-                allBlocks.push(block);
-                seenPageIds.add(block.id);
+        if (generalContainerId) {
+          try {
+            console.log('Fetching posts from GERAL container:', generalContainerId);
+            const generalItems = await collectNewsItemsFromContainer(generalContainerId);
+            for (const item of generalItems) {
+              const id = item.id;
+              if (!seenIds.has(id)) {
+                allItems.push(item);
+                seenIds.add(id);
               }
             }
-
-            console.log('GERAL posts fetched:', generalResponse.results.length);
+            console.log('GERAL items collected:', generalItems.length);
           } catch (error) {
             console.error('Error fetching GERAL posts:', error);
             // Continue even if GERAL page fails
           }
+        } else {
+          console.warn(
+            'GERAL container not configured (NOTION_PAGE_ID_GERAL) and could not be resolved from NOTION_NEWS_PAGE_ID.'
+          );
         }
 
         // Fetch posts from user type specific page
         if (userTypePageId) {
           try {
             console.log('Fetching posts from user type page:', userTypePageId);
-            const userTypeResponse = await notion.blocks.children.list({
-              block_id: userTypePageId,
-              page_size: 50,
-              start_cursor: input.cursor,
-            });
-
-            // Add user type specific posts to the list
-            for (const block of userTypeResponse.results) {
-              if ('type' in block && block.type === 'child_page' && !seenPageIds.has(block.id)) {
-                allBlocks.push(block);
-                seenPageIds.add(block.id);
+            const userItems = await collectNewsItemsFromContainer(userTypePageId);
+            for (const item of userItems) {
+              const id = item.id;
+              if (!seenIds.has(id)) {
+                allItems.push(item);
+                seenIds.add(id);
               }
             }
 
-            console.log('User type posts fetched:', userTypeResponse.results.length);
+            console.log('User type items collected:', userItems.length);
           } catch (error) {
             console.error('Error fetching user type posts:', error);
             // Continue even if user type page fails
@@ -149,16 +299,16 @@ export const newsRouter = createTRPCRouter({
         }
 
         // Sort blocks by created_time (newest first) if available
-        allBlocks.sort((a, b) => {
+        allItems.sort((a, b) => {
           const timeA = 'created_time' in a ? new Date(a.created_time).getTime() : 0;
           const timeB = 'created_time' in b ? new Date(b.created_time).getTime() : 0;
           return timeB - timeA;
         });
 
-        console.log('Total combined posts:', allBlocks.length);
+        console.log('Total combined items:', allItems.length);
 
         return {
-          blocks: allBlocks,
+          blocks: allItems,
           hasMore: false, // We're fetching all posts, so no pagination needed for now
           nextCursor: undefined,
           userType, // Return the user type for reference

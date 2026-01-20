@@ -31,8 +31,11 @@ interface PartnersSectionProps {
 export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
   const t = useTranslation();
 
-  // Fetch partners data for the marquee
-  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
+  // Fetch partners data for the marquee - defer loading
+  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery(undefined, {
+    staleTime: 15 * 60 * 1000, // 15 minutes - partners don't change often
+    refetchOnWindowFocus: false,
+  });
 
   // Style variants for different backgrounds
   const isInternal = variant === 'internal';

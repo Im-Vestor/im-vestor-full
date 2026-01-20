@@ -6,24 +6,38 @@ import { type BlockObjectResponse, type PartialBlockObjectResponse, type PageObj
 import { extractPageTitle, getPageIcon, extractFirstLineFromBlocks } from '~/utils/notion';
 import { api } from '~/utils/api';
 
+type NewsItem = BlockObjectResponse | PartialBlockObjectResponse | PageObjectResponse;
+
+function isNotionPageObject(item: NewsItem): item is PageObjectResponse {
+  return 'object' in item && item.object === 'page';
+}
+
+function isChildPageBlock(item: NewsItem): item is BlockObjectResponse {
+  return 'type' in item && item.type === 'child_page';
+}
+
 interface NewsCardProps {
-  block: BlockObjectResponse | PartialBlockObjectResponse;
+  block: NewsItem;
   showDate?: boolean;
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) => {
-  // Type guard to check if block has type property
-  if (!('type' in block) || block.type !== 'child_page') return null;
+  const pageId = block.id;
+  const isRenderable = isChildPageBlock(block) || isNotionPageObject(block);
+  if (!isRenderable) return null;
 
-  const title = extractPageTitle(block);
-  const icon = getPageIcon(block);
+  // Notion SDK block/page typings are very broad unions; at runtime these helpers safely handle both.
+  const title = extractPageTitle(block as any);
+  const icon = getPageIcon(block as any);
 
   // Fetch page content to get the first line as description and cover image
+  // Use longer staleTime and disable refetch to improve performance
   const { data: pageData } = api.news.getPageContent.useQuery(
-    { pageId: block.id },
+    { pageId },
     {
-      staleTime: 1000 * 60 * 10, // 10 minutes
+      staleTime: 1000 * 60 * 30, // 30 minutes - news content doesn't change often
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // Don't refetch if data exists in cache
     }
   );
 
@@ -43,14 +57,14 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
   const coverImage = pageData?.page ? getCoverImage(pageData.page as PageObjectResponse) : null;
 
   // Extract date from block if available - using consistent formatting
-  const createdDate = block.created_time ? (() => {
+  const createdDate = 'created_time' in block && block.created_time ? (() => {
     const date = new Date(block.created_time);
     // Use consistent formatting to prevent hydration mismatch
     return date.toISOString().split('T')[0]; // YYYY-MM-DD format
   })() : null;
 
   return (
-    <Link href={`/news/page/${block.id}`} className="group">
+    <Link href={`/news/page/${pageId}`} className="group">
       <article className="h-full rounded-xl border-2 border-white/10 bg-card overflow-hidden hover:border-white/20 transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-2xl">
         {/* Cover Image/Icon */}
         <div className="relative h-48 bg-gradient-to-br from-primary-from to-primary-to">
@@ -104,16 +118,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({ block, showDate = true }) =>
 };
 
 interface NewsGridProps {
-  blocks: (BlockObjectResponse | PartialBlockObjectResponse)[];
+  blocks: NewsItem[];
   title?: string;
   description?: string;
 }
 
 export const NewsGrid: React.FC<NewsGridProps> = ({ blocks, title, description }) => {
-  // Filter for child_page blocks (news articles) with proper type guard
-  const newsBlocks = blocks.filter((block): block is BlockObjectResponse =>
-    'type' in block && block.type === 'child_page'
-  );
+  const newsBlocks = blocks.filter((b) => isChildPageBlock(b) || isNotionPageObject(b));
 
   if (newsBlocks.length === 0) {
     return (

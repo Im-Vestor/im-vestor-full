@@ -1,10 +1,26 @@
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Header } from '~/components/header';
-import Home from '~/components/home';
 import { api } from '~/utils/api';
 import { isProfileCompleted } from '~/utils/profile-completion';
+
+// Lazy load the Home component to improve initial render
+const Home = dynamic(() => import('~/components/home'), {
+  loading: () => (
+    <div className="space-y-8">
+      <div className="flex items-center gap-6">
+        <div className="h-16 w-16 bg-card rounded-full border-2 border-white/10 animate-pulse"></div>
+        <div className="space-y-2">
+          <div className="h-8 w-64 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+          <div className="h-4 w-32 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false,
+});
 
 export default function HomePage() {
   const router = useRouter();
@@ -66,7 +82,21 @@ export default function HomePage() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <Home />
+        <Suspense
+          fallback={
+            <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                <div className="h-16 w-16 bg-card rounded-full border-2 border-white/10 animate-pulse"></div>
+                <div className="space-y-2">
+                  <div className="h-8 w-64 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+                  <div className="h-4 w-32 bg-card rounded border-2 border-white/10 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          }
+        >
+          <Home />
+        </Suspense>
       </div>
     </main>
   );

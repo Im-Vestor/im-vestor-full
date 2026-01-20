@@ -11,16 +11,37 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, memo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { NewsGrid } from '~/components/news/NewsCard';
 import { Skeleton } from '~/components/ui/skeleton';
-import { PartnersSection } from '~/components/ui/partners-section';
 import { api } from '~/utils/api';
 import { useTranslation } from '~/hooks/use-translation';
-import { Hypertrain } from '../hypertrain/hypertrain';
 import { toNewsUserType } from '~/types/news';
 
-export default function Home() {
+// Lazy load heavy components
+const PartnersSection = dynamic(() => import('~/components/ui/partners-section').then(mod => ({ default: mod.PartnersSection })), {
+  loading: () => (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-64 mx-auto" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  ),
+  ssr: false,
+});
+
+const Hypertrain = dynamic(() => import('../hypertrain/hypertrain').then(mod => ({ default: mod.Hypertrain })), {
+  loading: () => (
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-32" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+    </div>
+  ),
+  ssr: false,
+});
+
+// Memoize the component to prevent unnecessary re-renders
+const Home = memo(function Home() {
   const { user, isLoaded, isSignedIn } = useUser();
   const userType = user?.publicMetadata.userType as UserType;
   const t = useTranslation();
@@ -30,19 +51,23 @@ export default function Home() {
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
+  // Defer news loading - only fetch when needed
   const { data: news, isLoading: isLoadingNews } = api.news.getUserTypeNews.useQuery(
     {
       userType: userType ? toNewsUserType(userType) : undefined,
     },
     {
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes - increased cache time
       enabled: isLoaded && !!userType, // Only fetch when user is loaded and has a type
     }
   );
 
+  // Defer hypertrain loading - only fetch when component is visible
   const { data: hypertrainItems } = api.hypertrain.getHyperTrainItems.useQuery(undefined, {
     enabled: isLoaded && !!user,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Get the referrer's name based on their type (memoized to avoid recalculation)
@@ -117,10 +142,11 @@ export default function Home() {
 
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];
-  const hasNews = !isLoadingNews &&
-    firstNewsArticle &&
-    'type' in firstNewsArticle &&
-    firstNewsArticle.type === 'child_page';
+  const hasNews =
+    !isLoadingNews &&
+    !!firstNewsArticle &&
+    (('type' in firstNewsArticle && firstNewsArticle.type === 'child_page') ||
+      ('object' in firstNewsArticle && firstNewsArticle.object === 'page'));
 
   return (
     <div className="space-y-8">
@@ -144,6 +170,8 @@ export default function Home() {
                   width={64}
                   height={64}
                   className="w-full h-full object-cover"
+                  loading="eager"
+                  priority
                 />
               ) : (
                 <div className="w-full h-full bg-card flex items-center justify-center">
@@ -199,8 +227,17 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* Hypertrain Area */}
-      {hypertrainItems && hypertrainItems.length > 0 && <Hypertrain />}
+      {/* Hypertrain Area - Lazy loaded */}
+      {hypertrainItems && hypertrainItems.length > 0 && (
+        <Suspense fallback={
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+          </div>
+        }>
+          <Hypertrain />
+        </Suspense>
+      )}
 
       {/* Latest News Section */}
       <div className="space-y-4">
@@ -224,9 +261,17 @@ export default function Home() {
             </div>
           </div>
         ) : hasNews ? (
-          <div className="w-full">
-            <NewsGrid blocks={news.blocks} title="" description="" />
-          </div>
+          <Suspense fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-xl" />
+              ))}
+            </div>
+          }>
+            <div className="w-full">
+              <NewsGrid blocks={news.blocks.slice(0, 3)} title="" description="" />
+            </div>
+          </Suspense>
         ) : (
           <div className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">
             <div className="w-full h-24 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
@@ -249,7 +294,15 @@ export default function Home() {
         )}
       </div>
 
-      <PartnersSection variant="internal" />
+      {/* Partners Section - Lazy loaded */}
+      <Suspense fallback={
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-64 mx-auto" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      }>
+        <PartnersSection variant="internal" />
+      </Suspense>
 
       {/* Footer Utility Cards */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -290,4 +343,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+});
+
+export default Home;
