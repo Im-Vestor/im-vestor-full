@@ -310,6 +310,7 @@ model Project {
   photo2Caption             String?
   photo3Caption             String?
   photo4Caption             String?
+  videoPitchUrl             String?
   boostedUntil              DateTime?
   actionPlan                String?
   videoPitchUrl             String?

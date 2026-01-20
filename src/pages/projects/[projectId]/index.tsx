@@ -26,6 +26,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BoostDialog } from '~/components/boosts/boost-dialog';
+import { useTranslation } from '~/hooks/use-translation';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
 import { ProjectDialog } from '~/components/hypertrain/project-dialog';
@@ -94,6 +95,7 @@ const STAGE_TO_STEP_MAP = {
 export default function CompanyDetails() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
+  const t = useTranslation();
   const utils = api.useUtils();
   const { projectId } = router.query;
 
@@ -154,6 +156,14 @@ export default function CompanyDetails() {
   });
 
   const addInvestorViewMutation = api.project.addView.useMutation();
+  const requestPitchVideoMutation = api.project.requestPitchVideo.useMutation({
+    onSuccess: () => {
+      toast.success('Pitch video request sent to entrepreneur!');
+    },
+    onError: error => {
+      toast.error(error.message);
+    },
+  });
   const schedulePitchMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
     onSuccess: () => {
       toast.success('Meeting scheduled successfully');
@@ -326,7 +336,7 @@ export default function CompanyDetails() {
           </div>
 
           <div className="mt-0 flex-1 sm:mt-2">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-semibold sm:text-3xl">{project.name}</h1>
@@ -379,15 +389,13 @@ export default function CompanyDetails() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Atenção</DialogTitle>
-                          <DialogDescription>
-                            Relembrando os termos e condições, de que não pode contactar o
-                            empreendedor fora da plataforma. A partir deste momento, ambos estão
-                            legalmente conectados na plataforma im-vestor.com.
-                          </DialogDescription>
+                          <DialogTitle>{t('websiteWarningTitle')}</DialogTitle>
+                          <DialogDescription>{t('websiteWarningDescription')}</DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button onClick={() => setShowWebsiteModal(false)}>Entendi</Button>
+                          <Button onClick={() => setShowWebsiteModal(false)}>
+                            {t('understood')}
+                          </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -557,11 +565,22 @@ export default function CompanyDetails() {
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
-
-                      <Button variant="secondary" disabled>
-                        <Presentation className="mr-2 h-4 w-4" /> Request Pitch{' '}
-                        <span className="text-xs text-white/50">Coming soon</span>
-                      </Button>
+                      {!project.videoPitchUrl && (
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            requestPitchVideoMutation.mutate({ projectId: projectId as string })
+                          }
+                          disabled={requestPitchVideoMutation.isPending}
+                        >
+                          {requestPitchVideoMutation.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Presentation className="mr-2 h-4 w-4" />
+                          )}
+                          Request Pitch
+                        </Button>
+                      )}
                     </>
                   )}
               </div>
@@ -692,6 +711,25 @@ export default function CompanyDetails() {
         {(isEntrepreneur || isIncubator) && negotiation?.entrepreneurActionNeeded && (
           <NextStepDialog negotiationId={negotiation.id} />
         )}
+        {/* Pitch Video Section */}
+        {project.videoPitchUrl &&
+          (isProjectOwner ||
+            user?.publicMetadata.userType === 'INVESTOR' ||
+            user?.publicMetadata.userType === 'VC_GROUP') && (
+            <>
+              <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Pitch Video</h2>
+              <div className="mt-3 sm:mt-4">
+                {project.videoPitchUrl ? (
+                  <video src={project.videoPitchUrl} controls className="w-full rounded-lg">
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <VideoPitchRequestButton projectId={projectId as string} />
+                )}
+              </div>
+              <hr className="my-6 border-white/10 sm:my-8" />
+            </>
+          )}
 
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
           <div>
@@ -1147,6 +1185,64 @@ function VideoRequestButton({ projectId }: { projectId: string }) {
           <>
             <Video className="mr-2 h-4 w-4" />
             Request Video Access
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
+function VideoPitchRequestButton({ projectId }: { projectId: string }) {
+  const [hasRequested, setHasRequested] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  const requestVideoMutation = api.project.requestVideoAccess.useMutation({
+    onSuccess: data => {
+      setHasRequested(true);
+      setVideoUrl(data.videoUrl ?? null);
+      toast.success('Video access granted! You are now connected with the entrepreneur.');
+    },
+    onError: error => {
+      toast.error('Failed to request video access: ' + error.message);
+    },
+  });
+
+  const handleRequestVideo = () => {
+    requestVideoMutation.mutate({ projectId });
+  };
+
+  if (hasRequested && videoUrl) {
+    return (
+      <video src={videoUrl} controls className="w-full max-w-md rounded-lg">
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-card p-4 sm:p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Video className="h-6 w-6 text-[#EFD687]" />
+        <h3 className="text-lg font-medium">Pitch Video Available</h3>
+      </div>
+      <p className="text-sm text-white/70 mb-4">
+        This company has uploaded a pitch video. Request access to view it and connect with the
+        entrepreneur.
+      </p>
+      <Button
+        onClick={handleRequestVideo}
+        disabled={requestVideoMutation.isPending}
+        className="w-full sm:w-auto"
+      >
+        {requestVideoMutation.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Requesting Access...
+          </>
+        ) : (
+          <>
+            <Presentation className="mr-2 h-4 w-4" />
+            Request Pitch
           </>
         )}
       </Button>
