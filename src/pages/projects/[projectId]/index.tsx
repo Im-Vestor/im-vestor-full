@@ -389,13 +389,15 @@ export default function CompanyDetails() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>{t('websiteWarningTitle')}</DialogTitle>
-                          <DialogDescription>{t('websiteWarningDescription')}</DialogDescription>
+                          <DialogTitle>Atenção</DialogTitle>
+                          <DialogDescription>
+                            Relembrando os termos e condições, de que não pode contactar o
+                            empreendedor fora da plataforma. A partir deste momento, ambos estão
+                            legalmente conectados na plataforma im-vestor.com.
+                          </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button onClick={() => setShowWebsiteModal(false)}>
-                            {t('understood')}
-                          </Button>
+                          <Button onClick={() => setShowWebsiteModal(false)}>Entendi</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -509,7 +511,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                        'bg-primary text-primary-foreground opacity-100'
+                                      'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -543,7 +545,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                              scheduleOtherStageMeetingMutation.isPending ? (
+                                scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -598,37 +600,17 @@ export default function CompanyDetails() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
                   {/* Image/Video Section - Left Half */}
                   <div className="relative h-64 md:h-96 lg:h-[500px] overflow-hidden bg-gradient-to-br from-purple-600/20 to-primary/20">
-                    {hypertrainItem.image ? (
-                      /\.(mp4|webm|ogg|mov)$/i.exec(hypertrainItem.image) ? (
-                        <video
-                          src={hypertrainItem.image}
-                          controls
-                          className="h-full w-full object-cover"
-                        >
-                          <track kind="captions" src="" srcLang="en" label="English" default />
-                        </video>
-                      ) : (
-                        <Image
-                          src={hypertrainItem.image}
-                          alt={hypertrainItem.name}
-                          fill
-                          className="object-cover"
-                          priority
-                        />
-                      )
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <div className="text-center text-white/50">
-                          <Presentation className="mx-auto h-12 w-12 mb-2" />
-                          <p>No media available</p>
-                        </div>
-                      </div>
+                    {hypertrainItem.image && (
+                      <Image
+                        src={hypertrainItem.image}
+                        alt={hypertrainItem.name}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
                     )}
-                    {/* Overlay gradient for better text readability - only for images, not videos */}
-                    {hypertrainItem.image &&
-                      !/\.(mp4|webm|ogg|mov)$/i.exec(hypertrainItem.image) && (
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/40" />
-                      )}
+                    {/* Overlay gradient for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/40" />
 
                     {/* Badge overlay on image */}
                     <div className="absolute top-4 left-4 md:top-6 md:left-6">

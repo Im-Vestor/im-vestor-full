@@ -50,7 +50,6 @@ export default function HypertrainEdit() {
   // Get the hypertrain item if it exists
   const { data: hypertrainItem, isLoading: isLoadingHypertrain } =
     api.hypertrain.getHyperTrainItemByExternalId.useQuery(projectId as string, {
-      refetchOnWindowFocus: false,
       enabled: !!projectId,
     });
 
@@ -200,10 +199,7 @@ export default function HypertrainEdit() {
         </div>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle>Project Description</CardTitle>
@@ -231,11 +227,10 @@ export default function HypertrainEdit() {
                           <div className="flex justify-between text-sm">
                             <FormMessage />
                             <span
-                              className={`font-medium ${
-                                isNearLimit
+                              className={`font-medium ${isNearLimit
                                   ? 'text-yellow-600 dark:text-yellow-500'
                                   : 'text-muted-foreground'
-                              }`}
+                                }`}
                             >
                               {characterCount} / 150 characters
                               {charactersRemaining < 30 && ` (${charactersRemaining} remaining)`}
@@ -299,7 +294,7 @@ export default function HypertrainEdit() {
               </CardContent>
             </Card>
 
-            <Card className="col-span-1 md:col-span-2">
+            <Card className="border-2">
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">

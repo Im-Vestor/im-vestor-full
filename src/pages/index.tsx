@@ -942,53 +942,36 @@ export default function Home() {
                             <div className="w-24 h-4 bg-white/20 rounded"></div>
                           </div>
                         ))
-                        : partners && partners.length >= 3
+                        : partners && partners.length > 0
                           ? // Real partner data
-                          partners.map(partner => {
-                            const handleClick = () => {
-                              if (partner.website) {
-                                // Ensure URL has protocol
-                                const url = partner.website.startsWith('http://') || partner.website.startsWith('https://')
-                                  ? partner.website
-                                  : `https://${partner.website}`;
-                                window.open(url, '_blank', 'noopener,noreferrer');
-                              }
-                            };
-
-                            return (
-                              <div
-                                key={partner.id}
-                                onClick={handleClick}
-                                className={`flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${
-                                  partner.website
-                                    ? 'hover:bg-white/10 cursor-pointer'
-                                    : 'hover:bg-white/10'
-                                }`}
-                              >
-                                {partner.companyLogoUrl ? (
-                                  // Show company logo if available
-                                  <div className="relative w-32 h-12">
-                                    <Image
-                                      src={partner.companyLogoUrl}
-                                      alt={
-                                        partner.companyName ??
-                                        `${partner.firstName} ${partner.lastName}`
-                                      }
-                                      fill
-                                      className="object-contain"
-                                      sizes="128px"
-                                    />
-                                  </div>
-                                ) : (
-                                  // Fallback to company name
-                                  <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
-                                    {partner.companyName ??
-                                      `${partner.firstName} ${partner.lastName}`}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })
+                          partners.map(partner => (
+                            <div
+                              key={partner.id}
+                              className="flex items-center justify-center w-40 h-20  rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
+                            >
+                              {partner.companyLogoUrl ? (
+                                // Show company logo if available
+                                <div className="relative w-32 h-12">
+                                  <Image
+                                    src={partner.companyLogoUrl}
+                                    alt={
+                                      partner.companyName ??
+                                      `${partner.firstName} ${partner.lastName}`
+                                    }
+                                    fill
+                                    className="object-contain"
+                                    sizes="128px"
+                                  />
+                                </div>
+                              ) : (
+                                // Fallback to company name
+                                <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
+                                  {partner.companyName ??
+                                    `${partner.firstName} ${partner.lastName}`}
+                                </div>
+                              )}
+                            </div>
+                          ))
                           : // Fallback to default partners if no data
                           [
                             { name: 'SEQUOIA' },
