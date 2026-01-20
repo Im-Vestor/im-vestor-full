@@ -63,7 +63,8 @@ export const investorRouter = createTRPCRouter({
       };
     }
 
-    const [negotiations, favoriteProjects, investedProjects] = await Promise.all([
+    // Fetch negotiations and investor data in parallel
+    const [negotiations, investorWithProjects] = await Promise.all([
       ctx.db.negotiation.findMany({
         where: { investorId: investor.id },
         include: {
@@ -93,78 +94,64 @@ export const investorRouter = createTRPCRouter({
           },
         },
       }),
-      ctx.db.project.findMany({
-        where: {
-          favoriteInvestors: {
-            some: {
-              id: investor.id,
+      ctx.db.investor.findUnique({
+        where: { id: investor.id },
+        select: {
+          favoriteProjects: {
+            include: {
+              Entrepreneur: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              sector: true,
+              country: true,
+              state: true,
+              _count: {
+                select: {
+                  favoriteInvestors: true,
+                  favoriteVcGroups: true,
+                },
+              },
             },
           },
-        },
-        include: {
-          Entrepreneur: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          sector: true,
-          country: true,
-          state: true,
-          _count: {
-            select: {
-              favoriteInvestors: true,
-              favoriteVcGroups: true,
-            },
-          },
-        },
-      }),
-      ctx.db.project.findMany({
-        where: {
-          investedInvestors: {
-            some: {
-              id: investor.id,
-            },
-          },
-        },
-        include: {
-          Entrepreneur: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          sector: true,
-          country: true,
-          state: true,
-          _count: {
-            select: {
-              favoriteInvestors: true,
-              favoriteVcGroups: true,
+          investedProjects: {
+            include: {
+              Entrepreneur: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              sector: true,
+              country: true,
+              state: true,
+              _count: {
+                select: {
+                  favoriteInvestors: true,
+                  favoriteVcGroups: true,
+                },
+              },
             },
           },
         },
       }),
     ]);
 
+    // Helper function to add likesCount to project
+    const addLikesCount = (project: any) => ({
+      ...project,
+      likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+    });
+
     return {
       negotiations: negotiations.map(negotiation => ({
         ...negotiation,
-        project: {
-          ...negotiation.project,
-          likesCount:
-            negotiation.project._count.favoriteInvestors +
-            negotiation.project._count.favoriteVcGroups,
-        },
+        project: addLikesCount(negotiation.project),
       })),
-      favoriteProjects: favoriteProjects.map(project => ({
-        ...project,
-        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
-      })),
-      investedProjects: investedProjects.map(project => ({
-        ...project,
-        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
-      })),
+      favoriteProjects: (investorWithProjects?.favoriteProjects ?? []).map(addLikesCount),
+      investedProjects: (investorWithProjects?.investedProjects ?? []).map(addLikesCount),
     };
   }),
   getByUserIdForAdmin: protectedProcedure
@@ -214,111 +201,76 @@ export const investorRouter = createTRPCRouter({
       const { page, searchQuery, minInvestment, maxInvestment, areaIds, countryId, stateId } =
         input;
 
-      const users = await ctx.db.user.findMany({
-        where: {
-          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
-        },
-        include: {
-          investor: {
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [
-                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                  ],
-                }
-                : {}),
-              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { areas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-            include: {
-              state: true,
-              country: true,
-              areas: true,
-            },
-          },
-          vcGroup: {
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                }
-                : {}),
-              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { interestedAreas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-            include: {
-              state: true,
-              country: true,
-              interestedAreas: true,
-            },
-          },
-        },
-        skip: page ? page * 10 : 0,
-        take: 10,
-      });
+      // Build the where clause for investor filtering
+      const investorWhere = {
+        ...(searchQuery
+          ? {
+            OR: [
+              { firstName: { contains: searchQuery, mode: 'insensitive' } },
+              { lastName: { contains: searchQuery, mode: 'insensitive' } },
+            ],
+          }
+          : {}),
+        ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
+        ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
+        ...(areaIds && areaIds.length > 0
+          ? { areas: { some: { id: { in: areaIds } } } }
+          : {}),
+        ...(countryId ? { countryId: countryId } : {}),
+        ...(stateId ? { stateId: stateId } : {}),
+      };
 
-      const totalUsers = await ctx.db.user.findMany({
-        where: {
-          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
-        },
-        include: {
-          investor: {
-            select: {
-              id: true,
-            },
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [
-                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                  ],
-                }
-                : {}),
-              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { areas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-          },
-          vcGroup: {
-            select: {
-              id: true,
-            },
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                }
-                : {}),
-              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { interestedAreas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-          },
-        },
-      });
+      // Build the where clause for VC group filtering
+      const vcGroupWhere = {
+        ...(searchQuery
+          ? {
+            OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+          }
+          : {}),
+        ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
+        ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
+        ...(areaIds && areaIds.length > 0
+          ? { interestedAreas: { some: { id: { in: areaIds } } } }
+          : {}),
+        ...(countryId ? { countryId: countryId } : {}),
+        ...(stateId ? { stateId: stateId } : {}),
+      };
 
-      return { users, total: totalUsers.length };
+      const baseWhere = {
+        OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
+      };
+
+      // Use Promise.all to run both queries in parallel
+      const [users, total] = await Promise.all([
+        ctx.db.user.findMany({
+          where: baseWhere,
+          include: {
+            investor: {
+              where: investorWhere,
+              include: {
+                state: true,
+                country: true,
+                areas: true,
+              },
+            },
+            vcGroup: {
+              where: vcGroupWhere,
+              include: {
+                state: true,
+                country: true,
+                interestedAreas: true,
+              },
+            },
+          },
+          skip: page ? page * 10 : 0,
+          take: 10,
+        }),
+        ctx.db.user.count({
+          where: baseWhere,
+        }),
+      ]);
+
+      return { users, total };
     }),
   create: publicProcedure
     .input(
