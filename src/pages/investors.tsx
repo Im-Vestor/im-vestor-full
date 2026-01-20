@@ -4,12 +4,14 @@ import {
   type Investor,
   type State,
   type User,
+  type UserType,
   type VcGroup,
 } from '@prisma/client';
+import { useUser } from '@clerk/nextjs';
 import { Building2, Loader2, SearchIcon, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '~/components/header';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -41,10 +43,19 @@ type UserWithRelations = User & {
 };
 
 export default function Investors() {
+  const { user, isLoaded } = useUser();
+  const userType = user?.publicMetadata.userType as UserType;
+  const isEntrepreneur = userType === 'ENTREPRENEUR';
+
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
+
+  // For infinite scroll (entrepreneurs only)
+  const [allInvestors, setAllInvestors] = useState<UserWithRelations[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Filter states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
@@ -82,10 +93,72 @@ export default function Investors() {
     page: page,
   };
 
-  const { data, isLoading } =
+  const { data, isLoading, isFetching } =
     api.investor.getInvestorsAndVcGroupsRelatedToEntrepreneur.useQuery(filterParams);
 
   const visibleAreas = areas?.slice(0, visibleAreasCount);
+
+  // Reset investors and page when filters change (for entrepreneurs with infinite scroll)
+  useEffect(() => {
+    if (isEntrepreneur) {
+      setAllInvestors([]);
+      setPage(0);
+      setHasMore(true);
+    }
+  }, [
+    selectedAreas,
+    investmentRange.min,
+    investmentRange.max,
+    searchQuery,
+    isEntrepreneur,
+  ]);
+
+  // Accumulate investors when new data arrives (for entrepreneurs with infinite scroll)
+  useEffect(() => {
+    if (isEntrepreneur && data) {
+      if (page === 0) {
+        // First page - replace all investors
+        setAllInvestors(data.users ?? []);
+        // Check if there are more pages
+        const totalLoaded = data.users?.length ?? 0;
+        setHasMore(totalLoaded < (data.total ?? 0) && (data.users?.length ?? 0) > 0);
+      } else {
+        // Subsequent pages - append to existing investors
+        setAllInvestors(prev => {
+          const newInvestors = [...prev, ...(data.users ?? [])];
+          // Check if there are more pages
+          const totalLoaded = newInvestors.length;
+          setHasMore(totalLoaded < (data.total ?? 0) && (data.users?.length ?? 0) > 0);
+          return newInvestors;
+        });
+      }
+    }
+  }, [data, page, isEntrepreneur]);
+
+  // Intersection Observer for infinite scroll (entrepreneurs only)
+  useEffect(() => {
+    if (!isEntrepreneur || !isLoaded) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting && hasMore && !isFetching && !isLoading) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, isFetching, isLoading, isEntrepreneur, isLoaded]);
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     if (checked) {
@@ -182,44 +255,87 @@ export default function Investors() {
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
-                {data?.users && data.users.length > 0 ? (
-                  data.users.map((investorOrVcGroup: UserWithRelations) =>
-                    investorOrVcGroup.investor ? (
-                      <InvestorCard
-                        key={investorOrVcGroup.id}
-                        investor={investorOrVcGroup.investor}
-                      />
-                    ) : investorOrVcGroup.vcGroup ? (
-                      <VcGroupCard key={investorOrVcGroup.id} vcGroup={investorOrVcGroup.vcGroup} />
-                    ) : null
-                  )
-                ) : isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="size-8 animate-spin text-white" />
-                  </div>
-                ) : (
-                  <p className="my-12 text-center text-sm text-white/50">
-                    No investors found matching your criteria.
+                {(() => {
+                  // For entrepreneurs, use accumulated investors; for others, use current page data
+                  const investorsToShow = isEntrepreneur && isLoaded
+                    ? allInvestors
+                    : data?.users ?? [];
+
+                  if (investorsToShow.length > 0) {
+                    return (
+                      <>
+                        {investorsToShow.map((investorOrVcGroup: UserWithRelations) =>
+                          investorOrVcGroup.investor ? (
+                            <InvestorCard
+                              key={investorOrVcGroup.id}
+                              investor={investorOrVcGroup.investor}
+                            />
+                          ) : investorOrVcGroup.vcGroup ? (
+                            <VcGroupCard
+                              key={investorOrVcGroup.id}
+                              vcGroup={investorOrVcGroup.vcGroup}
+                            />
+                          ) : null
+                        )}
+                        {/* Intersection Observer target for infinite scroll (entrepreneurs only) */}
+                        {isEntrepreneur && isLoaded && (
+                          <div ref={observerTarget} className="h-4" />
+                        )}
+                        {/* Loading indicator at bottom for infinite scroll */}
+                        {isEntrepreneur && isLoaded && isFetching && hasMore && (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="size-6 animate-spin text-white" />
+                          </div>
+                        )}
+                      </>
+                    );
+                  } else if (isLoading) {
+                    return (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="size-8 animate-spin text-white" />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <p className="my-12 text-center text-sm text-white/50">
+                        No investors found matching your criteria.
+                      </p>
+                    );
+                  }
+                })()}
+              </div>
+              {/* Pagination controls - only show for non-entrepreneurs */}
+              {!isEntrepreneur && (
+                <div className="mt-8 flex items-center justify-end gap-2">
+                  <p className="text-sm text-white/50">
+                    {isLoading
+                      ? 'Loading investors...'
+                      : `Showing ${data?.users?.length ?? 0} of ${data?.total ?? 0} investors`}
                   </p>
-                )}
-              </div>
-              <div className="mt-8 flex items-center justify-end gap-2">
-                <p className="text-sm text-white/50">
-                  {isLoading
-                    ? 'Loading investors...'
-                    : `Showing ${data?.users?.length ?? 0} of ${data?.total ?? 0} investors`}
-                </p>
-                <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(page + 1)}
-                  disabled={(data?.total ?? 0) - (page + 1) * 10 <= 0}
-                >
-                  Next
-                </Button>
-              </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(page - 1)}
+                    disabled={page === 0}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(page + 1)}
+                    disabled={(data?.total ?? 0) - (page + 1) * 10 <= 0}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+              {/* Show total count for entrepreneurs */}
+              {isEntrepreneur && isLoaded && !isLoading && (
+                <div className="mt-8 flex items-center justify-end">
+                  <p className="text-sm text-white/50">
+                    Showing {allInvestors.length} of {data?.total ?? 0} investors
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

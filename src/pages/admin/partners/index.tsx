@@ -307,10 +307,10 @@ export default function AdminPartnersPage() {
       </Sheet>
 
       <Sheet open={isMarqueeLinkSheetOpen} onOpenChange={setIsMarqueeLinkSheetOpen}>
-        <SheetContent className="sm:max-w-md bg-background-secondary border-white/10 overflow-y-auto">
+        <SheetContent className="sm:max-w-md bg-background border-white/10 overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-white flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-primary" />
+              <Link2 className="h-5 w-5 text-white" />
               Edit Marquee Link
             </SheetTitle>
           </SheetHeader>
