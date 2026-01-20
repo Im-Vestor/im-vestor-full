@@ -393,8 +393,21 @@ export default function CompanyDetails() {
                           <DialogDescription>{t('websiteWarningDescription')}</DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button onClick={() => setShowWebsiteModal(false)}>
-                            {t('understood')}
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowWebsiteModal(false)}
+                          >
+                            {t('cancel')}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              if (project.website) {
+                                window.open(project.website, '_blank', 'noopener,noreferrer');
+                              }
+                              setShowWebsiteModal(false);
+                            }}
+                          >
+                            {t('continue')}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -509,7 +522,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                        'bg-primary text-primary-foreground opacity-100'
+                                      'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -543,7 +556,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                              scheduleOtherStageMeetingMutation.isPending ? (
+                                scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />

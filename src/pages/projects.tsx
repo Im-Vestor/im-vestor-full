@@ -1,12 +1,11 @@
 import { type Area, type Country, type Project, type State, ProjectStage, type UserType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
-import { Building2, Heart, SearchIcon, Calendar, MapPin, CircleUserRound, Zap } from 'lucide-react';
+import { Building2, Heart, SearchIcon, Calendar, MapPin, CircleUserRound, Zap, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Header } from '~/components/header';
-import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
 import { Skeleton } from '~/components/ui/skeleton';
@@ -53,6 +52,12 @@ export default function Companies() {
 
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [allProjects, setAllProjects] = useState<Array<Project & { state: State | null; country: Country | null; sector: Area } & {
+    isFavorite: boolean;
+    likesCount: number;
+  }>>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
   const { data: areas, isLoading: isLoadingAreas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(INITIAL_VISIBLE_AREAS);
 
@@ -118,8 +123,71 @@ export default function Companies() {
     favorites: favorites,
   };
 
-  const { data: projects, isLoading: isLoadingProjects } =
+  const { data: projects, isLoading: isLoadingProjects, isFetching } =
     api.project.getAllWithFilters.useQuery(filterParams);
+
+  // Reset projects and page when filters change
+  useEffect(() => {
+    setAllProjects([]);
+    setPage(0);
+    setHasMore(true);
+  }, [
+    selectedSectors,
+    selectedStages,
+    oneToFiveSlots,
+    onlyIncubatorProjects,
+    revenueFilters.min,
+    revenueFilters.max,
+    investmentRange.min,
+    investmentRange.max,
+    searchQuery,
+    favorites,
+  ]);
+
+  // Accumulate projects when new data arrives
+  useEffect(() => {
+    if (projects) {
+      if (page === 0) {
+        // First page - replace all projects
+        setAllProjects(projects.projects ?? []);
+        // Check if there are more pages
+        const totalLoaded = projects.projects?.length ?? 0;
+        setHasMore(totalLoaded < (projects.total ?? 0) && (projects.projects?.length ?? 0) > 0);
+      } else {
+        // Subsequent pages - append to existing projects
+        setAllProjects(prev => {
+          const newProjects = [...prev, ...(projects.projects ?? [])];
+          // Check if there are more pages
+          const totalLoaded = newProjects.length;
+          setHasMore(totalLoaded < (projects.total ?? 0) && (projects.projects?.length ?? 0) > 0);
+          return newProjects;
+        });
+      }
+    }
+  }, [projects, page]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting && hasMore && !isFetching && !isLoadingProjects) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, isFetching, isLoadingProjects]);
 
   const handleSectorChange = (sectorId: string, checked: boolean) => {
     if (checked) {
@@ -307,39 +375,38 @@ export default function Companies() {
               />
             </div>
             <div className="mt-4 flex flex-col gap-4">
-              {isLoadingProjects ? (
+              {isLoadingProjects && page === 0 ? (
                 <>
                   <CompanyCardSkeleton />
                   <CompanyCardSkeleton />
                   <CompanyCardSkeleton />
                 </>
-              ) : projects?.projects && projects?.projects.length > 0 ? (
-                projects?.projects.map(project => (
-                  <CompanyCard key={project.id} project={project} />
-                ))
+              ) : allProjects.length > 0 ? (
+                <>
+                  {allProjects.map(project => (
+                    <CompanyCard key={project.id} project={project} />
+                  ))}
+                  {/* Intersection observer target */}
+                  <div ref={observerTarget} className="h-4" />
+                  {/* Loading indicator for additional pages */}
+                  {isFetching && page > 0 && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-white/50" />
+                    </div>
+                  )}
+                  {/* End of results message */}
+                  {!hasMore && allProjects.length > 0 && (
+                    <p className="text-center text-sm text-white/50 py-4">
+                      {`Showing all ${allProjects.length} of ${projects?.total ?? 0} projects`}
+                    </p>
+                  )}
+                </>
               ) : (
                 <p className="text-center text-sm text-white/50">
                   No projects found matching your criteria.
                 </p>
               )}
             </div>
-            {!isLoadingProjects && (
-              <div className="mt-8 flex items-center justify-end gap-2">
-                <p className="text-sm text-white/50">
-                  {`Showing ${projects?.projects?.length ?? 0} of ${projects?.total ?? 0} projects`}
-                </p>
-                <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(page + 1)}
-                  disabled={(projects?.total ?? 0) - (page + 1) * 20 <= 0}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -360,11 +427,10 @@ function CompanyCard({
   return (
     <Link
       href={`/projects/${project.id}`}
-      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${
-        isBoosted
-          ? 'border-yellow-500/50 hover:border-yellow-600/50'
-          : 'border-white/10 hover:border-white/20'
-      }`}
+      className={`cursor-pointer rounded-xl border-2 bg-card p-6 transition-all  ${isBoosted
+        ? 'border-yellow-500/50 hover:border-yellow-600/50'
+        : 'border-white/10 hover:border-white/20'
+        }`}
     >
       <div className="flex flex-col gap-4 md:flex-row md:gap-6">
         {project.logo ? (

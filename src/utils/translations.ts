@@ -89,7 +89,10 @@ type TranslationKey =
   | 'legalDisclaimer'
   | 'viewInEnglish'
   | 'viewInPortuguese'
-  | 'englishVersionDisclaimer';
+  | 'englishVersionDisclaimer'
+  | 'websiteWarningTitle'
+  | 'websiteWarningDescription'
+  | 'understood';
 
 // Define the translations for each language
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -201,6 +204,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     viewInPortuguese: 'Ver em Português',
     englishVersionDisclaimer:
       'Note: The legal version of these Terms and Conditions is in Portuguese (PT). This English version is provided for convenience only and may contain AI translation errors. The AI is responsible for this translation. For legal purposes, please refer to the Portuguese version.',
+    websiteWarningTitle: 'External Website Warning',
+    websiteWarningDescription:
+      'You are about to leave Im-Vestor and visit an external website. We are not responsible for the content, privacy practices, or security of external websites. Please proceed with caution.',
+    understood: 'Understood',
   },
   'pt-PT': {
     signIn: 'Iniciar Sessão',
@@ -310,6 +317,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     viewInPortuguese: 'Ver em Português',
     englishVersionDisclaimer:
       'Nota: A versão legal destes Termos e Condições é em Português (PT). Esta versão em inglês é fornecida apenas para conveniência e pode conter erros de tradução por A.I. A A.I. é responsável por esta tradução. Para fins legais, consulte a versão em português.',
+    websiteWarningTitle: 'Aviso de Website Externo',
+    websiteWarningDescription:
+      'Está prestes a sair do Im-Vestor e visitar um website externo. Não somos responsáveis pelo conteúdo, práticas de privacidade ou segurança de websites externos. Por favor, proceda com cautela.',
+    understood: 'Entendido',
   },
 };
 
