@@ -1,4 +1,4 @@
-import { UserType } from '@prisma/client';
+import { Prisma, UserType } from '@prisma/client';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const recommendationsRouter = createTRPCRouter({
@@ -67,11 +67,11 @@ export const recommendationsRouter = createTRPCRouter({
 
       const projectIds = projects.map(p => p.id);
 
-      // Get view counts using raw SQL
+      // Get view counts using raw SQL (safe from SQL injection)
       const viewCountsRaw = await tx.$queryRaw<Array<{ project_id: string; count: number }>>`
         SELECT "projectId" as project_id, COUNT(*) as count
         FROM "ProjectView"
-        WHERE "projectId" IN (${projectIds.join(',')})
+        WHERE "projectId" IN (${Prisma.join(projectIds)})
         GROUP BY "projectId"
       `;
 
@@ -141,6 +141,29 @@ export const recommendationsRouter = createTRPCRouter({
           take: 5,
         });
 
+        // Batch count queries for better performance
+        const [totalViews, totalMeetings, totalConnections] = await Promise.all([
+          ctx.db.projectView.count({
+            where: {
+              investorId: user.investor?.id,
+            },
+          }),
+          ctx.db.meeting.count({
+            where: {
+              investors: {
+                some: {
+                  id: user.investor?.id,
+                },
+              },
+            },
+          }),
+          ctx.db.connection.count({
+            where: {
+              OR: [{ followerId: user.id }, { followingId: user.id }],
+            },
+          }),
+        ]);
+
         return {
           recommendedProjects: recommendedProjects.map(project => ({
             ...project,
@@ -148,25 +171,9 @@ export const recommendationsRouter = createTRPCRouter({
           })),
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
-            totalViews: await ctx.db.projectView.count({
-              where: {
-                investorId: user.investor?.id,
-              },
-            }),
-            totalMeetings: await ctx.db.meeting.count({
-              where: {
-                investors: {
-                  some: {
-                    id: user.investor?.id,
-                  },
-                },
-              },
-            }),
-            totalConnections: await ctx.db.connection.count({
-              where: {
-                OR: [{ followerId: user.id }, { followingId: user.id }],
-              },
-            }),
+            totalViews,
+            totalMeetings,
+            totalConnections,
           },
         };
       }
@@ -193,27 +200,34 @@ export const recommendationsRouter = createTRPCRouter({
           take: 5,
         });
 
+        // Batch count queries for better performance
+        const [totalViews, totalMeetings, totalConnections] = await Promise.all([
+          ctx.db.projectView.count({
+            where: {
+              project: {
+                entrepreneurId: user.entrepreneur?.id,
+              },
+            },
+          }),
+          ctx.db.meeting.count({
+            where: {
+              entrepreneurId: user.entrepreneur?.id,
+            },
+          }),
+          ctx.db.connection.count({
+            where: {
+              OR: [{ followerId: user.id }, { followingId: user.id }],
+            },
+          }),
+        ]);
+
         return {
           recommendedInvestors,
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
-            totalViews: await ctx.db.projectView.count({
-              where: {
-                project: {
-                  entrepreneurId: user.entrepreneur?.id,
-                },
-              },
-            }),
-            totalMeetings: await ctx.db.meeting.count({
-              where: {
-                entrepreneurId: user.entrepreneur?.id,
-              },
-            }),
-            totalConnections: await ctx.db.connection.count({
-              where: {
-                OR: [{ followerId: user.id }, { followingId: user.id }],
-              },
-            }),
+            totalViews,
+            totalMeetings,
+            totalConnections,
           },
         };
       }
@@ -245,20 +259,26 @@ export const recommendationsRouter = createTRPCRouter({
           take: 5,
         });
 
+        // Batch count queries for better performance
+        const [totalProjects, totalConnections] = await Promise.all([
+          ctx.db.project.count({
+            where: {
+              incubatorId: user.incubator?.id,
+            },
+          }),
+          ctx.db.connection.count({
+            where: {
+              OR: [{ followerId: user.id }, { followingId: user.id }],
+            },
+          }),
+        ]);
+
         return {
           recommendedInvestors: recommendedInvestors.filter(u => u.investor ?? u.vcGroup),
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
-            totalProjects: await ctx.db.project.count({
-              where: {
-                incubatorId: user.incubator?.id,
-              },
-            }),
-            totalConnections: await ctx.db.connection.count({
-              where: {
-                OR: [{ followerId: user.id }, { followingId: user.id }],
-              },
-            }),
+            totalProjects,
+            totalConnections,
           },
         };
       }
@@ -278,20 +298,26 @@ export const recommendationsRouter = createTRPCRouter({
           },
         });
 
+        // Batch count queries for better performance
+        const [totalReferrals, totalConnections] = await Promise.all([
+          ctx.db.referral.count({
+            where: {
+              referrerId: user.id,
+            },
+          }),
+          ctx.db.connection.count({
+            where: {
+              OR: [{ followerId: user.id }, { followingId: user.id }],
+            },
+          }),
+        ]);
+
         return {
           recentReferrals: referrals,
           hyperTrainProjects: hyperTrainProjects,
           metrics: {
-            totalReferrals: await ctx.db.referral.count({
-              where: {
-                referrerId: user.id,
-              },
-            }),
-            totalConnections: await ctx.db.connection.count({
-              where: {
-                OR: [{ followerId: user.id }, { followingId: user.id }],
-              },
-            }),
+            totalReferrals,
+            totalConnections,
           },
         };
       }
