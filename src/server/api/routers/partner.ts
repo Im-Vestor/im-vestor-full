@@ -32,6 +32,12 @@ export const partnerRouter = createTRPCRouter({
         companyName: true,
         companyLogoUrl: true,
         website: true,
+        facebook: true,
+        instagram: true,
+        linkedinUrl: true,
+        twitter: true,
+        marqueeLinkType: true,
+        marqueeLinkUrl: true,
       },
     });
   }),
@@ -194,6 +200,7 @@ export const partnerRouter = createTRPCRouter({
         facebook: z.string().optional(),
         instagram: z.string().optional(),
         twitter: z.string().optional(),
+        marqueeLinkType: z.enum(['WEBSITE', 'FACEBOOK', 'INSTAGRAM', 'LINKEDIN', 'TWITTER']).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -343,6 +350,35 @@ export const partnerRouter = createTRPCRouter({
       return ctx.db.partner.update({
         where: { id: input.id },
         data: { companyLogoUrl: input.companyLogoUrl },
+      });
+    }),
+
+  adminUpdateMarqueeLink: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        marqueeLinkType: z.enum(['WEBSITE', 'FACEBOOK', 'INSTAGRAM', 'LINKEDIN', 'TWITTER']).optional(),
+        marqueeLinkUrl: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if current user is admin
+      const client = await clerkClient();
+      const currentUser = await client.users.getUser(ctx.auth.userId);
+      const userMetadata = currentUser.publicMetadata as {
+        userIsAdmin?: boolean;
+      };
+
+      if (!userMetadata?.userIsAdmin) {
+        throw new Error('Unauthorized: Only admins can manage partners');
+      }
+
+      return ctx.db.partner.update({
+        where: { id: input.id },
+        data: {
+          marqueeLinkType: input.marqueeLinkType,
+          marqueeLinkUrl: input.marqueeLinkUrl,
+        },
       });
     }),
 

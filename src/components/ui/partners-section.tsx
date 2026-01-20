@@ -102,22 +102,61 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
                 : partners && partners.length >= 3
                   ? // Real partner data
                   partners.map(partner => {
+                    const getMarqueeUrl = () => {
+                      // If admin has set a custom URL, use it
+                      if (partner.marqueeLinkUrl) {
+                        const url = partner.marqueeLinkUrl.startsWith('http://') || partner.marqueeLinkUrl.startsWith('https://')
+                          ? partner.marqueeLinkUrl
+                          : `https://${partner.marqueeLinkUrl}`;
+                        return url;
+                      }
+
+                      // Otherwise, use the URL based on the selected type
+                      let url: string | undefined;
+                      switch (partner.marqueeLinkType) {
+                        case 'WEBSITE':
+                          url = partner.website;
+                          break;
+                        case 'FACEBOOK':
+                          url = partner.facebook;
+                          break;
+                        case 'INSTAGRAM':
+                          url = partner.instagram;
+                          break;
+                        case 'LINKEDIN':
+                          url = partner.linkedinUrl;
+                          break;
+                        case 'TWITTER':
+                          url = partner.twitter;
+                          break;
+                        default:
+                          // Fallback to website if no type is selected
+                          url = partner.website;
+                      }
+
+                      if (!url) return null;
+
+                      // Ensure URL has protocol
+                      return url.startsWith('http://') || url.startsWith('https://')
+                        ? url
+                        : `https://${url}`;
+                    };
+
                     const handleClick = () => {
-                      if (partner.website) {
-                        // Ensure URL has protocol
-                        const url = partner.website.startsWith('http://') || partner.website.startsWith('https://')
-                          ? partner.website
-                          : `https://${partner.website}`;
+                      const url = getMarqueeUrl();
+                      if (url) {
                         window.open(url, '_blank', 'noopener,noreferrer');
                       }
                     };
+
+                    const marqueeUrl = getMarqueeUrl();
 
                     return (
                       <div
                         key={partner.id}
                         onClick={handleClick}
                         className={`flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${
-                          partner.website
+                          marqueeUrl
                             ? 'hover:bg-white/10 cursor-pointer'
                             : 'hover:bg-white/10'
                         }`}

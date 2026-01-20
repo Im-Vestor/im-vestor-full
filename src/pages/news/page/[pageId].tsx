@@ -3,7 +3,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { NotionBlockRenderer } from '~/components/notion/NotionBlockRenderer';
 import { Button } from '~/components/ui/button';
-import { extractPageTitle, getPageIcon, getPageDescription } from '~/utils/notion';
+import { extractPageTitle, getPageIcon, getPageDescription, getPageCoverImage } from '~/utils/notion';
+import { type PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { api } from '~/utils/api';
 import { Header } from '~/components/header';
 import { useUser } from '@clerk/nextjs';
@@ -143,7 +144,11 @@ export default function NotionPageView() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
+              onClick={() => {
+                const coverImage = pageData?.page
+                  ? getPageCoverImage(pageData.page as PageObjectResponse)
+                  : null;
+
                 createHyperTrainItem({
                   name: pageTitle,
                   description: pageDescription,
@@ -151,8 +156,9 @@ export default function NotionPageView() {
                   link: `/news/page/${pageId as string}`,
                   liveUntil: addDays(new Date(), 7),
                   externalId: pageId as string,
-                })
-              }
+                  image: coverImage ?? undefined,
+                });
+              }}
               disabled={isPending}
             >
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add to HyperTrain'}

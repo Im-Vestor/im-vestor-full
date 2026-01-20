@@ -18,10 +18,17 @@ import {
   AlertDialogTrigger,
 } from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { PhoneInput } from '~/components/ui/phone-input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
 import { api } from '~/utils/api';
 import { sendImageToBackend } from '~/utils/file';
 
@@ -52,6 +59,7 @@ const partnerFormSchema = z.object({
     .union([z.string().url('Invalid Twitter URL'), z.literal('')])
     .optional()
     .transform(val => (val === '' ? undefined : val)),
+  marqueeLinkType: z.enum(['WEBSITE', 'FACEBOOK', 'INSTAGRAM', 'LINKEDIN', 'TWITTER']).optional(),
 });
 
 interface PartnerFormProps {
@@ -103,6 +111,7 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
       facebook: partner?.facebook ?? '',
       instagram: partner?.instagram ?? '',
       twitter: partner?.twitter ?? '',
+      marqueeLinkType: partner?.marqueeLinkType ?? undefined,
     },
   });
 
@@ -286,6 +295,43 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
                     disabled={isUpdatingPartner}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mx-6 grid grid-cols-1 gap-4 pt-2">
+          <FormField
+            control={form.control}
+            name="marqueeLinkType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="font-normal text-neutral-200">
+                  Link do Carrossel (Marquee)
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value ?? ''}
+                  disabled={isUpdatingPartner}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha qual link será exibido no carrossel" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="WEBSITE">Website</SelectItem>
+                    <SelectItem value="FACEBOOK">Facebook</SelectItem>
+                    <SelectItem value="INSTAGRAM">Instagram</SelectItem>
+                    <SelectItem value="LINKEDIN">LinkedIn</SelectItem>
+                    <SelectItem value="TWITTER">Twitter</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-neutral-400 mt-1">
+                  Escolha qual link será usado quando os usuários clicarem no seu logo no carrossel.
+                  O admin pode alterar a URL final se necessário.
+                </p>
                 <FormMessage />
               </FormItem>
             )}

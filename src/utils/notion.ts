@@ -135,3 +135,16 @@ export function extractFirstLineFromBlocks(blocks: (BlockObjectResponse | Partia
 
   return 'No text content found';
 }
+
+// Extract cover image from Notion page
+export function getPageCoverImage(page: any): string | null {
+  if (!page?.cover) return null;
+
+  if (page.cover.type === 'external') {
+    return page.cover.external.url;
+  } else if (page.cover.type === 'file') {
+    return page.cover.file.url;
+  }
+
+  return null;
+}

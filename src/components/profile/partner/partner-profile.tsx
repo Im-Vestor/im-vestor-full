@@ -17,9 +17,11 @@ import {
   TrendingUp,
   Users2,
   Wallet,
+  Download,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import QRCode from 'react-qr-code';
 
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
@@ -31,6 +33,7 @@ import { toast } from 'sonner';
 export const PartnerProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: partner, isPending: isLoading } = userId
@@ -62,6 +65,45 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
       toast.success('Referral link copied!');
       setTimeout(() => setIsCopied(false), 2000);
     }
+  };
+
+  const handleDownloadQRCode = () => {
+    if (!qrCodeRef.current || !userData?.referralCode) return;
+
+    const svgElement = qrCodeRef.current.querySelector('svg');
+    if (!svgElement) return;
+
+    // Convert SVG to canvas
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    img.onload = () => {
+      // Set canvas size with padding
+      const padding = 20;
+      canvas.width = img.width + padding * 2;
+      canvas.height = img.height + padding * 2;
+
+      if (ctx) {
+        // Fill white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw QR code
+        ctx.drawImage(img, padding, padding);
+
+        // Download as PNG
+        const link = document.createElement('a');
+        link.download = `referral-qr-code-${userData.referralCode}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        toast.success('QR code downloaded!');
+      }
+    };
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
   if (isLoading) {
@@ -191,7 +233,7 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                 <TrendingUp className="h-5 w-5 text-primary-solid" />
                 Referral Dashboard
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader className="pb-2">
@@ -241,7 +283,7 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                     'Generating code...'
                   )}
                 </div>
-                <Button 
+                <Button
                   onClick={handleCopyLink}
                   className="bg-primary-solid text-black hover:bg-primary-hover"
                 >
@@ -249,6 +291,33 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                   <span className="ml-2 hidden sm:inline">Copy Link</span>
                 </Button>
               </div>
+
+              {/* QR Code Section */}
+              {userData?.referralCode && (
+                <div className="mt-6 flex flex-col items-center gap-4">
+                  <div
+                    ref={qrCodeRef}
+                    className="bg-white p-4 rounded-lg"
+                  >
+                    <QRCode
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/sign-up?referralToken=${userData.referralCode}`}
+                      size={200}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                      level="M"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleDownloadQRCode}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download QR Code
+                  </Button>
+                </div>
+              )}
+
               <p className="mt-3 text-xs text-gray-500">
                 Share this link with your network. You earn for every new user who activates their account.
               </p>

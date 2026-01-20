@@ -1,17 +1,17 @@
 import { useState } from "react";
 import AdminLayout from "~/pages/admin";
 import { api } from "~/utils/api";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "~/components/ui/table";
 import { Switch } from "~/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Search, Building2, Upload, Users, Check } from "lucide-react";
+import { Loader2, Search, Building2, Upload, Users, Check, Link2, Pencil } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import Image from "next/image";
 import { cn } from "~/lib/utils";
@@ -23,12 +23,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 
 export default function AdminPartnersPage() {
   const [search, setSearch] = useState("");
   const [uploadingPartnerId, setUploadingPartnerId] = useState<string | null>(null);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingMarqueeLinkId, setEditingMarqueeLinkId] = useState<string | null>(null);
+  const [isMarqueeLinkSheetOpen, setIsMarqueeLinkSheetOpen] = useState(false);
+  const [marqueeLinkType, setMarqueeLinkType] = useState<string>("");
+  const [marqueeLinkUrl, setMarqueeLinkUrl] = useState<string>("");
   const utils = api.useUtils();
 
   const { data: partners, isLoading } = api.partner.adminGetAll.useQuery();
@@ -63,6 +76,19 @@ export default function AdminPartnersPage() {
     }
   });
 
+  const { mutate: updateMarqueeLink, isPending: isUpdatingMarqueeLink } = api.partner.adminUpdateMarqueeLink.useMutation({
+    onSuccess: () => {
+      toast.success("Marquee link updated successfully");
+      void utils.partner.adminGetAll.invalidate();
+      void utils.partner.getAll.invalidate();
+      setIsMarqueeLinkSheetOpen(false);
+      setEditingMarqueeLinkId(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to update marquee link: " + error.message);
+    }
+  });
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, partnerId: string, userId: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -78,7 +104,7 @@ export default function AdminPartnersPage() {
     }
   };
 
-  const filteredPartners = partners?.filter(partner => 
+  const filteredPartners = partners?.filter(partner =>
     partner.companyName?.toLowerCase().includes(search.toLowerCase()) ||
     partner.firstName.toLowerCase().includes(search.toLowerCase()) ||
     partner.lastName.toLowerCase().includes(search.toLowerCase())
@@ -102,19 +128,20 @@ export default function AdminPartnersPage() {
                 <TableHead className="text-white">Company</TableHead>
                 <TableHead className="text-white">Email</TableHead>
                 <TableHead className="text-white text-center">Referrals</TableHead>
+                <TableHead className="text-white text-center">Marquee Link</TableHead>
                 <TableHead className="text-white text-center">In Carousel</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                   </TableCell>
                 </TableRow>
               ) : filteredPartners?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                     No partners found.
                   </TableCell>
                 </TableRow>
@@ -144,7 +171,7 @@ export default function AdminPartnersPage() {
                             ) : (
                               <Building2 className="h-5 w-5 text-muted-foreground" />
                             )}
-                            
+
                             {uploadingPartnerId === partner.id && (
                               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                                 <Loader2 className="h-4 w-4 animate-spin text-white" />
@@ -152,7 +179,7 @@ export default function AdminPartnersPage() {
                             )}
                           </div>
 
-                          <label 
+                          <label
                             htmlFor={`logo-${partner.id}`}
                             className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg"
                           >
@@ -184,6 +211,23 @@ export default function AdminPartnersPage() {
                         <Users className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm font-bold text-white">
                           {partner.user._count.referralsAsReferrer}
+                        </span>
+                      </button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        onClick={() => {
+                          setEditingMarqueeLinkId(partner.id);
+                          setMarqueeLinkType(partner.marqueeLinkType ?? "");
+                          setMarqueeLinkUrl(partner.marqueeLinkUrl ?? "");
+                          setIsMarqueeLinkSheetOpen(true);
+                        }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary transition-all group"
+                        title="Edit marquee link"
+                      >
+                        <Link2 className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-white">
+                          {partner.marqueeLinkType ? partner.marqueeLinkType : "Not set"}
                         </span>
                       </button>
                     </TableCell>
@@ -227,7 +271,7 @@ export default function AdminPartnersPage() {
           ) : partnerReferrals && partnerReferrals.length > 0 ? (
             <div className="space-y-4">
               {partnerReferrals.map((ref) => (
-                <div 
+                <div
                   key={ref.id}
                   className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2 group hover:border-primary/30 transition-all"
                 >
@@ -238,12 +282,12 @@ export default function AdminPartnersPage() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground font-mono">{ref.email}</p>
-                  
+
                   <div className="pt-2 flex items-center justify-between border-t border-white/5">
                     <span className="text-[10px] text-gray-500 italic">
                       Joined {new Date(ref.joinedAt).toLocaleDateString()}
                     </span>
-                    
+
                     {ref.hasClosedDeal && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full animate-pulse">
                         <Check className="h-2 w-2" />
@@ -259,6 +303,95 @@ export default function AdminPartnersPage() {
               <p className="text-muted-foreground">No users referred by this partner yet.</p>
             </div>
           )}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isMarqueeLinkSheetOpen} onOpenChange={setIsMarqueeLinkSheetOpen}>
+        <SheetContent className="sm:max-w-md bg-background-secondary border-white/10 overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-white flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-primary" />
+              Edit Marquee Link
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white">Link Type</Label>
+              <Select
+                value={marqueeLinkType}
+                onValueChange={setMarqueeLinkType}
+                disabled={isUpdatingMarqueeLink}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select link type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WEBSITE">Website</SelectItem>
+                  <SelectItem value="FACEBOOK">Facebook</SelectItem>
+                  <SelectItem value="INSTAGRAM">Instagram</SelectItem>
+                  <SelectItem value="LINKEDIN">LinkedIn</SelectItem>
+                  <SelectItem value="TWITTER">Twitter</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose which type of link will be used in the marquee
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Custom URL (Optional)</Label>
+              <Input
+                value={marqueeLinkUrl}
+                onChange={(e) => setMarqueeLinkUrl(e.target.value)}
+                placeholder="Leave empty to use the partner's profile URL"
+                disabled={isUpdatingMarqueeLink}
+                className="bg-white/5 border-white/10"
+              />
+              <p className="text-xs text-muted-foreground">
+                Override the default URL. If empty, the system will use the partner's profile URL for the selected type.
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsMarqueeLinkSheetOpen(false);
+                  setEditingMarqueeLinkId(null);
+                }}
+                disabled={isUpdatingMarqueeLink}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (editingMarqueeLinkId) {
+                    updateMarqueeLink({
+                      id: editingMarqueeLinkId,
+                      marqueeLinkType: marqueeLinkType ? (marqueeLinkType as 'WEBSITE' | 'FACEBOOK' | 'INSTAGRAM' | 'LINKEDIN' | 'TWITTER') : undefined,
+                      marqueeLinkUrl: marqueeLinkUrl || undefined,
+                    });
+                  }
+                }}
+                disabled={isUpdatingMarqueeLink || !editingMarqueeLinkId}
+                className="flex-1"
+              >
+                {isUpdatingMarqueeLink ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
     </AdminLayout>
