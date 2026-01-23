@@ -6,6 +6,10 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  // Used by `prisma migrate dev` to create/apply migrations against a separate "shadow" database.
+  // This is especially useful when your main `DATABASE_URL` points to a pooled connection (e.g. Supabase pooler)
+  // or when your primary DB user cannot CREATE/DROP databases.
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Country {

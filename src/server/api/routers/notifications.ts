@@ -4,14 +4,24 @@ import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const notificationsRouter = createTRPCRouter({
   getUnreadNotifications: protectedProcedure.query(async ({ ctx }) => {
+    // OPTIMIZED: Limit results and use indexed fields
     return await ctx.db.notification.findMany({
       where: {
         userId: ctx.auth.userId,
         read: false,
       },
+      select: {
+        id: true,
+        createdAt: true,
+        type: true,
+        read: true,
+        userId: true,
+        investorId: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
+      take: 50, // OPTIMIZED: Limit to 50 most recent unread notifications
     });
   }),
   readNotification: protectedProcedure

@@ -79,24 +79,36 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where: Prisma.ProjectWhereInput = {};
 
-      const [investor, vc] = await Promise.all([
-        ctx.db.investor.findUnique({
-          where: {
-            userId: ctx.auth.userId,
-          },
-          include: {
-            favoriteProjects: true,
-          },
-        }),
-        ctx.db.vcGroup.findUnique({
-          where: {
-            userId: ctx.auth.userId,
-          },
-          include: {
-            favoriteProjects: true,
-          },
-        }),
-      ]);
+      // OPTIMIZED: Only fetch favorites if needed
+      let investor = null;
+      let vc = null;
+
+      if (input.favorites) {
+        [investor, vc] = await Promise.all([
+          ctx.db.investor.findUnique({
+            where: {
+              userId: ctx.auth.userId,
+            },
+            select: {
+              id: true,
+              favoriteProjects: {
+                select: { id: true }, // OPTIMIZED: Only need IDs
+              },
+            },
+          }),
+          ctx.db.vcGroup.findUnique({
+            where: {
+              userId: ctx.auth.userId,
+            },
+            select: {
+              id: true,
+              favoriteProjects: {
+                select: { id: true }, // OPTIMIZED: Only need IDs
+              },
+            },
+          }),
+        ]);
+      }
 
       where.visibility = ProjectVisibility.PUBLIC;
       where.status = ProjectStatus.ACTIVE;

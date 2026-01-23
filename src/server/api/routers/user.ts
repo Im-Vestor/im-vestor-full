@@ -14,68 +14,144 @@ import {
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: {
-        id: ctx.auth.userId,
-      },
-      include: {
-        entrepreneur: true,
-        investor: true,
-        partner: true,
-        incubator: true,
-        vcGroup: true,
-        referralsAsReferred: {
-          include: {
-            referrer: {
-              include: {
-                entrepreneur: true,
-                investor: true,
-                partner: true,
-                incubator: true,
-                vcGroup: true,
-              },
-            },
-          },
-          take: 1, // Only need the first referral (most recent)
-          orderBy: {
-            joinedAt: 'desc',
-          },
-        },
+    // OPTIMIZED V3: Parallel queries - minimize latency impact
+    // With 350ms network latency, running in parallel is faster than sequential
+
+    // Fetch base user first (fast query)
+    const baseUser = await ctx.db.user.findUnique({
+      where: { id: ctx.auth.userId },
+      select: {
+        id: true,
+        email: true,
+        imageUrl: true,
+        referralCode: true,
+        userType: true,
+        availablePokes: true,
+        stripeCustomerId: true,
+        availableBoosts: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
-    const whereClause = {
-      OR: [
-        {
-          investor: {
-            userId: ctx.auth.userId,
+    if (!baseUser) {
+      throw new Error('User not found');
+    }
+
+    // Build parallel queries based on userType
+    const queries: Promise<any>[] = [];
+
+    // Profile query (only for the specific type)
+    let profilePromise: Promise<any> | null = null;
+    switch (baseUser.userType) {
+      case 'ENTREPRENEUR':
+        profilePromise = ctx.db.entrepreneur.findUnique({
+          where: { userId: ctx.auth.userId },
+        });
+        break;
+      case 'INVESTOR':
+        profilePromise = ctx.db.investor.findUnique({
+          where: { userId: ctx.auth.userId },
+        });
+        break;
+      case 'PARTNER':
+        profilePromise = ctx.db.partner.findUnique({
+          where: { userId: ctx.auth.userId },
+        });
+        break;
+      case 'INCUBATOR':
+        profilePromise = ctx.db.incubator.findUnique({
+          where: { userId: ctx.auth.userId },
+        });
+        break;
+      case 'VC_GROUP':
+        profilePromise = ctx.db.vcGroup.findUnique({
+          where: { userId: ctx.auth.userId },
+        });
+        break;
+    }
+
+    // Referrals query (minimal)
+    const referralsPromise = ctx.db.referral.findFirst({
+      where: { referredId: ctx.auth.userId },
+      select: {
+        id: true,
+        name: true,
+        joinedAt: true,
+        referrer: {
+          select: {
+            id: true,
+            email: true,
+            userType: true,
+            entrepreneur: { select: { firstName: true, lastName: true } },
+            investor: { select: { firstName: true, lastName: true } },
+            partner: { select: { firstName: true, lastName: true } },
+            incubator: { select: { name: true } },
+            vcGroup: { select: { name: true } },
           },
         },
-        {
+      },
+      orderBy: { joinedAt: 'desc' },
+    });
+
+    // Negotiations query (only if needed)
+    let negotiationsPromise: Promise<any> | null = null;
+    if (baseUser.userType === 'ENTREPRENEUR' || baseUser.userType === 'INVESTOR') {
+      const negotiationWhere: any = {};
+
+      if (baseUser.userType === 'ENTREPRENEUR') {
+        negotiationWhere.project = {
+          Entrepreneur: { userId: ctx.auth.userId },
+        };
+        negotiationWhere.entrepreneurActionNeeded = true;
+      } else {
+        negotiationWhere.investor = { userId: ctx.auth.userId };
+        negotiationWhere.investorActionNeeded = true;
+      }
+
+      negotiationsPromise = ctx.db.negotiation.findMany({
+        where: negotiationWhere,
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          stage: true,
+          investorActionNeeded: true,
+          entrepreneurActionNeeded: true,
+          investorAgreedToGoToNextStage: true,
+          entrepreneurAgreedToGoToNextStage: true,
           project: {
-            Entrepreneur: {
-              userId: ctx.auth.userId,
-            },
+            select: { id: true, name: true, logo: true, stage: true },
           },
         },
-      ],
+      });
+    }
+
+    // Execute all queries in parallel
+    const [profile, referral, negotiations] = await Promise.all([
+      profilePromise,
+      referralsPromise,
+      negotiationsPromise,
+    ]);
+
+    // Construct response matching original structure
+    const user: any = { ...baseUser };
+
+    // Add profile based on type
+    if (baseUser.userType === 'ENTREPRENEUR') user.entrepreneur = profile;
+    else if (baseUser.userType === 'INVESTOR') user.investor = profile;
+    else if (baseUser.userType === 'PARTNER') user.partner = profile;
+    else if (baseUser.userType === 'INCUBATOR') user.incubator = profile;
+    else if (baseUser.userType === 'VC_GROUP') user.vcGroup = profile;
+
+    // Add referrals
+    user.referralsAsReferred = referral ? [referral] : [];
+
+    return {
+      ...user,
+      openNegotiations: negotiations || [],
     };
-
-    // check is user have an open negotiation
-    const negotiationWhereClause = {
-      ...whereClause,
-      ...(user?.userType === 'ENTREPRENEUR' && { entrepreneurActionNeeded: true }),
-      ...(user?.userType === 'INVESTOR' && { investorActionNeeded: true }),
-    };
-
-    const openNegotiations = await ctx.db.negotiation.findMany({
-      where: negotiationWhereClause,
-      include: {
-        project: true,
-      },
-    });
-
-    return { ...user, openNegotiations };
   }),
 
   getUserById: protectedProcedure
