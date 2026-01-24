@@ -1,12 +1,12 @@
-import { ArrowLeft, Loader2, UserPlus, UserRound } from 'lucide-react';
+import { ArrowLeft, Loader2, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { toast } from 'sonner';
+
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
-import { type ConnectionResponse } from '~/server/api/routers/connection';
+import type { ConnectionResponse } from '~/server/api/routers/connection';
 import { api } from '~/utils/api';
 
 export default function Connections() {
@@ -68,8 +68,6 @@ export default function Connections() {
 }
 
 function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
-  const utils = api.useUtils();
-
   const user = connection.user;
   const userType = user.userType;
   const firstName =
@@ -77,20 +75,9 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
   const lastName =
     user.entrepreneur?.lastName ?? user.investor?.lastName ?? user.partner?.lastName ?? '';
 
-  const connectMutation = api.connection.connect.useMutation({
-    onSuccess: data => {
-      void utils.connection.getMyConnections.invalidate();
-      toast.success(
-        `${data.connected ? 'Connected with' : 'Disconnected from'} ${firstName} ${lastName}!`
-      );
-    },
-    onError: () => {
-      toast.error('Failed to update connection status.');
-    },
-  });
-
+  const userId = user.entrepreneur?.id || user.investor?.id;
   return (
-    <Link href={`/${userType.toLowerCase()}/${user.id}`}>
+    <Link href={`/${userType.toLowerCase()}/${userId}`}>
       <div
         key={connection.connection.id}
         className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
@@ -124,25 +111,10 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
                   )}
                 </div>
                 <p className="text-white/70">
-                  {connection.type === 'following' ? 'You follow them' : 'Follow you'} since{' '}
+                  Connected since &nbsp;
                   {new Date(connection.connection.createdAt).toISOString().split('T')[0]}
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-col">
-              <Button
-                onClick={e => {
-                  e.preventDefault();
-                  connectMutation.mutate({ userId: user.id });
-                }}
-                className="gap-2 self-start md:self-auto"
-                size="sm"
-                variant="outline"
-              >
-                <UserPlus className="size-4" strokeWidth={2.5} />
-                <span>{connection.type === 'following' ? 'Unfollow' : 'Follow'}</span>
-              </Button>
             </div>
           </div>
         </div>

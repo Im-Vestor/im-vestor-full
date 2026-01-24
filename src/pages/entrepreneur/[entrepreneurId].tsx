@@ -138,7 +138,7 @@ export default function EntrepreneurDetails() {
                 <Button
                   onClick={handleConnectClick}
                   variant="secondary"
-                  disabled={connectMutation.isPending}
+                  disabled={isConnected || connectMutation.isPending}
                   className="mt-4 sm:mt-0"
                 >
                   {isConnected ? (

@@ -117,7 +117,6 @@ export const connectionRouter = createTRPCRouter({
   connect: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if connection already exists
       const existingConnection = await ctx.db.connection.findUnique({
         where: {
           followerId_followingId: {
@@ -128,18 +127,8 @@ export const connectionRouter = createTRPCRouter({
       });
 
       if (existingConnection) {
-        // Connection already exists, so we remove it (unfollow)
-        await ctx.db.connection.delete({
-          where: {
-            followerId_followingId: {
-              followerId: ctx.auth.userId,
-              followingId: input.userId,
-            },
-          },
-        });
-        return { connected: false };
+        return { connected: true };
       } else {
-        // Create new connection (follow)
         await ctx.db.connection.create({
           data: {
             followerId: ctx.auth.userId,

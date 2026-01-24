@@ -220,9 +220,30 @@ export default function CompanyDetails() {
     },
   });
 
+  const connectMutation = api.connection.connect.useMutation({
+    onSuccess: () => {
+      toast.success(
+        `Connected with ${project?.Entrepreneur?.firstName} ${project?.Entrepreneur?.lastName}!`
+      );
+      setShowWebsiteModal(false);
+    },
+    onError: () => {
+      toast.error('Failed to update connection status.');
+    },
+  });
+
   const handleFavoriteClick = () => {
     if (projectId) {
       favoriteOrUnfavoriteMutation.mutate({ projectId: projectId as string });
+    }
+  };
+
+  const handleConnectClick = () => {
+    if (project?.Entrepreneur?.userId) {
+      connectMutation.mutate({ userId: project?.Entrepreneur?.userId });
+    }
+    if (project?.website) {
+      window.open(project.website, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -342,6 +363,7 @@ export default function CompanyDetails() {
                   <h1 className="text-2xl font-semibold sm:text-3xl">{project.name}</h1>
                   {(isInvestor || isVc) && (
                     <button
+                      type="button"
                       onClick={handleFavoriteClick}
                       className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors duration-200"
                       aria-label={
@@ -370,50 +392,43 @@ export default function CompanyDetails() {
                     <span>Location not specified</span>
                   )}
                   <span className="mx-2">•</span>
-                  <div className="flex items-center gap-1.5">
-                    <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <Dialog open={showWebsiteModal} onOpenChange={setShowWebsiteModal}>
-                      <DialogTrigger asChild>
-                        <Link
-                          href={project.website ?? ''}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-white/70 hover:underline"
-                          onClick={e => {
-                            e.preventDefault();
-                            setShowWebsiteModal(true);
-                          }}
-                        >
-                          Click to show website
-                        </Link>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>{t('websiteWarningTitle')}</DialogTitle>
-                          <DialogDescription>{t('websiteWarningDescription')}</DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowWebsiteModal(false)}
-                          >
-                            {t('cancel')}
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              if (project.website) {
-                                window.open(project.website, '_blank', 'noopener,noreferrer');
-                              }
-                              setShowWebsiteModal(false);
-                            }}
-                          >
-                            {t('continue')}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  <span className="mx-2">•</span>
+
+                  {!isProjectOwner && (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <Dialog open={showWebsiteModal} onOpenChange={setShowWebsiteModal}>
+                          <DialogTrigger asChild>
+                            <Link
+                              href={project.website ?? ''}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-white/70 hover:underline"
+                              onClick={e => {
+                                e.preventDefault();
+                                setShowWebsiteModal(true);
+                              }}
+                            >
+                              Click to show website
+                            </Link>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>{t('websiteWarningTitle')}</DialogTitle>
+                              <DialogDescription>
+                                {t('websiteWarningDescription')}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button onClick={handleConnectClick}>{t('understood')}</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                      <span className="mx-2">•</span>
+                    </>
+                  )}
+
                   <span className="w-fit rounded-full bg-white/10 border border-white/10 px-2 py-0.5 text-sm text-primary sm:px-6">
                     {project.sector?.name ?? 'Uncategorized'}
                   </span>
@@ -522,7 +537,7 @@ export default function CompanyDetails() {
                                     className={cn(
                                       'h-9',
                                       time === hour &&
-                                      'bg-primary text-primary-foreground opacity-100'
+                                        'bg-primary text-primary-foreground opacity-100'
                                     )}
                                     onClick={() => setTime(hour)}
                                   >
@@ -556,7 +571,7 @@ export default function CompanyDetails() {
                               }
                             >
                               {schedulePitchMeetingMutation.isPending ||
-                                scheduleOtherStageMeetingMutation.isPending ? (
+                              scheduleOtherStageMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
