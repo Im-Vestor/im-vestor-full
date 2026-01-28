@@ -999,8 +999,8 @@ export default function Home() {
                                 key={partner.id}
                                 onClick={handleClick}
                                 className={`flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${marqueeUrl
-                                    ? 'hover:bg-white/10 cursor-pointer'
-                                    : 'hover:bg-white/10'
+                                  ? 'hover:bg-white/10 cursor-pointer'
+                                  : 'hover:bg-white/10'
                                   }`}
                               >
                                 {partner.companyLogoUrl ? (

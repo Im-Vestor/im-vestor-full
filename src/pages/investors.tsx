@@ -4,8 +4,10 @@ import {
   type Investor,
   type State,
   type User,
+  type UserType,
   type VcGroup,
 } from '@prisma/client';
+import { useUser } from '@clerk/nextjs';
 import { Building2, Loader2, SearchIcon, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -42,6 +44,10 @@ type UserWithRelations = User & {
 };
 
 export default function Investors() {
+  const { user, isLoaded } = useUser();
+  const userType = user?.publicMetadata.userType as UserType;
+  const isEntrepreneur = userType === 'ENTREPRENEUR';
+
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');

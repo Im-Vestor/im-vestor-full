@@ -63,7 +63,8 @@ export const investorRouter = createTRPCRouter({
       };
     }
 
-    const [negotiations, favoriteProjects, investedProjects] = await Promise.all([
+    // Fetch negotiations and investor data in parallel
+    const [negotiations, investorWithProjects] = await Promise.all([
       ctx.db.negotiation.findMany({
         where: { investorId: investor.id },
         include: {
@@ -93,78 +94,64 @@ export const investorRouter = createTRPCRouter({
           },
         },
       }),
-      ctx.db.project.findMany({
-        where: {
-          favoriteInvestors: {
-            some: {
-              id: investor.id,
+      ctx.db.investor.findUnique({
+        where: { id: investor.id },
+        select: {
+          favoriteProjects: {
+            include: {
+              Entrepreneur: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              sector: true,
+              country: true,
+              state: true,
+              _count: {
+                select: {
+                  favoriteInvestors: true,
+                  favoriteVcGroups: true,
+                },
+              },
             },
           },
-        },
-        include: {
-          Entrepreneur: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          sector: true,
-          country: true,
-          state: true,
-          _count: {
-            select: {
-              favoriteInvestors: true,
-              favoriteVcGroups: true,
-            },
-          },
-        },
-      }),
-      ctx.db.project.findMany({
-        where: {
-          investedInvestors: {
-            some: {
-              id: investor.id,
-            },
-          },
-        },
-        include: {
-          Entrepreneur: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          sector: true,
-          country: true,
-          state: true,
-          _count: {
-            select: {
-              favoriteInvestors: true,
-              favoriteVcGroups: true,
+          investedProjects: {
+            include: {
+              Entrepreneur: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              sector: true,
+              country: true,
+              state: true,
+              _count: {
+                select: {
+                  favoriteInvestors: true,
+                  favoriteVcGroups: true,
+                },
+              },
             },
           },
         },
       }),
     ]);
 
+    // Helper function to add likesCount to project
+    const addLikesCount = (project: any) => ({
+      ...project,
+      likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+    });
+
     return {
       negotiations: negotiations.map(negotiation => ({
         ...negotiation,
-        project: {
-          ...negotiation.project,
-          likesCount:
-            negotiation.project._count.favoriteInvestors +
-            negotiation.project._count.favoriteVcGroups,
-        },
+        project: addLikesCount(negotiation.project),
       })),
-      favoriteProjects: favoriteProjects.map(project => ({
-        ...project,
-        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
-      })),
-      investedProjects: investedProjects.map(project => ({
-        ...project,
-        likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
-      })),
+      favoriteProjects: (investorWithProjects?.favoriteProjects ?? []).map(addLikesCount),
+      investedProjects: (investorWithProjects?.investedProjects ?? []).map(addLikesCount),
     };
   }),
   getByUserIdForAdmin: protectedProcedure

@@ -57,6 +57,9 @@ model Referral {
   referredId String
   referred   User     @relation("ReferredToUser", fields: [referredId], references: [id])
   referrer   User     @relation("ReferrerToUser", fields: [referrerId], references: [id])
+
+  @@index([referrerId])
+  @@index([referredId])
 }
 
 model User {
@@ -244,6 +247,10 @@ model Meeting {
   incubators     Incubator[]   @relation("MeetingIncubators")
   investors      Investor[]    @relation("MeetingInvestors")
   vcGroups       VcGroup[]     @relation("MeetingVcGroups")
+
+  @@index([entrepreneurId])
+  @@index([negotiationId])
+  @@index([startDate])
 }
 
 model Entrepreneur {
@@ -339,6 +346,9 @@ model Project {
   favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
   investedInvestors         Investor[]              @relation("InvestedInvestors")
   investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
+
+  @@index([sectorId])
+  @@index([visibility, status, boostedUntil, createdAt])
 }
 
 model IncubatorEntrepreneur {
@@ -371,6 +381,11 @@ model Negotiation {
   investor                          Investor?        @relation(fields: [investorId], references: [id])
   project                           Project          @relation(fields: [projectId], references: [id])
   VcGroup                           VcGroup?         @relation(fields: [vcGroupId], references: [id])
+
+  @@index([investorId])
+  @@index([projectId])
+  @@index([vcGroupId])
+  @@index([stage])
 }
 
 model KnowYourNumbers {
@@ -405,6 +420,11 @@ model ProjectView {
   investor   Investor? @relation(fields: [investorId], references: [id])
   project    Project   @relation(fields: [projectId], references: [id])
   VcGroup    VcGroup?  @relation(fields: [vcGroupId], references: [id])
+
+  @@index([projectId])
+  @@index([investorId])
+  @@index([vcGroupId])
+  @@index([createdAt])
 }
 
 model File {
@@ -426,6 +446,8 @@ model Connection {
   following   User     @relation("Following", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Notification {
@@ -436,6 +458,11 @@ model Notification {
   userId     String
   investorId String?
   user       User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([userId, read])
 }
 
 model SupportTicket {

@@ -199,6 +199,7 @@ export const newsRouter = createTRPCRouter({
     .input(
       z.object({
         cursor: z.string().optional(),
+        limit: z.number().min(1).max(100).default(20),
         userType: z.enum(['ENTREPRENEUR', 'INVESTOR', 'PARTNER', 'VC_GROUP', 'INCUBATOR', 'ADMIN']).optional(),
       })
     )
@@ -307,10 +308,30 @@ export const newsRouter = createTRPCRouter({
 
         console.log('Total combined items:', allItems.length);
 
+        // Implement cursor-based pagination
+        let startIndex = 0;
+        if (input.cursor) {
+          // Find the index of the item with the cursor timestamp
+          startIndex = allItems.findIndex(item => {
+            const itemTime = 'created_time' in item ? item.created_time : '';
+            return itemTime === input.cursor;
+          });
+          // Start from the next item after the cursor
+          startIndex = startIndex >= 0 ? startIndex + 1 : 0;
+        }
+
+        const paginatedItems = allItems.slice(startIndex, startIndex + input.limit);
+        const hasMore = startIndex + input.limit < allItems.length;
+        const nextCursor = hasMore && paginatedItems.length > 0
+          ? ('created_time' in paginatedItems[paginatedItems.length - 1]
+              ? paginatedItems[paginatedItems.length - 1].created_time
+              : undefined)
+          : undefined;
+
         return {
-          blocks: allItems,
-          hasMore: false, // We're fetching all posts, so no pagination needed for now
-          nextCursor: undefined,
+          blocks: paginatedItems,
+          hasMore,
+          nextCursor,
           userType, // Return the user type for reference
           sectionTitle, // Return the appropriate section title
         };
