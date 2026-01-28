@@ -18,6 +18,7 @@ import {
   Users2,
   Wallet,
   Download,
+  ImageIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useRef } from 'react';
@@ -77,7 +78,7 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
     const svgData = new XMLSerializer().serializeToString(svgElement);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const img = new Image();
+    const img = new window.Image();
 
     img.onload = () => {
       // Set canvas size with padding
@@ -104,6 +105,64 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
+  const handleDownloadPromotionalImage = () => {
+    if (!qrCodeRef.current || !userData?.referralCode) return;
+
+    const svgElement = qrCodeRef.current.querySelector('svg');
+    if (!svgElement) return;
+
+    // Load the base promotional image
+    const baseImage = new window.Image();
+    baseImage.crossOrigin = 'anonymous';
+
+    baseImage.onload = () => {
+      // Convert QR code SVG to image
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const qrImage = new window.Image();
+
+      qrImage.onload = () => {
+        // Create canvas with base image dimensions
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        canvas.width = baseImage.width;
+        canvas.height = baseImage.height;
+
+        // Draw base image
+        ctx.drawImage(baseImage, 0, 0);
+
+        // Calculate QR code position (centered in the white space area)
+        // Based on the promotional image layout:
+        // The white space is approximately centered horizontally
+        // and positioned at about 63.5% from the top
+        const qrSize = 320; // Increased size to fill the box
+        const qrX = (canvas.width - qrSize) / 2;
+        const qrY = canvas.height * 0.650; // Moved down to fit in the box
+
+        // Draw QR code
+        ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+
+        // Download as PNG
+        const link = document.createElement('a');
+        link.download = `imvestor-partner-promo-${userData.referralCode}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        toast.success('Promotional image downloaded!');
+      };
+
+      qrImage.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    };
+
+    baseImage.onerror = () => {
+      toast.error('Failed to load promotional image');
+    };
+
+    baseImage.src = '/images/partner-promo.png';
   };
 
   if (isLoading) {
@@ -307,14 +366,24 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                       level="M"
                     />
                   </div>
-                  <Button
-                    onClick={handleDownloadQRCode}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download QR Code
-                  </Button>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Button
+                      onClick={handleDownloadQRCode}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download QR Code
+                    </Button>
+                    <Button
+                      onClick={handleDownloadPromotionalImage}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      Download Flyer
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -347,9 +416,8 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${
-                              ref.status === 'ACTIVE' ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${ref.status === 'ACTIVE' ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'
+                              }`}>
                               {ref.status}
                             </span>
                           </td>

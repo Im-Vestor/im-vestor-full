@@ -1,6 +1,6 @@
 import { clerkClient } from '@clerk/nextjs/server';
 import { TRPCError } from '@trpc/server';
-import { UserType, Currency, UserStatus } from '@prisma/client';
+import { UserType, Currency, UserStatus, type Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
@@ -201,7 +201,8 @@ export const investorRouter = createTRPCRouter({
   getInvestorsAndVcGroupsRelatedToEntrepreneur: protectedProcedure
     .input(
       z.object({
-        page: z.number().optional(),
+        cursor: z.number().nullish(),
+        limit: z.number().min(1).max(100).nullish(),
         searchQuery: z.string().optional(),
         minInvestment: z.number().optional(),
         maxInvestment: z.number().optional(),
@@ -211,32 +212,78 @@ export const investorRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { page, searchQuery, minInvestment, maxInvestment, areaIds, countryId, stateId } =
-        input;
+      const { minInvestment, maxInvestment, areaIds, countryId, stateId } = input;
+      const limit = input.limit ?? 10;
+      const page = input.cursor ?? 0;
+
+      // Trim and normalize search query
+      const searchQuery = input.searchQuery?.trim() || '';
+      const searchParts = searchQuery.split(/\s+/).filter(part => part.length > 0);
+
+      // Build investor search conditions with support for full name search
+      const buildInvestorSearchConditions = (): Prisma.InvestorWhereInput['OR'] => {
+        if (!searchQuery) return undefined;
+
+        const conditions: Prisma.InvestorWhereInput[] = [
+          // Match firstName or lastName containing the full query
+          { firstName: { contains: searchQuery, mode: 'insensitive' } },
+          { lastName: { contains: searchQuery, mode: 'insensitive' } },
+        ];
+
+        // If query has multiple parts, also try matching "firstName lastName" pattern
+        if (searchParts.length >= 2) {
+          conditions.push({
+            AND: [
+              { firstName: { startsWith: searchParts[0], mode: 'insensitive' } },
+              { lastName: { startsWith: searchParts[searchParts.length - 1], mode: 'insensitive' } },
+            ],
+          });
+        }
+
+        return conditions;
+      };
+
+      // Investment filter uses OVERLAP logic:
+      // An investor's range [investmentMinValue, investmentMaxValue] overlaps with filter range [minInvestment, maxInvestment]
+      // if: investmentMaxValue >= minInvestment AND investmentMinValue <= maxInvestment
+      const investorWhere: Prisma.InvestorWhereInput = {
+        ...(searchQuery ? { OR: buildInvestorSearchConditions() } : {}),
+        // Overlap logic: investor's max must be >= filter min (if filter min defined)
+        ...(minInvestment ? { investmentMaxValue: { gte: minInvestment } } : {}),
+        // Overlap logic: investor's min must be <= filter max (if filter max defined)
+        ...(maxInvestment ? { investmentMinValue: { lte: maxInvestment } } : {}),
+        ...(areaIds && areaIds.length > 0
+          ? { areas: { some: { id: { in: areaIds } } } }
+          : {}),
+        ...(countryId ? { countryId: countryId } : {}),
+        ...(stateId ? { stateId: stateId } : {}),
+      };
+
+      // For VcGroup, averageInvestmentSize is a single value, so we check if it falls within the range
+      const vcGroupWhere: Prisma.VcGroupWhereInput = {
+        ...(searchQuery
+          ? {
+            OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
+          }
+          : {}),
+        ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
+        ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
+        ...(areaIds && areaIds.length > 0
+          ? { interestedAreas: { some: { id: { in: areaIds } } } }
+          : {}),
+        ...(countryId ? { countryId: countryId } : {}),
+        ...(stateId ? { stateId: stateId } : {}),
+      };
 
       const users = await ctx.db.user.findMany({
         where: {
-          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
+          OR: [
+            { userType: UserType.INVESTOR, investor: investorWhere },
+            { userType: UserType.VC_GROUP, vcGroup: vcGroupWhere },
+          ],
         },
         include: {
           investor: {
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [
-                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                  ],
-                }
-                : {}),
-              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { areas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
             include: {
               state: true,
               country: true,
@@ -244,20 +291,6 @@ export const investorRouter = createTRPCRouter({
             },
           },
           vcGroup: {
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                }
-                : {}),
-              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { interestedAreas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
             include: {
               state: true,
               country: true,
@@ -265,60 +298,17 @@ export const investorRouter = createTRPCRouter({
             },
           },
         },
-        skip: page ? page * 10 : 0,
-        take: 10,
+        skip: page * limit,
+        take: limit + 1,
       });
 
-      const totalUsers = await ctx.db.user.findMany({
-        where: {
-          OR: [{ userType: UserType.INVESTOR }, { userType: UserType.VC_GROUP }],
-        },
-        include: {
-          investor: {
-            select: {
-              id: true,
-            },
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [
-                    { firstName: { contains: searchQuery, mode: 'insensitive' } },
-                    { lastName: { contains: searchQuery, mode: 'insensitive' } },
-                  ],
-                }
-                : {}),
-              ...(minInvestment ? { investmentMinValue: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { investmentMaxValue: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { areas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-          },
-          vcGroup: {
-            select: {
-              id: true,
-            },
-            where: {
-              ...(searchQuery
-                ? {
-                  OR: [{ name: { contains: searchQuery, mode: 'insensitive' } }],
-                }
-                : {}),
-              ...(minInvestment ? { averageInvestmentSize: { gte: minInvestment } } : {}),
-              ...(maxInvestment ? { averageInvestmentSize: { lte: maxInvestment } } : {}),
-              ...(areaIds && areaIds.length > 0
-                ? { interestedAreas: { some: { id: { in: areaIds } } } }
-                : {}),
-              ...(countryId ? { countryId: countryId } : {}),
-              ...(stateId ? { stateId: stateId } : {}),
-            },
-          },
-        },
-      });
+      let nextCursor: number | undefined = undefined;
+      if (users.length > limit) {
+        users.pop();
+        nextCursor = page + 1;
+      }
 
-      return { users, total: totalUsers.length };
+      return { users, nextCursor };
     }),
   create: publicProcedure
     .input(

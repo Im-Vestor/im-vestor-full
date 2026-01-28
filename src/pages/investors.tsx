@@ -9,12 +9,13 @@ import {
 import { Building2, Loader2, SearchIcon, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Header } from '~/components/header';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
+import { useDebounce } from '~/hooks/use-debounce';
 import { api } from '~/utils/api';
 
 type InvestmentRange = {
@@ -44,19 +45,25 @@ export default function Investors() {
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(0);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   // Filter states
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
 
   // Calculate combined investment range from selected ranges
+  // Uses union logic: if any range has undefined min/max, the combined range inherits that
   const getInvestmentRange = () => {
     if (selectedInvestmentRanges.length === 0) return { min: undefined, max: undefined };
 
     const selectedRanges = INVESTMENT_RANGES.filter(range =>
       selectedInvestmentRanges.includes(range.id)
     );
+
+    // If any selected range has no minimum (e.g., "Less than $100k"), global min is undefined
+    const hasOpenMin = selectedRanges.some(range => range.min === undefined);
+    // If any selected range has no maximum (e.g., "$5M+"), global max is undefined
+    const hasOpenMax = selectedRanges.some(range => range.max === undefined);
 
     const mins = selectedRanges
       .map(range => range.min)
@@ -66,8 +73,8 @@ export default function Investors() {
       .filter((max): max is number => max !== undefined);
 
     return {
-      min: mins.length > 0 ? Math.min(...mins) : undefined,
-      max: maxs.length > 0 ? Math.max(...maxs) : undefined,
+      min: hasOpenMin ? undefined : (mins.length > 0 ? Math.min(...mins) : undefined),
+      max: hasOpenMax ? undefined : (maxs.length > 0 ? Math.max(...maxs) : undefined),
     };
   };
 
@@ -78,12 +85,39 @@ export default function Investors() {
     areaIds: selectedAreas,
     minInvestment: investmentRange.min,
     maxInvestment: investmentRange.max,
-    searchQuery: searchQuery,
-    page: page,
+    searchQuery: debouncedSearchQuery,
   };
 
-  const { data, isLoading } =
-    api.investor.getInvestorsAndVcGroupsRelatedToEntrepreneur.useQuery(filterParams);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    api.investor.getInvestorsAndVcGroupsRelatedToEntrepreneur.useInfiniteQuery(
+      {
+        ...filterParams,
+        limit: 10,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
+
+  const allUsers = (data?.pages.flatMap((page) => page.users) ?? []) as UserWithRelations[];
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const visibleAreas = areas?.slice(0, visibleAreasCount);
 
@@ -182,8 +216,8 @@ export default function Investors() {
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
-                {data?.users && data.users.length > 0 ? (
-                  data.users.map((investorOrVcGroup: UserWithRelations) =>
+                {allUsers.length > 0 ? (
+                  allUsers.map((investorOrVcGroup) =>
                     investorOrVcGroup.investor ? (
                       <InvestorCard
                         key={investorOrVcGroup.id}
@@ -202,23 +236,19 @@ export default function Investors() {
                     No investors found matching your criteria.
                   </p>
                 )}
+
+                {/* Sentinel and Loading Spinner */}
+                <div ref={loadMoreRef} className="h-10 w-full flex items-center justify-center">
+                  {isFetchingNextPage && <Loader2 className="size-6 animate-spin text-white" />}
+                </div>
+
               </div>
               <div className="mt-8 flex items-center justify-end gap-2">
                 <p className="text-sm text-white/50">
                   {isLoading
                     ? 'Loading investors...'
-                    : `Showing ${data?.users?.length ?? 0} of ${data?.total ?? 0} investors`}
+                    : `Showing ${allUsers.length} investors`}
                 </p>
-                <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page === 0}>
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(page + 1)}
-                  disabled={(data?.total ?? 0) - (page + 1) * 10 <= 0}
-                >
-                  Next
-                </Button>
               </div>
             </div>
           </div>

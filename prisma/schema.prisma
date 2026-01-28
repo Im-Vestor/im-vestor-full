@@ -3,10 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider         = "postgresql"
-  url              = env("DATABASE_URL")
-  directUrl        = env("DIRECT_URL")
-  shadowDatabaseUrl = null
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Country {
@@ -85,6 +84,8 @@ model User {
   supportTickets       SupportTicket[]
   supportTicketReplies SupportTicketReply[] @relation("AdminReplies")
   vcGroup              VcGroup?
+
+  @@index([userType])
 }
 
 model VcGroup {
@@ -121,6 +122,9 @@ model VcGroup {
   favoriteProjects      Project[]       @relation("FavoriteVcGroups")
   investedProjects      Project[]       @relation("InvestedVcGroups")
   meetings              Meeting[]       @relation("MeetingVcGroups")
+
+  @@index([name])
+  @@index([averageInvestmentSize])
 }
 
 model VcGroupMember {
@@ -220,6 +224,9 @@ model Investor {
   favoriteProjects   Project[]             @relation("FavoriteInvestors")
   investedProjects   Project[]             @relation("InvestedInvestors")
   meetings           Meeting[]             @relation("MeetingInvestors")
+
+  @@index([firstName, lastName])
+  @@index([investmentMinValue, investmentMaxValue])
 }
 
 model Meeting {
