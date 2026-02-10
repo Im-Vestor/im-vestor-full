@@ -3,6 +3,21 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '~/server/db';
 import { addDays } from 'date-fns';
+import { type Readable } from 'stream';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+async function buffer(readable: Readable) {
+  const chunks = [];
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
 
 const allowedEvents: Stripe.Event.Type[] = [
   'checkout.session.completed',
@@ -31,10 +46,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-05-28.basil',
+    apiVersion: '2025-05-28.basil' as any,
   });
 
-  const body = req.body as string;
   const signature = req.headers['stripe-signature'] as string;
 
   if (!signature) {
@@ -42,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
+    const buf = await buffer(req);
+    const event = stripe.webhooks.constructEvent(buf, signature, env.STRIPE_WEBHOOK_SECRET);
 
     // Process event asynchronously
     void processEvent(event);
@@ -72,7 +87,7 @@ async function processEvent(event: Stripe.Event) {
         where: { id: userId },
         data: {
           availablePokes: {
-            increment: 3,
+            increment: 2,
           },
         },
       });

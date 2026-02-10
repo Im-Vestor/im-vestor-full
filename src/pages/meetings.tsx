@@ -1,7 +1,7 @@
 import { useUser } from '@clerk/nextjs';
 import { UTCDate } from '@date-fns/utc';
 import { addHours, format, isAfter, isBefore, subMinutes } from 'date-fns';
-import { CalendarIcon, ClockIcon } from 'lucide-react';
+import { Building2, CalendarIcon, ClockIcon, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -167,16 +167,22 @@ export default function Meetings() {
                   <div className="rounded-xl border-2 border-white/10 bg-card p-6" key={meeting.id}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Image
-                          src={meeting.negotiation?.project?.logo ?? ''}
-                          alt="Company Logo"
-                          width={72}
-                          height={72}
-                          className="h-12 w-12 cursor-pointer rounded-md object-cover"
-                          onClick={() =>
+                        {meeting.negotiation?.project?.logo ? (
+                          <Image
+                            src={meeting.negotiation?.project?.logo}
+                            alt="Company Logo"
+                            width={72}
+                            height={72}
+                            className="h-12 w-12 cursor-pointer rounded-md object-cover"
+                            onClick={() =>
+                              router.push(`/projects/${meeting.negotiation?.project?.name}`)
+                            }
+                          />
+                        ) : (
+                          <Building2 className="h-10 w-10 text-white cursor-pointer" onClick={() =>
                             router.push(`/projects/${meeting.negotiation?.project?.name}`)
-                          }
-                        />
+                          } />
+                        )}
                         <div className="flex flex-col">
                           <p className="text-sm font-medium text-white">
                             {meeting.negotiation?.project?.name ?? ''}
@@ -222,13 +228,19 @@ export default function Meetings() {
                           <TooltipProvider key={investor.id}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Image
-                                  src={investor.user.imageUrl ?? ''}
-                                  alt="Investor Avatar"
-                                  width={24}
-                                  height={24}
-                                  className="rounded-full object-cover"
-                                />
+                                {
+                                  investor.user.imageUrl ? (
+                                    <Image
+                                      src={investor.user.imageUrl}
+                                      alt="Investor Avatar"
+                                      width={24}
+                                      height={24}
+                                      className="rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <User className="h-6 w-6 text-white border-2 border-white rounded-full" />
+                                  )
+                                }
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>
