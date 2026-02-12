@@ -26,7 +26,11 @@ const fadeIn = {
 
 export default function PartnersMarquee() {
   const t = useTranslation();
-  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
+  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery(undefined, {
+    staleTime: 15 * 60 * 1000, // 15 minutes - partners don't change often
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   return (
     <motion.div
