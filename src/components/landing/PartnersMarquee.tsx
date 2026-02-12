@@ -1,28 +1,7 @@
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Marquee } from '~/components/ui/marquee';
 import { useTranslation } from '~/hooks/use-translation';
 import { api } from '~/utils/api';
-
-const fadeIn = {
-  initial: {
-    opacity: 0,
-    filter: 'blur(8px)',
-    scale: 0.95,
-  },
-  animate: {
-    opacity: 1,
-    filter: 'blur(0px)',
-    scale: 1,
-    transition: {
-      duration: 1,
-      ease: [0.25, 0.1, 0.25, 1],
-      opacity: { duration: 0.6 },
-      filter: { duration: 0.8 },
-      scale: { duration: 0.8 },
-    },
-  },
-};
 
 export default function PartnersMarquee() {
   const t = useTranslation();
@@ -33,27 +12,17 @@ export default function PartnersMarquee() {
   });
 
   return (
-    <motion.div
-      variants={fadeIn}
-      initial="initial"
-      whileInView="animate"
-      viewport={{ once: true }}
-      transition={{ duration: 1, delay: 0.3 }}
-      className="relative w-full py-8 sm:py-12 md:py-16"
-    >
+    <div className="relative w-full py-8 sm:py-12 md:py-16 overflow-hidden">
       <div className="absolute inset-0" />
       <div className="relative z-10">
         <h2 className="font-['Segoe UI'] text-xl sm:text-3xl md:text-4xl lg:text-[66px] leading-[130%] md:leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent text-center mb-3 sm:mb-6 md:mb-12 px-6 sm:px-8">
           {t('trustedByPartners')}
         </h2>
-        <motion.p
-          variants={fadeIn}
-          className="mb-6 sm:mb-8 md:mb-16 text-center text-xs sm:text-sm md:text-base lg:text-lg text-white/60 max-w-xs sm:max-w-sm md:max-w-2xl mx-auto px-8 sm:px-6"
-        >
+        <p className="mb-6 sm:mb-8 md:mb-16 text-center text-xs sm:text-sm md:text-base lg:text-lg text-white/60 max-w-xs sm:max-w-sm md:max-w-2xl mx-auto px-8 sm:px-6">
           {t('partnersDescription')}
-        </motion.p>
+        </p>
 
-        <motion.div variants={fadeIn} className="w-full max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           <div className="relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
@@ -167,8 +136,8 @@ export default function PartnersMarquee() {
                   ))}
             </Marquee>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -561,6 +561,34 @@
   animation: marquee-vertical var(--duration) linear infinite;
 }
 
+/* Landing page animations */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes breathe-slow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0px 0px 0px rgba(255,255,255,0.2); }
+  50% { box-shadow: 0px 0px 20px rgba(255,255,255,0.5); }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-breathe-slow {
+  animation: breathe-slow 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 /* Toast positioning for mobile */
 @media (max-width: 768px) {
   [data-sonner-toaster] {
