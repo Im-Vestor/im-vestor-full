@@ -10,28 +10,38 @@ import {
   ShieldCheck,
   Zap,
   Play,
-  X,
   ArrowUpRight,
   LogIn,
   Flag,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSignIn, useUser } from '@clerk/nextjs';
-import { toast } from 'sonner';
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useTranslation } from '~/hooks/use-translation';
-import StarField from '~/components/ui/StarField';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
-import { Marquee } from '~/components/ui/marquee';
-import { api } from '~/utils/api';
 import { useRouter } from 'next/router';
-import { isProfileCompleted } from '~/utils/profile-completion';
-import { logger } from '~/utils/logger';
+
+const StarField = dynamic(() => import('~/components/ui/StarField'), {
+  ssr: false,
+  loading: () => <div className="relative w-full overflow-hidden bg-black min-h-[400px]" />,
+});
+
+const VideoModal = dynamic(() => import('~/components/landing/VideoModal'), {
+  ssr: false,
+});
+
+const LoginSection = dynamic(() => import('~/components/landing/LoginSection'), {
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />,
+});
+
+const PartnersMarquee = dynamic(() => import('~/components/landing/PartnersMarquee'), {
+  ssr: false,
+  loading: () => <div className="min-h-[300px]" />,
+});
 
 const fadeIn = {
   initial: {
@@ -65,7 +75,7 @@ const fadeInScale = {
     filter: 'blur(0px)',
     transition: {
       duration: 1.2,
-      ease: [0.34, 1.56, 0.64, 1], // Spring-like easing
+      ease: [0.34, 1.56, 0.64, 1],
       opacity: { duration: 0.8 },
       filter: { duration: 0.8 },
     },
@@ -124,53 +134,8 @@ const rotateIn = {
 
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isPending, setIsPending] = useState(false);
   const t = useTranslation();
-  const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
-  const hasRedirected = useRef(false);
-
-  const { isLoaded, signIn, setActive } = useSignIn();
-  const { user, isLoaded: isUserLoaded } = useUser();
-
-  // Fetch partners data for the marquee
-  const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery();
-  const { data: userData } = api.user.getUser.useQuery(undefined, {
-    enabled: isUserLoaded && !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
-  });
-
-  const handleLogin = async () => {
-    if (!isLoaded) return;
-
-    setIsPending(true);
-
-    try {
-      const signInAttempt = await signIn.create({
-        identifier: email,
-        password,
-      });
-
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId });
-        // We'll let the useEffect handle the redirect based on profile completion
-      } else {
-        logger.error('Sign in attempt incomplete:', signInAttempt);
-      }
-    } catch (err) {
-      if (isClerkAPIResponseError(err)) {
-        toast.error(err.errors[0]?.message ?? 'Failed to login. Please try again.');
-      } else {
-        toast.error('Failed to login. Please try again.');
-        logger.error('Login error:', err);
-      }
-    } finally {
-      setIsPending(false);
-    }
-  };
 
   useEffect(() => {
     if (isVideoPlaying) {
@@ -184,20 +149,6 @@ export default function Home() {
     };
   }, [isVideoPlaying]);
 
-  // Redirect logged-in users with completed profiles to dashboard
-  useEffect(() => {
-    // Prevent multiple redirects
-    if (hasRedirected.current) return;
-
-    if (isUserLoaded && user && userData) {
-      hasRedirected.current = true;
-      const profileCompleted = isProfileCompleted(userData);
-      if (profileCompleted) {
-        void router.push('/home');
-      }
-    }
-  }, [isUserLoaded, user, userData, router]);
-
   return (
     <div className="w-full">
       <div className="w-full fixed top-0 left-0 py-2 bg-card border-b border-white/10 z-50 backdrop-blur-sm">
@@ -207,20 +158,28 @@ export default function Home() {
         </div>
       </div>
       <main className="min-h-screen pt-32">
-        <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10]" />
+        <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10] hidden md:block" />
         <motion.header
           initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="m-6 flex justify-end gap-2 fixed top-10 sm:right-40 right-0 z-50"
+          className="my-3 md:m-6 flex justify-end gap-2 fixed top-6 md:top-10 md:right-2 bg-background/90 border md:border-none md:bg-transparent border-white/10 w-full sm:right-40 z-50 py-2 px-4 md:py-4 md:px-6"
         >
-          <LanguageSwitcher />
-          <Link href="/login">
-            <Button variant="outline" className="border-2 border-white/10">
-              <LogIn className="h-6 w-6" />
-              {t('signIn')}
-            </Button>
-          </Link>
+          <div className="flex items-center justify-between md:justify-end w-full">
+            <div className="flex items-center justify-start gap-2 md:hidden">
+              <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
+              <h1 className="text-xs font-bold text-white">Im-Vestor</h1>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <LanguageSwitcher />
+              <Link href="/login">
+                <Button variant="outline" className="opacity-100 border-2 border-white/15 hover:opacity-80">
+                  <LogIn className="h-6 w-6" />
+                  {t('signIn')}
+                </Button>
+              </Link>
+            </div>
+          </div>
         </motion.header>
 
         <motion.div
@@ -243,21 +202,21 @@ export default function Home() {
             <motion.h1
               variants={fadeIn}
               transition={{ delay: 1.2 }}
-              className="mt-16 px-4 font-['Segoe UI'] text-4xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
+              className="mt-8 md:mt-16 px-4 font-['Segoe UI'] text-3xl sm:text-5xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
             >
               {t('weMeanBusiness')}
             </motion.h1>
             <motion.span
               variants={fadeIn}
               transition={{ delay: 1.4 }}
-              className="mt-6 w-full md:w-2/3 font-['Segoe UI'] text-lg md:text-xl leading-[140%] text-white/50 font-light"
+              className="mt-4 md:mt-6 w-full md:w-2/3 px-4 font-['Segoe UI'] text-base md:text-xl leading-[140%] text-white/50 font-light"
             >
               {t('connectingEntrepreneursAndInvestors')}
             </motion.span>
             <motion.div variants={popUp} transition={{ delay: 1.6 }}>
               <Button
                 onClick={async () => await router.push('/sign-up')}
-                className="mt-16 rounded-full hover:opacity-75 hover:scale-x-105 transition-all duration-500"
+                className="mt-8 md:mt-16 rounded-full hover:opacity-75 hover:scale-x-105 transition-all duration-500"
               >
                 {t('getStarted')} <ArrowUpRight />
               </Button>
@@ -269,7 +228,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true, margin: '-100px' }}
-            className="my-32 w-full relative"
+            className="my-16 md:my-32 w-full relative"
           >
             <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent z-20 pointer-events-none" />
             <motion.div
@@ -340,66 +299,7 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            <AnimatePresence>
-              {isVideoPlaying && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    onClick={() => {
-                      if (videoRef.current) {
-                        videoRef.current.pause();
-                      }
-                      setIsVideoPlaying(false);
-                    }}
-                    className="fixed inset-0 z-50 backdrop-blur-sm bg-black/40"
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.75, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.75, y: 20 }}
-                    transition={{
-                      duration: 0.4,
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 25,
-                    }}
-                    className="fixed inset-4 z-50 m-auto max-h-[90vh] max-w-6xl rounded-2xl bg-background p-6 shadow-2xl"
-                  >
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.3, duration: 0.2 }}
-                      whileHover={{ scale: 1.1, rotate: 90 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.pause();
-                        }
-                        setIsVideoPlaying(false);
-                      }}
-                      className="absolute -right-3 -top-3 rounded-full bg-background p-2 text-white shadow-xl"
-                    >
-                      <X className="h-6 w-6" />
-                    </motion.button>
-                    <video
-                      ref={videoRef}
-                      className="h-full w-full rounded-lg"
-                      autoPlay
-                      controls
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <source
-                        src="https://r1pf0du9n17u37qf.public.blob.vercel-storage.com/Investor-LfT3nXCTFM9WBb33OA3Oyq4qfGQlto.mp4"
-                        type="video/mp4"
-                      />
-                    </video>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+            <VideoModal isOpen={isVideoPlaying} onClose={() => setIsVideoPlaying(false)} />
 
             <div className="absolute -top-20 left-1/2 h-[90%] w-[80%] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl opacity-30" />
           </motion.div>
@@ -409,7 +309,7 @@ export default function Home() {
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
-            className="py-24 w-full px-4 bg-gradient-to-b from-background to-black"
+            className="py-12 md:py-24 w-full px-4 bg-gradient-to-b from-background to-black"
           >
             <motion.h2
               variants={fadeInScale}
@@ -417,7 +317,7 @@ export default function Home() {
               whileInView="animate"
               viewport={{ once: true }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="mb-12 px-4 font-['Segoe UI'] text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
+              className="mb-8 md:mb-12 px-4 font-['Segoe UI'] text-3xl sm:text-5xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent"
             >
               {t('whyChooseImVestor')}{' '}
               <span className="bg-primary-gradient bg-clip-text text-transparent">Im-Vestor</span>
@@ -710,7 +610,7 @@ export default function Home() {
               >
                 <motion.h2
                   variants={fadeIn}
-                  className="mb-12 mx-4 font-['Segoe UI'] text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent md:mx-0"
+                  className="mb-8 md:mb-12 mx-4 font-['Segoe UI'] text-3xl sm:text-5xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent md:mx-0"
                 >
                   {t('businessRevolution')}
                 </motion.h2>
@@ -824,234 +724,11 @@ export default function Home() {
           </StarField>
 
           <StarField>
-            <motion.div
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              transition={{ delayChildren: 0.4, staggerChildren: 0.3 }}
-              className="mt-24 flex w-full flex-col justify-center gap-24 text-center md:flex-row md:text-start"
-            >
-              <motion.div
-                variants={fadeIn}
-                transition={{ duration: 1 }}
-                className="w-full md:w-[600px]"
-              >
-                <h2 className="font-['Segoe UI'] text-[66px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
-                  <span className="bg-primary-gradient bg-clip-text text-transparent">
-                    {t('joinUsNow').split(' ')[0]}
-                  </span>{' '}
-                  {t('joinUsNow').split(' ').slice(1).join(' ')}
-                </h2>
-                <p className="mt-8 max-w-96 text-2xl tracking-wider text-white/90">
-                  {t('receiveUpdates')}{' '}
-                  <span className="bg-primary-gradient bg-clip-text text-transparent">
-                    {t('exclusiveUpdates')}
-                  </span>{' '}
-                  {t('beNotified')}{' '}
-                  <span className="bg-primary-gradient bg-clip-text text-transparent">
-                    {t('specialGift')}
-                  </span>{' '}
-                  {t('forBeingFirst')} 🎁.
-                </p>
-              </motion.div>
-              <motion.div
-                variants={fadeIn}
-                transition={{ duration: 1 }}
-                className="w-full md:w-1/2"
-              >
-                <div className="flex flex-col items-center justify-center rounded-2xl border-[1px] border-white/10 bg-background/20 p-6 text-center backdrop-blur-sm h-full">
-                  <Image src={'/images/home-diamond.svg'} alt="Imvestor" width={32} height={180} />
-                  <h2 className="mt-4 bg-gradient-to-r from-[#BFBFC2] via-[#FDFDFD] to-[#BFBFC2] bg-clip-text text-2xl font-medium tracking-wide text-transparent">
-                    {t('takeYourSpecialGift').split(' ').slice(0, -1).join(' ')}{' '}
-                    <span className="bg-primary-gradient bg-clip-text text-transparent">
-                      {t('takeYourSpecialGift').split(' ').slice(-1)[0]}
-                    </span>
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-300">
-                    {t('dontHaveAccount')}{' '}
-                    <Link href="/sign-up" className="text-primary hover:opacity-70">
-                      {t('createOne')}
-                    </Link>
-                  </p>
-                  <Input
-                    className="mt-8"
-                    placeholder={t('enterYourEmail')}
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
-                  <Input
-                    className="mt-4"
-                    placeholder={t('password')}
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                  />
-                  <div className="mt-4 flex w-full items-center justify-between">
-                    <Link href="/reset-password" className="text-xs text-primary hover:opacity-70">
-                      {t('forgotPassword')}
-                    </Link>
-                    <Button onClick={handleLogin} disabled={isPending || !email || !password}>
-                      {isPending ? t('loggingIn') : t('login')} <ArrowRight />
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
+            <LoginSection />
           </StarField>
 
           <StarField>
-            <motion.div
-              variants={fadeIn}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="relative w-full py-16"
-            >
-              <div className="absolute inset-0" />
-              <div className="relative z-10">
-                <h2 className="font-['Segoe UI'] text-[66px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent text-center mb-12">
-                  {t('trustedByPartners')}
-                </h2>
-                <motion.p
-                  variants={fadeIn}
-                  className="mb-16 text-center text-lg text-white/60 max-w-2xl mx-auto px-4"
-                >
-                  {t('partnersDescription')}
-                </motion.p>
-
-                <motion.div variants={fadeIn} className="w-full max-w-7xl mx-auto px-4">
-                  {/* Marquee container with fade masks */}
-                  <div className="relative overflow-hidden">
-                    {/* Left fade mask */}
-                    <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-
-                    {/* Right fade mask */}
-                    <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-
-                    <Marquee className="py-8" pauseOnHover={true} repeat={6}>
-                      {isLoadingPartners
-                        ? // Loading skeleton
-                        Array.from({ length: 8 }).map((_, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
-                          >
-                            <div className="w-24 h-4 bg-white/20 rounded"></div>
-                          </div>
-                        ))
-                        : partners && partners.length >= 3
-                          ? // Real partner data
-                          partners.map(partner => {
-                            const getMarqueeUrl = () => {
-                              // If admin has set a custom URL, use it
-                              if (partner.marqueeLinkUrl) {
-                                const url = partner.marqueeLinkUrl.startsWith('http://') || partner.marqueeLinkUrl.startsWith('https://')
-                                  ? partner.marqueeLinkUrl
-                                  : `https://${partner.marqueeLinkUrl}`;
-                                return url;
-                              }
-
-                              // Otherwise, use the URL based on the selected type
-                              let url: string | null | undefined;
-                              switch (partner.marqueeLinkType) {
-                                case 'WEBSITE':
-                                  url = partner.website;
-                                  break;
-                                case 'FACEBOOK':
-                                  url = partner.facebook;
-                                  break;
-                                case 'INSTAGRAM':
-                                  url = partner.instagram;
-                                  break;
-                                case 'LINKEDIN':
-                                  url = partner.linkedinUrl;
-                                  break;
-                                case 'TWITTER':
-                                  url = partner.twitter;
-                                  break;
-                                default:
-                                  // Fallback to website if no type is selected
-                                  url = partner.website;
-                              }
-
-                              if (!url) return null;
-
-                              // Ensure URL has protocol
-                              return url.startsWith('http://') || url.startsWith('https://')
-                                ? url
-                                : `https://${url}`;
-                            };
-
-                            const handleClick = () => {
-                              const url = getMarqueeUrl();
-                              if (url) {
-                                window.open(url, '_blank', 'noopener,noreferrer');
-                              }
-                            };
-
-                            const marqueeUrl = getMarqueeUrl();
-
-                            return (
-                              <div
-                                key={partner.id}
-                                onClick={handleClick}
-                                className={`flex items-center justify-center w-40 h-20 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${marqueeUrl
-                                  ? 'hover:bg-white/10 cursor-pointer'
-                                  : 'hover:bg-white/10'
-                                  }`}
-                              >
-                                {partner.companyLogoUrl ? (
-                                  // Show company logo if available
-                                  <div className="relative w-32 h-12">
-                                    <Image
-                                      src={partner.companyLogoUrl}
-                                      alt={
-                                        partner.companyName ??
-                                        `${partner.firstName} ${partner.lastName}`
-                                      }
-                                      fill
-                                      className="object-contain"
-                                      sizes="128px"
-                                    />
-                                  </div>
-                                ) : (
-                                  // Fallback to company name
-                                  <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider text-center">
-                                    {partner.companyName ??
-                                      `${partner.firstName} ${partner.lastName}`}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })
-                          : // Fallback to default partners if no data
-                          [
-                            { name: 'SEQUOIA' },
-                            { name: 'ANDREESSEN' },
-                            { name: 'Y COMBINATOR' },
-                            { name: 'ACCEL' },
-                            { name: 'KLEINER PERKINS' },
-                            { name: 'GREYLOCK' },
-                            { name: 'INDEX VENTURES' },
-                            { name: 'FIRST ROUND' },
-                          ].map((partner, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-center w-40 h-20 mx-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300 group"
-                            >
-                              <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-sm tracking-wider">
-                                {partner.name}
-                              </div>
-                            </div>
-                          ))}
-                    </Marquee>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
+            <PartnersMarquee />
           </StarField>
 
           <StarField>
@@ -1061,7 +738,7 @@ export default function Home() {
               whileInView="animate"
               viewport={{ once: true }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="mx-auto mb-16 mt-32 w-full max-w-7xl px-6 md:px-12"
+              className="mx-auto mb-16 mt-16 md:mt-32 w-full max-w-7xl px-6 md:px-12"
             >
               <hr className="h-0.5 w-full bg-neutral-100 opacity-10" />
               <div className="my-8 flex w-full flex-col items-center gap-6 text-gray-500 md:flex-row">

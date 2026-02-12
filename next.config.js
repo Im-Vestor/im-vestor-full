@@ -21,6 +21,9 @@ const config = {
       },
     ],
   },
+  experimental: {
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
+  },
 };
 
 export default config;
