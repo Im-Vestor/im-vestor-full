@@ -4,7 +4,7 @@ import { Building2, Heart, SearchIcon, Calendar, MapPin, CircleUserRound, Zap, L
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Header } from '~/components/header';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
@@ -80,11 +80,6 @@ export default function Companies() {
     }
   }, [isLoaded, userType, router]);
 
-  // Don't render anything for entrepreneurs
-  if (isLoaded && userType === 'ENTREPRENEUR') {
-    return null;
-  }
-
   // Calculate combined investment range from selected ranges
   const getInvestmentRange = () => {
     if (selectedInvestmentRanges.length === 0) return { min: undefined, max: undefined };
@@ -124,10 +119,14 @@ export default function Companies() {
   };
 
   const { data: projects, isLoading: isLoadingProjects, isFetching } =
-    api.project.getAllWithFilters.useQuery(filterParams);
+    api.project.getAllWithFilters.useQuery(filterParams, {
+      enabled: !(isLoaded && userType === 'ENTREPRENEUR'),
+    });
 
   // Reset projects and page when filters change
   useEffect(() => {
+    // Only reset if we're not on the initial load or if filters actually changed
+    // This is a simplification, ideally we'd track previous filter state
     setAllProjects([]);
     setPage(0);
     setHasMore(true);
@@ -188,6 +187,11 @@ export default function Companies() {
       }
     };
   }, [hasMore, isFetching, isLoadingProjects]);
+
+  // Don't render anything for entrepreneurs
+  if (isLoaded && userType === 'ENTREPRENEUR') {
+    return null;
+  }
 
   const handleSectorChange = (sectorId: string, checked: boolean) => {
     if (checked) {

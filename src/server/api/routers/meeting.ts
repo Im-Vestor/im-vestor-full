@@ -1,4 +1,4 @@
-import { NegotiationStage, NotificationType, UserType } from '@prisma/client';
+import { NotificationType, UserType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { addDays } from 'date-fns';
 import { z } from 'zod';
@@ -135,7 +135,8 @@ export const meetingRouter = createTRPCRouter({
       await ctx.db.negotiation.update({
         where: { id: meeting?.negotiation?.id },
         data: {
-          stage: NegotiationStage.CANCELLED,
+          entrepreneurActionNeeded: false,
+          investorActionNeeded: false,
         },
       });
 

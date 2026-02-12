@@ -139,10 +139,21 @@ export const investorRouter = createTRPCRouter({
       }),
     ]);
 
+    type ProjectWithCounts = Prisma.ProjectGetPayload<{
+      include: {
+        Entrepreneur: { select: { firstName: true; lastName: true } };
+        sector: true;
+        country: true;
+        state: true;
+        _count: { select: { favoriteInvestors: true; favoriteVcGroups: true } };
+      };
+    }>;
+    type ProjectWithLikes = ProjectWithCounts & { likesCount: number };
+
     // Helper function to add likesCount to project
-    const addLikesCount = (project: any) => ({
+    const addLikesCount = (project: ProjectWithCounts): ProjectWithLikes => ({
       ...project,
-      likesCount: project._count.favoriteInvestors + project._count.favoriteVcGroups,
+      likesCount: (project._count?.favoriteInvestors ?? 0) + (project._count?.favoriteVcGroups ?? 0),
     });
 
     return {

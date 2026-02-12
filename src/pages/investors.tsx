@@ -14,7 +14,6 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Header } from '~/components/header';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
 import { useDebounce } from '~/hooks/use-debounce';
@@ -44,9 +43,8 @@ type UserWithRelations = User & {
 };
 
 export default function Investors() {
-  const { user, isLoaded } = useUser();
-  const userType = user?.publicMetadata.userType as UserType;
-  const isEntrepreneur = userType === 'ENTREPRENEUR';
+  const { user } = useUser();
+  // const userType = user?.publicMetadata.userType as UserType;
 
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);

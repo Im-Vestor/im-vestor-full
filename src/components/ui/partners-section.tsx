@@ -112,7 +112,7 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
                       }
 
                       // Otherwise, use the URL based on the selected type
-                      let url: string | undefined;
+                      let url: string | null | undefined;
                       switch (partner.marqueeLinkType) {
                         case 'WEBSITE':
                           url = partner.website;

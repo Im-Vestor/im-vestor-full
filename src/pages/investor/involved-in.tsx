@@ -335,25 +335,28 @@ export default function MyProjects() {
 
   // Combine all projects into a single array with type information
   const allProjects = [
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     ...(myProjects?.negotiations.map(negotiation => ({
       ...negotiation.project,
       projectType: 'negotiation' as const,
       negotiationStage: negotiation.stage,
       meetings: negotiation.meetings || []
     })) || []),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     ...(myProjects?.favoriteProjects.map(project => ({
       ...project,
       projectType: 'favorite' as const,
       negotiationStage: null,
       meetings: []
     })) || []),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     ...(myProjects?.investedProjects.map(project => ({
       ...project,
       projectType: 'invested' as const,
       negotiationStage: null,
       meetings: []
     })) || [])
-  ];
+  ] as const;
 
   // Filter projects based on search query
   const filteredProjects = allProjects.filter(project =>

@@ -20,6 +20,7 @@ export const createDailyCall = async (date: Date) => {
     eject_at_room_exp: true,
     enable_chat: true,
     enable_recording: 'cloud',
+    start_recording_on_participant_joined: true,
   };
 
   const requestBody = {
@@ -67,6 +68,57 @@ export const createDailyCall = async (date: Date) => {
       throw error;
     } else {
       throw new Error('Failed to create Daily call room');
+    }
+  }
+};
+
+// Interface for Daily recording response
+interface DailyRecordingResponse {
+  id?: string;
+  status?: string;
+  error?: string;
+  info?: string;
+}
+
+/**
+ * Starts recording for a Daily.co room via REST API
+ * @param roomName - The name of the Daily.co room
+ * @returns Promise with recording information
+ */
+export const startDailyRecording = async (roomName: string) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${env.DAILY_API_KEY}`,
+    },
+    body: JSON.stringify({
+      properties: {
+        max_duration: 3600, // 1 hour max recording duration
+      },
+    }),
+  };
+
+  const apiUrl = `${env.DAILY_REST_DOMAIN ?? 'https://api.daily.co/v1'}/rooms/${roomName}/recordings`;
+
+  try {
+    const dailyRes = await fetch(apiUrl, options);
+
+    const responseBody = (await dailyRes.json()) as DailyRecordingResponse;
+
+    if (!dailyRes.ok || responseBody.error) {
+      throw new Error(
+        `Daily API error: ${responseBody.error ?? 'Unknown error'} (Status: ${dailyRes.status}) - Info: ${responseBody.info ?? 'N/A'}`
+      );
+    }
+
+    return responseBody;
+  } catch (error) {
+    console.error('[startDailyRecording] Fetch or processing error:', error);
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Failed to start Daily recording');
     }
   }
 };

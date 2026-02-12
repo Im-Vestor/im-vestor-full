@@ -11,7 +11,7 @@ import {
 } from "~/components/ui/table";
 import { Switch } from "~/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Search, Building2, Upload, Users, Check, Link2, Pencil } from "lucide-react";
+import { Loader2, Building2, Upload, Users, Check, Link2, Pencil, Search } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import Image from "next/image";
 import { cn } from "~/lib/utils";
@@ -21,7 +21,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "~/components/ui/sheet";
 import {
   Select,
@@ -118,6 +117,18 @@ export default function AdminPartnersPage() {
           <p className="text-muted-foreground">
             Manage partners and select which ones appear in the "Trusted by Leading Partners" carousel.
           </p>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search partners..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 bg-background-secondary border-white/10 text-white"
+            />
+          </div>
         </div>
 
         <div className="rounded-md border border-white/10 bg-background-secondary overflow-hidden shadow-2xl">

@@ -610,7 +610,7 @@ export const projectRouter = createTRPCRouter({
         return;
       }
 
-      const [_, projectView] = await Promise.all([
+      const [, projectView] = await Promise.all([
         ctx.db.notification.create({
           data: {
             userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',

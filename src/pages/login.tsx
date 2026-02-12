@@ -50,7 +50,7 @@ export default function Login() {
           void router.push('/profile');
         }
       }
-    }, [user.isLoaded, user.isSignedIn, userData, router]);
+    }, [userData]);
 
     return null;
   }

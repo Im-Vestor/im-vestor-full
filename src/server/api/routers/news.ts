@@ -20,10 +20,6 @@ function isFullBlock(block: BlockObjectResponse | PartialBlockObjectResponse): b
   return 'type' in block;
 }
 
-function isPageObject(item: NewsItem): item is PageObjectResponse {
-  return 'object' in item && item.object === 'page';
-}
-
 async function listAllBlockChildren(blockId: string) {
   const results: Array<BlockObjectResponse | PartialBlockObjectResponse> = [];
   let cursor: string | undefined = undefined;
@@ -113,7 +109,7 @@ async function collectNewsItemsFromContainer(containerId: string) {
               seenIds.add(page.id);
             }
           }
-        } catch (e) {
+        } catch {
           // ignore databases we can't access
         }
         continue;
@@ -132,7 +128,7 @@ async function collectNewsItemsFromContainer(containerId: string) {
                 items.push(page as PageObjectResponse);
                 seenIds.add(pageId);
               }
-            } catch (e) {
+            } catch {
               // ignore broken links / missing access
             }
           }
@@ -146,7 +142,7 @@ async function collectNewsItemsFromContainer(containerId: string) {
                 seenIds.add(page.id);
               }
             }
-          } catch (e) {
+          } catch (error) {
             // ignore databases we can't access
           }
         }
@@ -322,10 +318,9 @@ export const newsRouter = createTRPCRouter({
 
         const paginatedItems = allItems.slice(startIndex, startIndex + input.limit);
         const hasMore = startIndex + input.limit < allItems.length;
-        const nextCursor = hasMore && paginatedItems.length > 0
-          ? ('created_time' in paginatedItems[paginatedItems.length - 1]
-              ? paginatedItems[paginatedItems.length - 1].created_time
-              : undefined)
+        const lastItem = paginatedItems[paginatedItems.length - 1];
+        const nextCursor = hasMore && lastItem && 'created_time' in lastItem
+          ? lastItem.created_time
           : undefined;
 
         return {

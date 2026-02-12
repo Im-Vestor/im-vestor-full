@@ -33,6 +33,9 @@ export function MediaUpload({
 }: MediaUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [internalUploading, setInternalUploading] = useState(false);
+
+  const uploading = isUploading || internalUploading;
 
   const getAcceptedMimeTypes = () => {
     switch (acceptedTypes) {
@@ -91,6 +94,7 @@ export function MediaUpload({
         return;
       }
 
+      setInternalUploading(true);
       try {
         // Import dynamically to avoid SSR issues
         const { sendImageToBackend } = await import('~/utils/file');
@@ -101,6 +105,8 @@ export function MediaUpload({
       } catch (error) {
         console.error('Upload error:', error);
         toast.error('Failed to upload media. Please try again.');
+      } finally {
+        setInternalUploading(false);
       }
     },
     [onUpload, validateFile, userId]
@@ -154,13 +160,19 @@ export function MediaUpload({
           </div>
         )}
 
+        {uploading && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/60">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+        )}
+
         <Button
           type="button"
           variant="destructive"
           size="icon"
           className="absolute top-2 right-2 h-8 w-8"
           onClick={onRemove}
-          disabled={disabled || isUploading}
+          disabled={disabled || uploading}
         >
           <XIcon className="h-4 w-4" />
         </Button>
@@ -183,7 +195,7 @@ export function MediaUpload({
       onClick={!disabled ? openFileDialog : undefined}
     >
       <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
-        {isUploading ? (
+        {uploading ? (
           <>
             <Loader2 className="h-12 w-12 text-muted-foreground animate-spin mb-4" />
             <p className="text-muted-foreground">Uploading media...</p>
@@ -225,7 +237,7 @@ export function MediaUpload({
         accept={getAcceptedMimeTypes()}
         onChange={handleFileSelect}
         className="hidden"
-        disabled={disabled || isUploading}
+        disabled={disabled || uploading}
       />
     </Card>
   );

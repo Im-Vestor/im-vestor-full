@@ -140,10 +140,10 @@ export function extractFirstLineFromBlocks(blocks: (BlockObjectResponse | Partia
 export function getPageCoverImage(page: any): string | null {
   if (!page?.cover) return null;
 
-  if (page.cover.type === 'external') {
-    return page.cover.external.url;
-  } else if (page.cover.type === 'file') {
-    return page.cover.file.url;
+  if (page.cover.type === 'external' && page.cover.external?.url) {
+    return page.cover.external.url as string;
+  } else if (page.cover.type === 'file' && page.cover.file?.url) {
+    return page.cover.file.url as string;
   }
 
   return null;
