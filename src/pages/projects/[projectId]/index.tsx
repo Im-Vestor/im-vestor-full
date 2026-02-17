@@ -393,7 +393,7 @@ export default function CompanyDetails() {
                   )}
                   <span className="mx-2">•</span>
 
-                  {!isProjectOwner && (
+                  {!isProjectOwner && project.website && (
                     <>
                       <div className="flex items-center gap-1.5">
                         <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
