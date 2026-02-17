@@ -415,7 +415,7 @@ export const IncubatorForm = ({ incubator, onCancel }: IncubatorFormProps) => {
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Enter amount in USD"
+                    placeholder="Enter amount"
                     {...field}
                     onChange={e => {
                       const value = e.target.value;
@@ -440,7 +440,7 @@ export const IncubatorForm = ({ incubator, onCancel }: IncubatorFormProps) => {
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Enter amount in USD"
+                    placeholder="Enter amount"
                     {...field}
                     onChange={e => {
                       const value = e.target.value;

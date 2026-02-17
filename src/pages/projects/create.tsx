@@ -845,7 +845,7 @@ export default function CreateCompany() {
                         <Input
                           type="number"
                           min={0}
-                          placeholder="Enter amount in USD"
+                          placeholder="Enter amount"
                           value={value === 0 ? '' : value}
                           onChange={e => {
                             const inputValue = e.target.value;
@@ -895,7 +895,7 @@ export default function CreateCompany() {
                         <Input
                           type="number"
                           min={0}
-                          placeholder="Enter amount in USD"
+                          placeholder="Enter amount"
                           value={value === 0 ? '' : value}
                           onChange={e => {
                             const inputValue = e.target.value;
