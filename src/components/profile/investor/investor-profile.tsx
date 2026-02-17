@@ -17,8 +17,8 @@ export const InvestorProfile = ({ userId }: { userId?: string }) => {
   const { data: investor, isPending: isLoading } = userId
     ? api.investor.getByUserIdForAdmin.useQuery({ userId })
     : api.investor.getByUserId.useQuery(undefined, {
-      enabled: isLoaded && isSignedIn,
-    });
+        enabled: isLoaded && isSignedIn,
+      });
 
   // Disable editing when viewing someone else's profile
   const canEdit = !userId;
@@ -94,8 +94,6 @@ export const InvestorProfile = ({ userId }: { userId?: string }) => {
         <hr className="my-4 sm:my-6 border-white/10" />
         <h3 className="mt-12 font-semibold">About me</h3>
         <p className="mt-3 text-gray-400">{investor?.about ?? 'No description'}</p>
-        <h3 className="mt-12 font-semibold">Portfolio</h3>
-        <p>TODO</p>
       </div>
     </div>
   );
