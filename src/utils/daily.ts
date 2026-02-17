@@ -20,7 +20,6 @@ export const createDailyCall = async (date: Date) => {
     eject_at_room_exp: true,
     enable_chat: true,
     enable_recording: 'cloud',
-    start_recording_on_participant_joined: true,
   };
 
   const requestBody = {

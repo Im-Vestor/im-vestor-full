@@ -285,6 +285,7 @@ export default function CompanyDetails() {
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
           projectId: projectId as string,
+          instantMeeting: true,
         });
       } else {
         scheduleOtherStageMeetingMutation.mutate({
@@ -294,6 +295,7 @@ export default function CompanyDetails() {
           investorId: investor?.id ?? '',
           vcGroupId: vcGroup?.id ?? '',
           projectId: projectId as string,
+          instantMeeting: true,
         });
       }
     } else {

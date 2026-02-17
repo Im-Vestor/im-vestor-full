@@ -51,6 +51,7 @@ export const negotiationRouter = createTRPCRouter({
         vcGroupId: z.string().optional(),
         entrepreneurId: z.string().optional(),
         incubatorId: z.string().optional(),
+        instantMeeting: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -88,7 +89,8 @@ export const negotiationRouter = createTRPCRouter({
         input.incubatorId ?? null,
         input.investorId ? [input.investorId] : [],
         input.vcGroupId ? [input.vcGroupId] : [],
-        negotiation.id
+        negotiation.id,
+        input.instantMeeting
       );
 
       // Fetch all user types with their email information
@@ -200,6 +202,7 @@ export const negotiationRouter = createTRPCRouter({
         vcGroupId: z.string().optional(),
         entrepreneurId: z.string().optional(),
         incubatorId: z.string().optional(),
+        instantMeeting: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -234,7 +237,8 @@ export const negotiationRouter = createTRPCRouter({
         input.incubatorId ?? null,
         input.investorId ? [input.investorId] : [],
         input.vcGroupId ? [input.vcGroupId] : [],
-        existingNegotiation.id
+        existingNegotiation.id,
+        input.instantMeeting
       );
 
       const entrepreneur = await ctx.db.entrepreneur.findUnique({
@@ -435,11 +439,12 @@ async function scheduleMeeting(
   incubatorId: string | null,
   investorIds: string[],
   vcGroupIds: string[],
-  negotiationId: string
+  negotiationId: string,
+  instantMeeting?: boolean
 ) {
   const now = new Date();
 
-  if (date < now) {
+  if (!instantMeeting && date < now) {
     console.error('Validation failed: Meeting time is in the past.', {
       inputDate: date,
       now,
