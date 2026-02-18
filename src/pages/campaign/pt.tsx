@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import Head from 'next/head';
-import { GetStaticProps } from 'next';
+import type { GetStaticProps } from 'next';
 import { useEffect } from 'react';
 
 interface CampaignPageProps {
@@ -10,30 +10,41 @@ interface CampaignPageProps {
 
 export default function CampaignPT({ htmlContent }: CampaignPageProps) {
   // Extract head content from HTML
-  const headMatch = htmlContent.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-  const headContent = headMatch ? headMatch[1] : '';
+  const headRegex = /<head[^>]*>([\s\S]*?)<\/head>/i;
+  const headMatch = headRegex.exec(htmlContent);
+  const headContent = headMatch ? headMatch[1] ?? '' : '';
 
   // Extract body content - everything between </head> and </body> or </html>
-  const bodyStartMatch = htmlContent.match(/<\/head>/i);
-  const bodyEndMatch = htmlContent.match(/<\/body>/i) || htmlContent.match(/<\/html>/i);
+  const bodyStartRegex = /<\/head>/i;
+  const bodyEndRegex = /<\/body>/i;
+  const htmlEndRegex = /<\/html>/i;
+  const bodyStartMatch = bodyStartRegex.exec(htmlContent);
+  const bodyEndMatch = bodyEndRegex.exec(htmlContent);
+  const htmlEndMatch = htmlEndRegex.exec(htmlContent);
+  const endMatch = bodyEndMatch ?? htmlEndMatch;
 
   let bodyContent = htmlContent;
-  if (bodyStartMatch && bodyEndMatch && bodyStartMatch.index !== undefined && bodyEndMatch.index !== undefined) {
+  if (bodyStartMatch && endMatch && bodyStartMatch.index !== undefined && endMatch.index !== undefined) {
     const startIndex = bodyStartMatch.index + bodyStartMatch[0].length;
-    const endIndex = bodyEndMatch.index;
+    const endIndex = endMatch.index;
     bodyContent = htmlContent.substring(startIndex, endIndex).trim();
   }
 
   // Extract title from head
-  const titleMatch = headContent ? headContent.match(/<title[^>]*>([\s\S]*?)<\/title>/i) : null;
+  const titleRegex = /<title[^>]*>([\s\S]*?)<\/title>/i;
+  const titleMatch = headContent ? titleRegex.exec(headContent) : null;
   const title = titleMatch ? titleMatch[1]?.trim() ?? 'im-vestor.com — Campaign v3' : 'im-vestor.com — Campaign v3';
 
   // Extract styles from head
-  const styleMatch = headContent ? headContent.match(/<style[^>]*>([\s\S]*?)<\/style>/gi) : null;
-  const styles = styleMatch ? styleMatch.map(m => {
-    const content = m.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-    return content ? content[1] ?? '' : '';
-  }).join('\n') : '';
+  const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  const styleMatches: string[] = [];
+  let styleMatch;
+  while ((styleMatch = styleRegex.exec(headContent)) !== null) {
+    if (styleMatch[1]) {
+      styleMatches.push(styleMatch[1]);
+    }
+  }
+  const styles = styleMatches.join('\n');
 
   // Extract scripts from body content
   const scriptMatches: string[] = [];
