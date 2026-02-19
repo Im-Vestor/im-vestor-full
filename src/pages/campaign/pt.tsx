@@ -99,14 +99,46 @@ export default function CampaignPT({ htmlContent }: CampaignPageProps) {
           }
           /* Ensure body styles are applied */
           #campaign-page {
-            background: var(--darker, #04040A);
+            background: transparent;
             font-family: 'Montserrat', sans-serif;
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+          }
+          /* Video background styles */
+          .video-bg-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            background: #04040A;
+          }
+          .video-bg-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          .video-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 4, 10, 0.65);
           }
         `}</style>
       </Head>
+      <div className="video-bg-wrapper">
+        <video autoPlay loop muted playsInline>
+          <source src="/comboio.mp4" type="video/mp4" />
+        </video>
+        <div className="video-bg-overlay" />
+      </div>
       <div id="campaign-page" dangerouslySetInnerHTML={{ __html: bodyContent }} />
     </>
   );
