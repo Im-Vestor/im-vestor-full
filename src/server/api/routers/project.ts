@@ -232,6 +232,14 @@ export const projectRouter = createTRPCRouter({
           investor: {
             select: {
               userId: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          VcGroup: {
+            select: {
+              userId: true,
+              name: true,
             },
           },
         },

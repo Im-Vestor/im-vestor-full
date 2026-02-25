@@ -1148,17 +1148,23 @@ export function ProjectViews({ projectId }: { projectId: string }) {
   if (!views || views.length === 0) {
     return null;
   }
-
   return (
     <div className="mt-8 sm:mt-12">
       <h2 className="text-lg font-semibold sm:text-xl">Recent Views</h2>
       <div className="mt-3 space-y-2 sm:mt-4">
-        {views.map(view => (
-          <div key={view.id} className="flex items-center gap-3 text-sm text-white/70">
-            <Clock className="h-4 w-4" />
-            <span>Viewed {formatDistanceToNow(new Date(view.createdAt))} ago</span>
-          </div>
-        ))}
+        {views.map(view => {
+          const viewerName = view.investor
+            ? `${view.investor.firstName} ${view.investor.lastName}`
+            : (view.VcGroup?.name ?? 'Unknown');
+          return (
+            <div key={view.id} className="flex items-center gap-3 text-sm text-white/70">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span className="font-medium text-white/90">Viewed by {viewerName}</span>
+              <span>·</span>
+              <span>{formatDistanceToNow(new Date(view.createdAt))} ago</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
