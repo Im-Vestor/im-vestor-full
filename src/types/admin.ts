@@ -28,7 +28,8 @@ export type NotificationLog = {
   type: NotificationType;
   read: boolean;
   userId: string;
-  investorId: string;
+  investorId: string | null;
+  message: string | null;
   user: {
     email: string;
     userType: UserType;

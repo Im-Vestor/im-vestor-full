@@ -235,7 +235,7 @@ export const Notifications = ({ userDetails }: { userDetails: UserDetails }) => 
                     notification.type.includes('SUPPORT_TICKET') ? 'text-primary font-medium' : ''
                   }
                 >
-                  {NotificationTextMap[notification.type]?.text ?? 'You have a new notification'}
+                  {notification.message ?? NotificationTextMap[notification.type]?.text ?? 'You have a new notification'}
                 </span>
                 <span className="text-xs text-neutral-500 ml-2">
                   {formatDistanceToNow(notification.createdAt, { addSuffix: true })}

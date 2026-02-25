@@ -762,7 +762,8 @@ export const projectRouter = createTRPCRouter({
         await createNotifications(
           ctx.db,
           [project.Entrepreneur.userId],
-          NotificationType.PITCH_REQUEST
+          NotificationType.PITCH_REQUEST,
+          `${requestingUserName} requested a pitch video for "${project.name}"`
         );
 
         await sendEmail(
@@ -776,7 +777,8 @@ export const projectRouter = createTRPCRouter({
         await createNotifications(
           ctx.db,
           [project.Incubator.userId],
-          NotificationType.PITCH_REQUEST
+          NotificationType.PITCH_REQUEST,
+          `${requestingUserName} requested a pitch video for "${project.name}"`
         );
 
         await sendEmail(

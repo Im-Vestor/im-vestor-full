@@ -457,6 +457,7 @@ model Notification {
   read       Boolean          @default(false)
   userId     String
   investorId String?
+  message    String?
   user       User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
