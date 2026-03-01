@@ -5,7 +5,7 @@ import { env } from '~/env.js';
 import { db } from '~/server/db';
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil',
+  apiVersion: '2026-02-25.clover',
 });
 
 interface Product {
@@ -129,7 +129,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card'],
       line_items: [
         {
           price: product.price,
