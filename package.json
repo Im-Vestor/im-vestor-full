@@ -102,7 +102,7 @@
     "recharts": "^2.15.0",
     "resend": "^4.5.1",
     "sonner": "^1.7.2",
-    "stripe": "^18.2.1",
+    "stripe": "^20.4.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",

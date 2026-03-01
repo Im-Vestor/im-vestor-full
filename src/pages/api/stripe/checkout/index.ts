@@ -5,7 +5,7 @@ import { env } from '~/env.js';
 import { db } from '~/server/db';
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil',
+  apiVersion: '2026-02-25.clover',
 });
 
 interface Product {
@@ -82,9 +82,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create or get Stripe customer
     let customerId = user.stripeCustomerId;
 
+    if (customerId) {
+      // Validate that customer exists in current Stripe environment (live vs sandbox)
+      try {
+        const existing = await stripe.customers.retrieve(customerId);
+        if (existing.deleted) customerId = null;
+      } catch {
+        // Customer not found in this environment (e.g. sandbox ID used in live)
+        customerId = null;
+        await db.user.update({ where: { id: userId }, data: { stripeCustomerId: null } });
+      }
+    }
+
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
+        address: {
+          country: 'PT',
+        },
         metadata: {
           userId: user.id,
         },
@@ -129,7 +144,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card'],
       line_items: [
         {
           price: product.price,
