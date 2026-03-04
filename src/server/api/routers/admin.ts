@@ -1,9 +1,11 @@
-import { z } from "zod";
-import { addDays } from "date-fns";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import type { ProjectViewWithRelations } from "~/types/admin";
-import type { NotificationType } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
+import { z } from 'zod';
+import { addDays, addHours } from 'date-fns';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import type { ProjectViewWithRelations } from '~/types/admin';
+import type { NotificationType } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { sendEmail } from '~/utils/email';
+import { generateIcsBuffer } from '~/utils/ics';
 
 // Security utilities
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
@@ -52,7 +54,15 @@ const logAdminAction = async (ctx: any, action: string, details: any) => {
 // Note: confirmation tokens are generated elsewhere; helper removed as unused
 
 // Helper function to check admin authorization with role-based permissions
-const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionClaims?: { publicMetadata?: { userIsAdmin?: boolean; adminRole?: string } } } }, requiredRole?: 'read' | 'write' | 'delete') => {
+const checkAdminAuthorization = async (
+  ctx: {
+    auth: {
+      userId: string;
+      sessionClaims?: { publicMetadata?: { userIsAdmin?: boolean; adminRole?: string } };
+    };
+  },
+  requiredRole?: 'read' | 'write' | 'delete'
+) => {
   // For development, you can temporarily bypass admin check
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_ADMIN_CHECK === 'true') {
     return true;
@@ -65,7 +75,8 @@ const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionCla
   if (!isAdminFromClerk) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: "Unauthorized - Admin access required. userIsAdmin must be true in Clerk public metadata.",
+      message:
+        'Unauthorized - Admin access required. userIsAdmin must be true in Clerk public metadata.',
     });
   }
 
@@ -76,7 +87,11 @@ const checkAdminAuthorization = async (ctx: { auth: { userId: string; sessionCla
       adminRoleRaw === 'delete' || adminRoleRaw === 'write' || adminRoleRaw === 'read'
         ? adminRoleRaw
         : 'read';
-    const roleHierarchy: Record<'read' | 'write' | 'delete', number> = { read: 1, write: 2, delete: 3 };
+    const roleHierarchy: Record<'read' | 'write' | 'delete', number> = {
+      read: 1,
+      write: 2,
+      delete: 3,
+    };
 
     const currentLevel = roleHierarchy[adminRole];
     const requiredLevel = roleHierarchy[requiredRole];
@@ -119,39 +134,61 @@ export const adminRouter = createTRPCRouter({
 
       // Check all possible references
       const checks = {
-        supportTicketReplies: await ctx.db.supportTicketReply.count({ where: { adminId: input.userId } }),
+        supportTicketReplies: await ctx.db.supportTicketReply.count({
+          where: { adminId: input.userId },
+        }),
         supportTickets: await ctx.db.supportTicket.count({ where: { userId: input.userId } }),
         notifications: await ctx.db.notification.count({ where: { userId: input.userId } }),
-        connectionsAsFollower: await ctx.db.connection.count({ where: { followerId: input.userId } }),
-        connectionsAsFollowing: await ctx.db.connection.count({ where: { followingId: input.userId } }),
+        connectionsAsFollower: await ctx.db.connection.count({
+          where: { followerId: input.userId },
+        }),
+        connectionsAsFollowing: await ctx.db.connection.count({
+          where: { followingId: input.userId },
+        }),
         referralsAsReferrer: await ctx.db.referral.count({ where: { referrerId: input.userId } }),
         referralsAsReferred: await ctx.db.referral.count({ where: { referredId: input.userId } }),
-        preferredHours: user.entrepreneur ? await ctx.db.preferredHours.count({ where: { entrepreneurId: user.entrepreneur.id } }) : 0,
-        projectViews: user.investor ? await ctx.db.projectView.count({ where: { investorId: user.investor.id } }) : 0,
-        negotiationsAsInvestor: user.investor ? await ctx.db.negotiation.count({ where: { investorId: user.investor.id } }) : 0,
-        negotiationsAsEntrepreneur: user.entrepreneur ? await ctx.db.negotiation.count({
+        preferredHours: user.entrepreneur
+          ? await ctx.db.preferredHours.count({ where: { entrepreneurId: user.entrepreneur.id } })
+          : 0,
+        projectViews: user.investor
+          ? await ctx.db.projectView.count({ where: { investorId: user.investor.id } })
+          : 0,
+        negotiationsAsInvestor: user.investor
+          ? await ctx.db.negotiation.count({ where: { investorId: user.investor.id } })
+          : 0,
+        negotiationsAsEntrepreneur: user.entrepreneur
+          ? await ctx.db.negotiation.count({
               where: {
                 project: {
-              entrepreneurId: user.entrepreneur.id
-            }
-          }
-        }) : 0,
-        meetingsAsEntrepreneur: user.entrepreneur ? await ctx.db.meeting.count({ where: { entrepreneurId: user.entrepreneur.id } }) : 0,
-        meetingsAsInvestor: user.investor ? await ctx.db.meeting.count({
+                  entrepreneurId: user.entrepreneur.id,
+                },
+              },
+            })
+          : 0,
+        meetingsAsEntrepreneur: user.entrepreneur
+          ? await ctx.db.meeting.count({ where: { entrepreneurId: user.entrepreneur.id } })
+          : 0,
+        meetingsAsInvestor: user.investor
+          ? await ctx.db.meeting.count({
               where: {
                 negotiation: {
                   investorId: user.investor.id,
                 },
               },
-        }) : 0,
-        files: user.entrepreneur ? await ctx.db.file.count({
+            })
+          : 0,
+        files: user.entrepreneur
+          ? await ctx.db.file.count({
               where: {
                 Project: {
                   entrepreneurId: user.entrepreneur.id,
                 },
               },
-        }) : 0,
-        projects: user.entrepreneur ? await ctx.db.project.count({ where: { entrepreneurId: user.entrepreneur.id } }) : 0,
+            })
+          : 0,
+        projects: user.entrepreneur
+          ? await ctx.db.project.count({ where: { entrepreneurId: user.entrepreneur.id } })
+          : 0,
       };
 
       return {
@@ -167,11 +204,13 @@ export const adminRouter = createTRPCRouter({
     }),
 
   deleteUserByAdmin: protectedProcedure
-    .input(z.object({
+    .input(
+      z.object({
         userId: z.string(),
         confirmationToken: z.string().optional(),
-      reason: z.string().optional()
-    }))
+        reason: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Allow any admin to perform deletion (no specific role required)
       await checkAdminAuthorization(ctx);
@@ -183,7 +222,7 @@ export const adminRouter = createTRPCRouter({
       await logAdminAction(ctx, 'USER_DELETION_ATTEMPT', {
         targetUserId: input.userId,
         reason: input.reason,
-        confirmationToken: input.confirmationToken ? 'provided' : 'missing'
+        confirmationToken: input.confirmationToken ? 'provided' : 'missing',
       });
 
       const user = await ctx.db.user.findUnique({
@@ -200,52 +239,52 @@ export const adminRouter = createTRPCRouter({
       if (!user) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'User not found'
+          message: 'User not found',
         });
       }
 
       if (user.status === 'INACTIVE') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'User account is already inactive'
+          message: 'User account is already inactive',
         });
       }
 
       try {
-
         // Log successful deletion
         await logAdminAction(ctx, 'USER_DELETION_SUCCESS', {
           targetUserId: input.userId,
           targetUserEmail: user.email,
-          reason: input.reason
+          reason: input.reason,
         });
 
         return {
           success: true,
-          message: `User account for ${user.email} has been deactivated and anonymized`
+          message: `User account for ${user.email} has been deactivated and anonymized`,
         };
-
       } catch (error) {
         // Log failed deletion
         await logAdminAction(ctx, 'USER_DELETION_FAILED', {
           targetUserId: input.userId,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
 
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`
+          message: `Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),
 
   // Direct account deletion without email confirmation - PERMANENT DELETION
   deleteUserAccountDirectly: protectedProcedure
-    .input(z.object({
+    .input(
+      z.object({
         userId: z.string(),
         confirmationToken: z.string(),
-      reason: z.string().optional()
-    }))
+        reason: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Allow any admin to perform permanent deletion
       await checkAdminAuthorization(ctx);
@@ -257,7 +296,7 @@ export const adminRouter = createTRPCRouter({
       await logAdminAction(ctx, 'PERMANENT_USER_DELETION_ATTEMPT', {
         targetUserId: input.userId,
         reason: input.reason,
-        confirmationToken: input.confirmationToken
+        confirmationToken: input.confirmationToken,
       });
 
       const user = await ctx.db.user.findUnique({
@@ -274,14 +313,14 @@ export const adminRouter = createTRPCRouter({
       if (!user) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `User ${input.userId} not found in database. This user may have already been deleted or the ID is invalid.`
+          message: `User ${input.userId} not found in database. This user may have already been deleted or the ID is invalid.`,
         });
       }
 
       if (user.status === 'INACTIVE') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Account already marked as inactive'
+          message: 'Account already marked as inactive',
         });
       }
 
@@ -306,12 +345,16 @@ export const adminRouter = createTRPCRouter({
             console.log(`Successfully deleted user ${input.userId} from Clerk`);
             clerkDeletionSuccess = true;
           } catch (clerkGetError) {
-            console.log(`User ${input.userId} not found in Clerk (${clerkGetError instanceof Error ? clerkGetError.message : 'Unknown error'}), proceeding with database cleanup`);
+            console.log(
+              `User ${input.userId} not found in Clerk (${clerkGetError instanceof Error ? clerkGetError.message : 'Unknown error'}), proceeding with database cleanup`
+            );
             clerkDeletionSuccess = true; // Consider it successful since user doesn't exist in Clerk
           }
         } catch (clerkError) {
           console.error(`Clerk deletion error:`, clerkError);
-          console.log(`Clerk deletion failed, but continuing with database cleanup to ensure data consistency`);
+          console.log(
+            `Clerk deletion failed, but continuing with database cleanup to ensure data consistency`
+          );
           // Don't throw error, continue with database cleanup
         }
 
@@ -319,7 +362,7 @@ export const adminRouter = createTRPCRouter({
         console.log('Starting database cleanup...');
 
         // Use database transaction for atomicity
-        const result = await ctx.db.$transaction(async (tx) => {
+        const result = await ctx.db.$transaction(async tx => {
           // First, delete all dependent records that reference the user
 
           // Delete support ticket replies (adminId references User)
@@ -347,10 +390,7 @@ export const adminRouter = createTRPCRouter({
           console.log(`Deleting connections for user ${input.userId}`);
           const deletedConnections = await tx.connection.deleteMany({
             where: {
-              OR: [
-                { followerId: input.userId },
-                { followingId: input.userId },
-              ],
+              OR: [{ followerId: input.userId }, { followingId: input.userId }],
             },
           });
           console.log(`Deleted ${deletedConnections.count} connections`);
@@ -359,10 +399,7 @@ export const adminRouter = createTRPCRouter({
           console.log(`Deleting referrals for user ${input.userId}`);
           const deletedReferrals = await tx.referral.deleteMany({
             where: {
-              OR: [
-                { referrerId: input.userId },
-                { referredId: input.userId },
-              ],
+              OR: [{ referrerId: input.userId }, { referredId: input.userId }],
             },
           });
           console.log(`Deleted ${deletedReferrals.count} referrals`);
@@ -400,11 +437,13 @@ export const adminRouter = createTRPCRouter({
             const deletedEntrepreneurNegotiations = await tx.negotiation.deleteMany({
               where: {
                 project: {
-                  entrepreneurId: user.entrepreneur.id
-                }
+                  entrepreneurId: user.entrepreneur.id,
+                },
               },
             });
-            console.log(`Deleted ${deletedEntrepreneurNegotiations.count} entrepreneur negotiations`);
+            console.log(
+              `Deleted ${deletedEntrepreneurNegotiations.count} entrepreneur negotiations`
+            );
           }
 
           // Delete meetings (entrepreneurId references Entrepreneur)
@@ -504,28 +543,29 @@ export const adminRouter = createTRPCRouter({
 
         console.log(`Successfully deleted all data for user ${input.userId}`);
 
-        const clerkStatus = result.clerkDeletionSuccess ? "Clerk authentication system and database" : "database (Clerk deletion failed)";
+        const clerkStatus = result.clerkDeletionSuccess
+          ? 'Clerk authentication system and database'
+          : 'database (Clerk deletion failed)';
 
         // Log successful deletion
         await logAdminAction(ctx, 'PERMANENT_USER_DELETION_SUCCESS', {
           targetUserId: input.userId,
           targetUserEmail: userEmail,
           reason: input.reason,
-          clerkStatus
+          clerkStatus,
         });
 
         return {
           success: true,
-          message: `Account for ${userEmail} has been permanently deleted from ${clerkStatus}. User can now create a new account with the same email.`
+          message: `Account for ${userEmail} has been permanently deleted from ${clerkStatus}. User can now create a new account with the same email.`,
         };
-
       } catch (error) {
         console.error('Error during permanent account deletion:', error);
 
         // Log failed deletion
         await logAdminAction(ctx, 'PERMANENT_USER_DELETION_FAILED', {
           targetUserId: input.userId,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
 
         // Provide more specific error information
@@ -533,40 +573,42 @@ export const adminRouter = createTRPCRouter({
           if (error.message.includes('not found') || error.message.includes('Not Found')) {
             throw new TRPCError({
               code: 'NOT_FOUND',
-              message: `User ${input.userId} not found in system. This could mean the user was already deleted or the ID is invalid.`
+              message: `User ${input.userId} not found in system. This could mean the user was already deleted or the ID is invalid.`,
             });
           } else if (error.message.includes('Clerk')) {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
-              message: `Clerk authentication system error: ${error.message}`
+              message: `Clerk authentication system error: ${error.message}`,
             });
           } else if (error.message.includes('database') || error.message.includes('prisma')) {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
-              message: `Database error during deletion: ${error.message}`
+              message: `Database error during deletion: ${error.message}`,
             });
           } else {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
-              message: `Unexpected error during account deletion: ${error.message}`
+              message: `Unexpected error during account deletion: ${error.message}`,
             });
           }
         }
 
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to permanently delete account: Unknown error occurred`
+          message: `Failed to permanently delete account: Unknown error occurred`,
         });
       }
     }),
 
   // Force delete user with transaction and cascade
   forceDeleteUser: protectedProcedure
-    .input(z.object({
+    .input(
+      z.object({
         userId: z.string(),
         confirmationToken: z.string(),
-      reason: z.string().optional()
-    }))
+        reason: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Allow any admin to perform force deletion
       await checkAdminAuthorization(ctx);
@@ -578,7 +620,7 @@ export const adminRouter = createTRPCRouter({
       await logAdminAction(ctx, 'FORCE_USER_DELETION_ATTEMPT', {
         targetUserId: input.userId,
         reason: input.reason,
-        confirmationToken: input.confirmationToken
+        confirmationToken: input.confirmationToken,
       });
 
       try {
@@ -591,7 +633,9 @@ export const adminRouter = createTRPCRouter({
           await client.users.deleteUser(input.userId);
           console.log(`Successfully deleted user ${input.userId} from Clerk`);
         } catch (clerkError) {
-          console.log(`Clerk deletion failed or user not found: ${clerkError instanceof Error ? clerkError.message : 'Unknown error'}`);
+          console.log(
+            `Clerk deletion failed or user not found: ${clerkError instanceof Error ? clerkError.message : 'Unknown error'}`
+          );
         }
 
         // Get user info
@@ -617,24 +661,27 @@ export const adminRouter = createTRPCRouter({
 
         // Delete support ticket replies
         console.log(`Deleting support ticket replies for admin ${input.userId}`);
-        deletionResults.supportTicketReplies = await ctx.db.supportTicketReply.deleteMany({ where: { adminId: input.userId } });
+        deletionResults.supportTicketReplies = await ctx.db.supportTicketReply.deleteMany({
+          where: { adminId: input.userId },
+        });
 
         // Delete support tickets
         console.log(`Deleting support tickets for user ${input.userId}`);
-        deletionResults.supportTickets = await ctx.db.supportTicket.deleteMany({ where: { userId: input.userId } });
+        deletionResults.supportTickets = await ctx.db.supportTicket.deleteMany({
+          where: { userId: input.userId },
+        });
 
         // Delete notifications
         console.log(`Deleting notifications for user ${input.userId}`);
-        deletionResults.notifications = await ctx.db.notification.deleteMany({ where: { userId: input.userId } });
+        deletionResults.notifications = await ctx.db.notification.deleteMany({
+          where: { userId: input.userId },
+        });
 
         // Delete connections
         console.log(`Deleting connections for user ${input.userId}`);
         deletionResults.connections = await ctx.db.connection.deleteMany({
           where: {
-            OR: [
-              { followerId: input.userId },
-              { followingId: input.userId },
-            ],
+            OR: [{ followerId: input.userId }, { followingId: input.userId }],
           },
         });
 
@@ -642,10 +689,7 @@ export const adminRouter = createTRPCRouter({
         console.log(`Deleting referrals for user ${input.userId}`);
         deletionResults.referrals = await ctx.db.referral.deleteMany({
           where: {
-            OR: [
-              { referrerId: input.userId },
-              { referredId: input.userId },
-            ],
+            OR: [{ referrerId: input.userId }, { referredId: input.userId }],
           },
         });
 
@@ -654,7 +698,9 @@ export const adminRouter = createTRPCRouter({
           console.log(`Deleting entrepreneur-specific records for ${user.entrepreneur.id}`);
 
           // Delete preferred hours
-          deletionResults.preferredHours = await ctx.db.preferredHours.deleteMany({ where: { entrepreneurId: user.entrepreneur.id } });
+          deletionResults.preferredHours = await ctx.db.preferredHours.deleteMany({
+            where: { entrepreneurId: user.entrepreneur.id },
+          });
 
           // Delete files (try-catch to handle potential issues)
           try {
@@ -666,12 +712,16 @@ export const adminRouter = createTRPCRouter({
               },
             });
           } catch (fileError) {
-            console.log(`File deletion failed (continuing): ${fileError instanceof Error ? fileError.message : 'Unknown error'}`);
+            console.log(
+              `File deletion failed (continuing): ${fileError instanceof Error ? fileError.message : 'Unknown error'}`
+            );
             deletionResults.files = { count: 0 };
           }
 
           // Delete projects
-          deletionResults.projects = await ctx.db.project.deleteMany({ where: { entrepreneurId: user.entrepreneur.id } });
+          deletionResults.projects = await ctx.db.project.deleteMany({
+            where: { entrepreneurId: user.entrepreneur.id },
+          });
 
           // Delete negotiations
           deletionResults.negotiations = await ctx.db.negotiation.deleteMany({
@@ -683,7 +733,9 @@ export const adminRouter = createTRPCRouter({
           });
 
           // Delete meetings
-          deletionResults.meetings = await ctx.db.meeting.deleteMany({ where: { entrepreneurId: user.entrepreneur.id } });
+          deletionResults.meetings = await ctx.db.meeting.deleteMany({
+            where: { entrepreneurId: user.entrepreneur.id },
+          });
 
           // Delete entrepreneur profile
           await ctx.db.entrepreneur.delete({ where: { id: user.entrepreneur.id } });
@@ -692,8 +744,12 @@ export const adminRouter = createTRPCRouter({
         if (user.investor) {
           console.log(`Deleting investor-specific records for ${user.investor.id}`);
 
-          deletionResults.projectViews = await ctx.db.projectView.deleteMany({ where: { investorId: user.investor.id } });
-          deletionResults.negotiationsAsInvestor = await ctx.db.negotiation.deleteMany({ where: { investorId: user.investor.id } });
+          deletionResults.projectViews = await ctx.db.projectView.deleteMany({
+            where: { investorId: user.investor.id },
+          });
+          deletionResults.negotiationsAsInvestor = await ctx.db.negotiation.deleteMany({
+            where: { investorId: user.investor.id },
+          });
 
           await ctx.db.investor.delete({ where: { id: user.investor.id } });
         }
@@ -731,7 +787,10 @@ export const adminRouter = createTRPCRouter({
             });
           }
         } catch (auditError) {
-          console.log('Audit log creation failed (continuing):', auditError instanceof Error ? auditError.message : 'Unknown error');
+          console.log(
+            'Audit log creation failed (continuing):',
+            auditError instanceof Error ? auditError.message : 'Unknown error'
+          );
         }
 
         // Log successful deletion
@@ -739,7 +798,7 @@ export const adminRouter = createTRPCRouter({
           targetUserId: input.userId,
           targetUserEmail: user.email,
           reason: input.reason,
-          deletions: deletionResults
+          deletions: deletionResults,
         });
 
         return {
@@ -747,19 +806,18 @@ export const adminRouter = createTRPCRouter({
           message: `User ${user.email} has been permanently deleted from all systems.`,
           deletions: deletionResults,
         };
-
       } catch (error) {
         console.error('Force deletion error:', error);
 
         // Log failed deletion
         await logAdminAction(ctx, 'FORCE_USER_DELETION_FAILED', {
           targetUserId: input.userId,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
 
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Force deletion failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          message: `Force deletion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),
@@ -783,7 +841,7 @@ export const adminRouter = createTRPCRouter({
                 project: {
                   name: {
                     contains: input.search,
-                  mode: "insensitive" as const,
+                    mode: 'insensitive' as const,
                   },
                 },
               },
@@ -791,7 +849,7 @@ export const adminRouter = createTRPCRouter({
                 investor: {
                   firstName: {
                     contains: input.search,
-                  mode: "insensitive" as const,
+                    mode: 'insensitive' as const,
                   },
                 },
               },
@@ -799,7 +857,7 @@ export const adminRouter = createTRPCRouter({
                 investor: {
                   lastName: {
                     contains: input.search,
-                  mode: "insensitive" as const,
+                    mode: 'insensitive' as const,
                   },
                 },
               },
@@ -812,7 +870,7 @@ export const adminRouter = createTRPCRouter({
           skip,
           take: input.perPage,
           where,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           include: {
             investor: {
               select: {
@@ -891,7 +949,7 @@ export const adminRouter = createTRPCRouter({
           skip,
           take: input.perPage,
           where,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           include: {
             user: {
               select: {
@@ -936,7 +994,7 @@ export const adminRouter = createTRPCRouter({
         // For now, return a simplified structure
         return {
           notificationCounts: [
-            { type: 'TOTAL_NOTIFICATIONS', _count: { type: notificationCount } }
+            { type: 'TOTAL_NOTIFICATIONS', _count: { type: notificationCount } },
           ],
           projectViewsCount,
           newUsersCount: 0, // User model doesn't have createdAt
@@ -972,14 +1030,14 @@ export const adminRouter = createTRPCRouter({
 
       if (input.search) {
         where.OR = [
-          { email: { contains: input.search, mode: "insensitive" as const } },
-          { entrepreneur: { firstName: { contains: input.search, mode: "insensitive" as const } } },
-          { entrepreneur: { lastName: { contains: input.search, mode: "insensitive" as const } } },
-          { investor: { firstName: { contains: input.search, mode: "insensitive" as const } } },
-          { investor: { lastName: { contains: input.search, mode: "insensitive" as const } } },
-          { incubator: { name: { contains: input.search, mode: "insensitive" as const } } },
-          { partner: { companyName: { contains: input.search, mode: "insensitive" as const } } },
-          { vcGroup: { name: { contains: input.search, mode: "insensitive" as const } } },
+          { email: { contains: input.search, mode: 'insensitive' as const } },
+          { entrepreneur: { firstName: { contains: input.search, mode: 'insensitive' as const } } },
+          { entrepreneur: { lastName: { contains: input.search, mode: 'insensitive' as const } } },
+          { investor: { firstName: { contains: input.search, mode: 'insensitive' as const } } },
+          { investor: { lastName: { contains: input.search, mode: 'insensitive' as const } } },
+          { incubator: { name: { contains: input.search, mode: 'insensitive' as const } } },
+          { partner: { companyName: { contains: input.search, mode: 'insensitive' as const } } },
+          { vcGroup: { name: { contains: input.search, mode: 'insensitive' as const } } },
         ];
       }
 
@@ -1022,11 +1080,7 @@ export const adminRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: [
-          { createdAt: "desc" },
-          { userType: "asc" },
-          { email: "asc" },
-        ],
+        orderBy: [{ createdAt: 'desc' }, { userType: 'asc' }, { email: 'asc' }],
       });
 
       // Get current date for filtering active HyperTrain items
@@ -1035,25 +1089,29 @@ export const adminRouter = createTRPCRouter({
       // OPTIMIZATION: Batch fetch all HyperTrain counts and Projects instead of N+1 queries
       // Group users by type to batch queries (using type guards to avoid non-null assertions)
       const investorIds = users
-        .filter((u): u is typeof u & { investor: { id: string } } =>
+        .filter(
+          (u): u is typeof u & { investor: { id: string } } =>
             u.userType === 'INVESTOR' && !!u.investor?.id
         )
         .map(u => String(u.investor.id));
 
       const vcGroupIds = users
-        .filter((u): u is typeof u & { vcGroup: { id: string } } =>
+        .filter(
+          (u): u is typeof u & { vcGroup: { id: string } } =>
             u.userType === 'VC_GROUP' && !!u.vcGroup?.id
         )
         .map(u => String(u.vcGroup.id));
 
       const entrepreneurIds = users
-        .filter((u): u is typeof u & { entrepreneur: { id: string } } =>
+        .filter(
+          (u): u is typeof u & { entrepreneur: { id: string } } =>
             u.userType === 'ENTREPRENEUR' && !!u.entrepreneur?.id
         )
         .map(u => u.entrepreneur.id);
 
       // Batch fetch all projects for entrepreneurs
-      const allProjects = entrepreneurIds.length > 0
+      const allProjects =
+        entrepreneurIds.length > 0
           ? await ctx.db.project.findMany({
               where: {
                 entrepreneurId: { in: entrepreneurIds },
@@ -1099,7 +1157,7 @@ export const adminRouter = createTRPCRouter({
       }
 
       // Map users with counts using the batch-fetched data
-      const usersWithCounts = users.map((user) => {
+      const usersWithCounts = users.map(user => {
         let availableHyperTrainTickets = 0;
         let availablePitches = 0;
 
@@ -1160,7 +1218,7 @@ export const adminRouter = createTRPCRouter({
   giftProductToUsersByEmail: protectedProcedure
     .input(
       z.object({
-        emails: z.array(z.string().email()).min(1, "At least one email is required"),
+        emails: z.array(z.string().email()).min(1, 'At least one email is required'),
         productType: z.enum(['poke', 'boost', 'public-pitch-ticket', 'hyper-train-ticket']),
         quantity: z.number().min(1).max(10),
         reason: z.string().optional(),
@@ -1186,15 +1244,18 @@ export const adminRouter = createTRPCRouter({
 
           // Check if user type is eligible for the product
           const productEligibility = {
-            'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
-            'boost': ['ENTREPRENEUR'],
+            poke: ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
+            boost: ['ENTREPRENEUR'],
             'public-pitch-ticket': ['ENTREPRENEUR'],
             'hyper-train-ticket': ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
           };
 
           const eligibleTypes = productEligibility[input.productType];
           if (!eligibleTypes?.includes(user.userType)) {
-            errors.push({ email, error: `User type ${user.userType} is not eligible for ${input.productType}` });
+            errors.push({
+              email,
+              error: `User type ${user.userType} is not eligible for ${input.productType}`,
+            });
             continue;
           }
 
@@ -1267,7 +1328,10 @@ export const adminRouter = createTRPCRouter({
               if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
                 const project = fullUser.entrepreneur.projects[0];
                 if (!project) {
-                  errors.push({ email, error: 'Entrepreneur must have at least one project to use Hyper Train' });
+                  errors.push({
+                    email,
+                    error: 'Entrepreneur must have at least one project to use Hyper Train',
+                  });
                   continue;
                 }
                 await ctx.db.hyperTrainItem.upsert({
@@ -1284,13 +1348,17 @@ export const adminRouter = createTRPCRouter({
                   },
                 });
               } else {
-                errors.push({ email, error: 'Entrepreneur must have at least one project to use Hyper Train' });
+                errors.push({
+                  email,
+                  error: 'Entrepreneur must have at least one project to use Hyper Train',
+                });
                 continue;
               }
             }
           }
 
-          const updatedUser = Object.keys(updateData).length > 0
+          const updatedUser =
+            Object.keys(updateData).length > 0
               ? await ctx.db.user.update({ where: { id: user.id }, data: updateData })
               : user;
 
@@ -1316,7 +1384,7 @@ export const adminRouter = createTRPCRouter({
         } catch (error) {
           errors.push({
             email,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       }
@@ -1356,19 +1424,21 @@ export const adminRouter = createTRPCRouter({
       });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
       // Validate product type for user type
       const productValidation = {
-        'poke': ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
-        'boost': ['ENTREPRENEUR'],
+        poke: ['ENTREPRENEUR', 'INVESTOR', 'INCUBATOR', 'VC_GROUP'],
+        boost: ['ENTREPRENEUR'],
         'public-pitch-ticket': ['ENTREPRENEUR'],
         'hyper-train-ticket': ['ENTREPRENEUR', 'INVESTOR', 'VC_GROUP'],
       };
 
       if (!productValidation[input.productType]?.includes(user.userType)) {
-        throw new Error(`Product ${input.productType} is not available for user type ${user.userType}`);
+        throw new Error(
+          `Product ${input.productType} is not available for user type ${user.userType}`
+        );
       }
 
       // Update user's available products or create specific records
@@ -1440,7 +1510,7 @@ export const adminRouter = createTRPCRouter({
           if (fullUser?.entrepreneur?.projects && fullUser.entrepreneur.projects.length > 0) {
             const project = fullUser.entrepreneur.projects[0];
             if (!project) {
-              throw new Error("Entrepreneur must have at least one project to use Hyper Train");
+              throw new Error('Entrepreneur must have at least one project to use Hyper Train');
             }
             await ctx.db.hyperTrainItem.upsert({
               where: { externalId: project.id },
@@ -1456,12 +1526,13 @@ export const adminRouter = createTRPCRouter({
               },
             });
           } else {
-            throw new Error("Entrepreneur must have at least one project to use Hyper Train");
+            throw new Error('Entrepreneur must have at least one project to use Hyper Train');
           }
         }
       }
 
-      const updatedUser = Object.keys(updateData).length > 0
+      const updatedUser =
+        Object.keys(updateData).length > 0
           ? await ctx.db.user.update({ where: { id: input.userId }, data: updateData })
           : user;
 
@@ -1483,6 +1554,101 @@ export const adminRouter = createTRPCRouter({
           availablePokes: updatedUser.availablePokes,
           availableBoosts: updatedUser.availableBoosts,
         },
+      };
+    }),
+
+  // Send email to a specific user
+  sendEmailToUser: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        subject: z.string().min(1, 'Subject is required'),
+        firstText: z.string().min(1, 'Heading is required'),
+        secondText: z.string().min(1, 'Body text is required'),
+        link: z.string().optional(),
+        buttonText: z.string().optional(),
+        meetingDate: z.date().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await checkAdminAuthorization(ctx);
+
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+        include: {
+          entrepreneur: true,
+          investor: true,
+          partner: true,
+          incubator: true,
+          vcGroup: true,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      // Determine user name for email greeting
+      let name = 'User';
+      if (user.entrepreneur) {
+        name = user.entrepreneur.firstName ?? 'User';
+      } else if (user.investor) {
+        name = user.investor.firstName ?? 'User';
+      } else if (user.partner) {
+        name = user.partner.companyName ?? 'User';
+      } else if (user.incubator) {
+        name = user.incubator.name ?? 'User';
+      } else if (user.vcGroup) {
+        name = user.vcGroup.name ?? 'User';
+      }
+
+      let attachments:
+        | Array<{ filename: string; content: Buffer; content_type?: string }>
+        | undefined;
+      if (input.meetingDate) {
+        const icsBuffer = generateIcsBuffer({
+          title: input.subject,
+          startDate: input.meetingDate,
+          endDate: addHours(input.meetingDate, 1),
+          url: input.link ?? '',
+          description: input.secondText,
+        });
+        attachments = [
+          { filename: 'meeting.ics', content: icsBuffer, content_type: 'text/calendar' },
+        ];
+      }
+
+      const result = await sendEmail(
+        name,
+        input.firstText,
+        input.secondText,
+        [user.email],
+        input.subject,
+        input.link,
+        input.buttonText,
+        attachments
+      );
+
+      if (result === false) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to send email',
+        });
+      }
+
+      // Log the action
+      await logAdminAction(ctx, 'SEND_EMAIL_TO_USER', {
+        targetUserId: input.userId,
+        targetUserEmail: user.email,
+        subject: input.subject,
+      });
+
+      return {
+        success: true,
+        message: `Email sent successfully to ${user.email}`,
       };
     }),
 });

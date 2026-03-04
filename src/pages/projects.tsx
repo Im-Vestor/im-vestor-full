@@ -72,6 +72,7 @@ export default function Companies() {
   }>({});
   const [selectedInvestmentRanges, setSelectedInvestmentRanges] = useState<string[]>([]);
   const [onlyIncubatorProjects, setOnlyIncubatorProjects] = useState(false);
+  const [nonRefundable, setNonRefundable] = useState(false);
 
   // Redirect entrepreneurs away from this page
   useEffect(() => {
@@ -116,6 +117,7 @@ export default function Companies() {
     searchQuery: searchQuery,
     page: page,
     favorites: favorites,
+    nonRefundable: nonRefundable,
   };
 
   const { data: projects, isLoading: isLoadingProjects, isFetching } =
@@ -141,6 +143,7 @@ export default function Companies() {
     investmentRange.max,
     searchQuery,
     favorites,
+    nonRefundable,
   ]);
 
   // Accumulate projects when new data arrives
@@ -325,6 +328,17 @@ export default function Companies() {
                     onCheckedChange={checked => setOnlyIncubatorProjects(checked === true)}
                   />
                   <p className="text-sm">Only Incubator Projects</p>
+                </div>
+              </div>
+              <p className="mt-2 font-medium">Funding Type</p>
+              <div className="ml-2 mt-1.5 gap-1 flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="non-refundable"
+                    checked={nonRefundable}
+                    onCheckedChange={checked => setNonRefundable(checked === true)}
+                  />
+                  <p className="text-sm">Projecto a fundo perdido</p>
                 </div>
               </div>
               <p className="mt-2 font-medium">Revenue</p>

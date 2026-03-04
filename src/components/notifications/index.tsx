@@ -77,6 +77,14 @@ const NotificationTextMap: Record<string, { text: string; link: string }> = {
     text: 'An investor has requested a pitch video for your project',
     link: '/projects',
   },
+  [NotificationType.PITCH_TICKET_PURCHASED]: {
+    text: 'Your Pitch of the Week ticket is ready! Schedule your pitch now.',
+    link: '/pitch-of-the-week/create',
+  },
+  [NotificationType.VIDEO_ACCESS_REQUESTED]: {
+    text: 'An investor has requested access to your company video',
+    link: '/projects',
+  },
 };
 
 type UserDetails = {

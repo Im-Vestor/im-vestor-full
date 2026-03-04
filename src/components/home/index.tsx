@@ -8,6 +8,7 @@ import {
   HelpCircle,
   Search,
   Share2,
+  Ticket,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -194,6 +195,26 @@ const Home = memo(function Home() {
             {t('youWereReferredBy')} <span className="font-semibold text-[#E5CD82]">{referrerName}</span>
           </p>
         </div>
+      )}
+
+      {/* Pitch Ticket Banner */}
+      {userType === 'ENTREPRENEUR' && (userData?.availablePublicPitchTickets ?? 0) > 0 && (
+        <Link href="/pitch-of-the-week/create">
+          <div className="rounded-xl border-2 border-blue-500/30 bg-blue-500/10 p-5 transition-all hover:border-blue-500/50 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Ticket className="w-6 h-6 text-blue-400" />
+                <div>
+                  <p className="text-white font-medium">
+                    You have {userData?.availablePublicPitchTickets} Pitch of the Week ticket(s)!
+                  </p>
+                  <p className="text-white/60 text-sm">Schedule your live pitch session now.</p>
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-blue-400" />
+            </div>
+          </div>
+        </Link>
       )}
 
       {/* Main Action Cards */}

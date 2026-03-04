@@ -140,7 +140,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const redirectTo =
       productId === 'hyper-train-ticket'
         ? `${req.headers.origin}/projects/${projectId}/hypertrain`
-        : `${req.headers.origin}/shop`;
+        : productId === 'public-pitch-ticket'
+          ? `${req.headers.origin}/pitch-of-the-week/create?checkout=success`
+          : `${req.headers.origin}/shop`;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

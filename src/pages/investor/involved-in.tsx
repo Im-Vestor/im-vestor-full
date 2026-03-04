@@ -16,7 +16,7 @@ import {
   Calendar,
   DollarSign,
   MessageSquare,
-  Search
+  Search,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -78,10 +78,12 @@ const ProjectCard = ({
     onSaveNotes(projectId);
   }, [projectId, onSaveNotes]);
 
-
-  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onNotesChange(projectId, e.target.value);
-  }, [projectId, onNotesChange]);
+    },
+    [projectId, onNotesChange]
+  );
 
   return (
     <Card className="rounded-xl border bg-card border-white/10 hover:border-white/20 transition-all">
@@ -107,14 +109,19 @@ const ProjectCard = ({
                   </div>
                 )}
                 <Link href={`/projects/${project.id}`} className="block max-w-full min-w-0">
-                  <h3 title={project.name} className="truncate text-base md:text-lg font-semibold tracking-tight hover:text-white/90 transition-colors cursor-pointer">
+                  <h3
+                    title={project.name}
+                    className="truncate text-base md:text-lg font-semibold tracking-tight hover:text-white/90 transition-colors cursor-pointer"
+                  >
                     {project.name}
                   </h3>
                 </Link>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-white/70">{project.likesCount}</span>
-                <Heart className={`size-4 ${project.likesCount > 0 ? 'fill-yellow-500 text-yellow-500' : 'fill-transparent'}`} />
+                <Heart
+                  className={`size-4 ${project.likesCount > 0 ? 'fill-yellow-500 text-yellow-500' : 'fill-transparent'}`}
+                />
               </div>
             </div>
 
@@ -136,7 +143,9 @@ const ProjectCard = ({
                 )}
                 {project.sector && (
                   <>
-                    {(project.Entrepreneur || project.country) ? <span className="mx-1 text-white/30">•</span> : null}
+                    {project.Entrepreneur || project.country ? (
+                      <span className="mx-1 text-white/30">•</span>
+                    ) : null}
                     <span>{project.sector.name}</span>
                   </>
                 )}
@@ -172,8 +181,14 @@ const ProjectCard = ({
           {negotiationStage && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-white/70">Negotiation:</span>
-              <Badge className={`text-[10px] ${NEGOTIATION_STAGE_COLORS[negotiationStage as keyof typeof NEGOTIATION_STAGE_COLORS]}`}>
-                {NEGOTIATION_STAGE_LABELS[negotiationStage as keyof typeof NEGOTIATION_STAGE_LABELS]}
+              <Badge
+                className={`text-[10px] ${NEGOTIATION_STAGE_COLORS[negotiationStage as keyof typeof NEGOTIATION_STAGE_COLORS]}`}
+              >
+                {
+                  NEGOTIATION_STAGE_LABELS[
+                    negotiationStage as keyof typeof NEGOTIATION_STAGE_LABELS
+                  ]
+                }
               </Badge>
             </div>
           )}
@@ -205,9 +220,13 @@ const ProjectCard = ({
                 aria-label="Personal Notes"
               >
                 {currentNotes ? (
-                  <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-2">{currentNotes}</p>
+                  <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-2">
+                    {currentNotes}
+                  </p>
                 ) : (
-                  <p className="text-xs text-white/50 italic">Click to add your notes about this project.</p>
+                  <p className="text-xs text-white/50 italic">
+                    Click to add your notes about this project.
+                  </p>
                 )}
               </div>
             )}
@@ -225,15 +244,14 @@ export default function MyProjects() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: myProjects, isLoading } = api.investor.getMyProjects.useQuery(
-    undefined,
-    { enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR' }
-  );
+  const { data: myProjects, isLoading } = api.investor.getMyProjects.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR',
+  });
 
   const { data: projectNotes, refetch: refetchNotes } = api.investor.getProjectNotes.useQuery(
     undefined,
     {
-      enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR'
+      enabled: isLoaded && isSignedIn && user?.publicMetadata.userType === 'INVESTOR',
     }
   );
 
@@ -242,7 +260,7 @@ export default function MyProjects() {
       toast.success('Note saved successfully');
       void refetchNotes();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || 'Failed to save note');
     },
   });
@@ -276,14 +294,17 @@ export default function MyProjects() {
     setNotes(prev => ({ ...prev, [projectId]: value }));
   }, []);
 
-  const handleSaveNotes = useCallback((projectId: string) => {
+  const handleSaveNotes = useCallback(
+    (projectId: string) => {
       const noteToSave = notes[projectId] || '';
       saveNoteMutation.mutate({
         projectId,
         notes: noteToSave,
       });
       setEditingNotes(null);
-  }, [notes, saveNoteMutation]);
+    },
+    [notes, saveNoteMutation]
+  );
 
   const handleCancelNotes = useCallback(() => {
     setEditingNotes(null);
@@ -340,30 +361,32 @@ export default function MyProjects() {
       ...negotiation.project,
       projectType: 'negotiation' as const,
       negotiationStage: negotiation.stage,
-      meetings: negotiation.meetings || []
+      meetings: negotiation.meetings || [],
     })) || []),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     ...(myProjects?.favoriteProjects.map(project => ({
       ...project,
       projectType: 'favorite' as const,
       negotiationStage: null,
-      meetings: []
+      meetings: [],
     })) || []),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     ...(myProjects?.investedProjects.map(project => ({
       ...project,
       projectType: 'invested' as const,
       negotiationStage: null,
-      meetings: []
-    })) || [])
+      meetings: [],
+    })) || []),
   ] as const;
 
   // Filter projects based on search query
-  const filteredProjects = allProjects.filter(project =>
+  const filteredProjects = allProjects.filter(
+    project =>
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (project.Entrepreneur &&
-      `${project.Entrepreneur.firstName} ${project.Entrepreneur.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+        `${project.Entrepreneur.firstName} ${project.Entrepreneur.lastName}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()))
   );
 
   const totalProjects = allProjects.length;
@@ -375,9 +398,9 @@ export default function MyProjects() {
       <div className="mt-12">
         <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Involved in</h1>
+            <h1 className="text-3xl font-bold mb-2">portfolio</h1>
             <p className="text-muted-foreground">
-              Projects you are involved in through investments, negotiations, and favorites
+              Projects you are portfolio through investments, negotiations, and favorites
             </p>
             <div className="mt-4 flex gap-4 text-sm text-white/70">
               <div className="flex items-center gap-1">
@@ -402,7 +425,7 @@ export default function MyProjects() {
                   type="text"
                   placeholder="Search projects by name or entrepreneur..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-white/20"
                 />
               </div>
@@ -447,7 +470,7 @@ export default function MyProjects() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredProjects.map((project) => (
+              {filteredProjects.map(project => (
                 <ProjectCard
                   key={`${project.projectType}-${project.id}`}
                   project={project}
@@ -469,4 +492,3 @@ export default function MyProjects() {
     </main>
   );
 }
-

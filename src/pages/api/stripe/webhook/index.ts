@@ -105,6 +105,26 @@ async function processEvent(event: Stripe.Event) {
       });
     }
 
+    if (userId && productType === 'public-pitch-ticket') {
+      // Increment user's available public pitch tickets
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          availablePublicPitchTickets: {
+            increment: 1,
+          },
+        },
+      });
+
+      // Notify the user that their pitch ticket is ready
+      await db.notification.create({
+        data: {
+          userId,
+          type: 'PITCH_TICKET_PURCHASED',
+        },
+      });
+    }
+
     if (userId && productType === 'hyper-train-ticket') {
       if (userType === 'INVESTOR') {
         const user = await db.user.findUnique({

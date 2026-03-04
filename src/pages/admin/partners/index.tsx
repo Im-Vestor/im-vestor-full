@@ -11,7 +11,7 @@ import {
 } from "~/components/ui/table";
 import { Switch } from "~/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Building2, Upload, Users, Check, Link2, Pencil, Search } from "lucide-react";
+import { Loader2, Building2, Upload, Users, Check, Link2, Pencil, Search, CheckCircle2, Clock, Eye, Film } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import Image from "next/image";
 import { cn } from "~/lib/utils";
@@ -41,6 +41,8 @@ export default function AdminPartnersPage() {
   const [isMarqueeLinkSheetOpen, setIsMarqueeLinkSheetOpen] = useState(false);
   const [marqueeLinkType, setMarqueeLinkType] = useState<string>("");
   const [marqueeLinkUrl, setMarqueeLinkUrl] = useState<string>("");
+  const [adProofUrl, setAdProofUrl] = useState<string | null>(null);
+  const [isAdProofOpen, setIsAdProofOpen] = useState(false);
   const utils = api.useUtils();
 
   const { data: partners, isLoading } = api.partner.adminGetAll.useQuery();
@@ -72,6 +74,16 @@ export default function AdminPartnersPage() {
     },
     onSettled: () => {
       setUploadingPartnerId(null);
+    }
+  });
+
+  const { mutate: updateStatus } = api.partner.adminUpdateStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Status do parceiro atualizado");
+      void utils.partner.adminGetAll.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Falha ao atualizar status: " + error.message);
     }
   });
 
@@ -138,6 +150,8 @@ export default function AdminPartnersPage() {
                 <TableHead className="text-white">Partner</TableHead>
                 <TableHead className="text-white">Company</TableHead>
                 <TableHead className="text-white">Email</TableHead>
+                <TableHead className="text-white text-center">Status</TableHead>
+                <TableHead className="text-white text-center">Ad Proof</TableHead>
                 <TableHead className="text-white text-center">Referrals</TableHead>
                 <TableHead className="text-white text-center">Marquee Link</TableHead>
                 <TableHead className="text-white text-center">In Carousel</TableHead>
@@ -146,13 +160,13 @@ export default function AdminPartnersPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                   </TableCell>
                 </TableRow>
               ) : filteredPartners?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                     No partners found.
                   </TableCell>
                 </TableRow>
@@ -210,6 +224,50 @@ export default function AdminPartnersPage() {
                     </TableCell>
                     <TableCell className="text-gray-400 font-mono text-xs">
                       {partner.user.email}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        onClick={() =>
+                          updateStatus({
+                            id: partner.id,
+                            status: partner.status === 'ACTIVE' ? 'STANDBY' : 'ACTIVE',
+                          })
+                        }
+                        title="Clique para alternar status"
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:opacity-80",
+                          partner.status === 'ACTIVE'
+                            ? "bg-green-500/15 text-green-400"
+                            : "bg-amber-500/15 text-amber-400"
+                        )}
+                      >
+                        {partner.status === 'ACTIVE' ? (
+                          <><CheckCircle2 className="h-3 w-3" /> Ativo</>
+                        ) : (
+                          <><Clock className="h-3 w-3" /> Stand-by</>
+                        )}
+                      </button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {partner.adProofUrl ? (
+                        <button
+                          onClick={() => {
+                            setAdProofUrl(partner.adProofUrl ?? null);
+                            setIsAdProofOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-all text-xs font-bold"
+                          title="Ver prova de publicidade"
+                        >
+                          {partner.adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+                            <Film className="h-3 w-3" />
+                          ) : (
+                            <Eye className="h-3 w-3" />
+                          )}
+                          Ver
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-600">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       <button
@@ -403,6 +461,36 @@ export default function AdminPartnersPage() {
               </Button>
             </div>
           </div>
+        </SheetContent>
+      </Sheet>
+      <Sheet open={isAdProofOpen} onOpenChange={setIsAdProofOpen}>
+        <SheetContent className="sm:max-w-lg bg-background-secondary border-white/10 overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-white flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              Prova de Publicidade
+            </SheetTitle>
+          </SheetHeader>
+          {adProofUrl && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/20">
+              {adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+                <video src={adProofUrl} controls className="w-full" />
+              ) : (
+                <img src={adProofUrl} alt="Ad Proof" className="w-full object-contain" />
+              )}
+            </div>
+          )}
+          {adProofUrl && (
+            <a
+              href={adProofUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-xs text-primary hover:underline"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Abrir em nova aba
+            </a>
+          )}
         </SheetContent>
       </Sheet>
     </AdminLayout>
