@@ -1,8 +1,11 @@
 import {
   Building,
   Building2,
+  CheckCircle2,
+  Clock,
   ExternalLink,
   Facebook,
+  Film,
   Globe,
   Instagram,
   Linkedin,
@@ -11,6 +14,7 @@ import {
   Pencil,
   Phone,
   Twitter,
+  UploadCloud,
   User,
   Copy,
   Check,
@@ -30,11 +34,26 @@ import { PartnerForm } from './partner-form';
 import { UpdateEmailButton } from '~/components/update-email-button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { toast } from 'sonner';
+import { sendImageToBackend } from '~/utils/file';
 
 export const PartnerProfile = ({ userId }: { userId?: string }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isUploadingAdProof, setIsUploadingAdProof] = useState(false);
   const qrCodeRef = useRef<HTMLDivElement>(null);
+  const utils = api.useUtils();
+
+  const { mutate: updateAdProof } = api.partner.updateAdProof.useMutation({
+    onSuccess: () => {
+      toast.success('Prova de publicidade enviada! O seu perfil foi ativado.');
+      void utils.partner.getByUserId.invalidate();
+      setIsUploadingAdProof(false);
+    },
+    onError: () => {
+      toast.error('Falha ao enviar prova. Por favor tente novamente.');
+      setIsUploadingAdProof(false);
+    },
+  });
 
   // Use different query based on whether userId is provided (admin view) or not (own profile)
   const { data: partner, isPending: isLoading } = userId
@@ -438,6 +457,137 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Ad Proof Section — only for own profile */}
+        {canEdit && (
+          <>
+            <hr className="my-6 border-white/10" />
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-primary-solid" />
+                Prova de Publicidade
+              </h3>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <p className="text-xs text-neutral-400">
+                    Envie uma foto ou vídeo da publicidade do im-vestor.com no seu negócio (online ou físico) para ativar o seu perfil de Parceiro.
+                  </p>
+                  <div className="flex-shrink-0">
+                    {partner?.status === 'ACTIVE' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/15 px-3 py-1 text-xs font-bold text-green-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Ativo
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-400">
+                        <Clock className="h-3.5 w-3.5" />
+                        Stand-by
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {partner?.adProofUrl ? (
+                  <div className="space-y-3">
+                    <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black/20">
+                      {partner.adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+                        <video src={partner.adProofUrl} controls className="w-full max-h-48 object-contain" />
+                      ) : (
+                        <img src={partner.adProofUrl} alt="Prova de publicidade" className="w-full max-h-48 object-contain" />
+                      )}
+                      {isUploadingAdProof && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 backdrop-blur-sm">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-xs text-white font-medium">A enviar...</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+                        <span className="text-xs text-neutral-300">
+                          {partner.status === 'ACTIVE' ? 'Prova aprovada' : 'Prova enviada — a aguardar aprovação'}
+                        </span>
+                      </div>
+                      <label htmlFor="ad-proof-upload" className={isUploadingAdProof ? 'cursor-not-allowed' : 'cursor-pointer'}>
+                        {isUploadingAdProof ? (
+                          <div className="inline-flex items-center gap-1.5 rounded-md bg-white/5 px-2.5 py-1 text-xs text-neutral-400">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            A enviar...
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 rounded-md bg-white/5 border border-white/10 px-2.5 py-1 text-xs text-neutral-300 hover:bg-white/10 hover:text-white transition-all">
+                            <UploadCloud className="h-3 w-3" />
+                            Substituir
+                          </div>
+                        )}
+                        <input
+                          id="ad-proof-upload"
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={async e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setIsUploadingAdProof(true);
+                            const url = await sendImageToBackend(file, partner?.id ?? '');
+                            if (url) {
+                              updateAdProof({ adProofUrl: url });
+                            } else {
+                              setIsUploadingAdProof(false);
+                            }
+                          }}
+                          disabled={isUploadingAdProof}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <label htmlFor="ad-proof-upload" className="block cursor-pointer">
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-white/10 bg-white/5 p-8 hover:border-primary/40 hover:bg-primary/5 transition-all">
+                      {isUploadingAdProof ? (
+                        <>
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-xs text-neutral-400">A enviar ficheiro...</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3 text-neutral-400">
+                            <ImageIcon className="h-6 w-6" />
+                            <span className="text-lg font-light">/</span>
+                            <Film className="h-6 w-6" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-neutral-300 font-medium">Clique para enviar foto ou vídeo</p>
+                            <p className="text-xs text-neutral-500 mt-1">JPG, PNG, MP4, MOV — máx. 50MB</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      id="ad-proof-upload"
+                      type="file"
+                      accept="image/*,video/*"
+                      className="hidden"
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setIsUploadingAdProof(true);
+                        const url = await sendImageToBackend(file, partner?.id ?? '');
+                        if (url) {
+                          updateAdProof({ adProofUrl: url });
+                        } else {
+                          setIsUploadingAdProof(false);
+                        }
+                      }}
+                      disabled={isUploadingAdProof}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
         <hr className="my-6 border-white/10" />

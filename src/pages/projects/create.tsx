@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
+import { Checkbox } from '~/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -35,6 +36,7 @@ const companyFormSchema = z.object({
   quickSolution: z.string().min(10, 'Quick solution must be at least 10 characters'),
   website: z.string().optional(),
   visibility: z.nativeEnum(ProjectVisibility),
+  nonRefundable: z.boolean().default(false),
   foundationDate: z.date(),
   sectorId: z.string().min(1, 'Company sector is required'),
   stage: z.nativeEnum(ProjectStage),
@@ -162,6 +164,7 @@ export default function CreateCompany() {
       photo4Caption: '',
       videoUrl: '',
       videoPitchUrl: '',
+      nonRefundable: false,
       faqs: [{ question: '', answer: '' }],
       socialImpactDescription: '',
       socialImpactBeneficiaries: 0,
@@ -834,6 +837,28 @@ export default function CreateCompany() {
               )}
 
               <h3 className="mt-2 text-lg">Financial Requirements</h3>
+              <FormField
+                control={form.control}
+                name="nonRefundable"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/10 p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <Label className="font-normal text-neutral-200">
+                        Projecto a fundo perdido
+                      </Label>
+                      <p className="text-sm text-white/60">
+                        This project is non-refundable.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

@@ -382,6 +382,33 @@ export const partnerRouter = createTRPCRouter({
       });
     }),
 
+  updateAdProof: protectedProcedure
+    .input(z.object({ adProofUrl: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.partner.update({
+        where: { userId: ctx.auth.userId },
+        data: {
+          adProofUrl: input.adProofUrl,
+          status: 'ACTIVE',
+        },
+      });
+    }),
+
+  adminUpdateStatus: protectedProcedure
+    .input(z.object({ id: z.string(), status: z.enum(['STANDBY', 'ACTIVE']) }))
+    .mutation(async ({ ctx, input }) => {
+      const client = await clerkClient();
+      const currentUser = await client.users.getUser(ctx.auth.userId);
+      const userMetadata = currentUser.publicMetadata as { userIsAdmin?: boolean };
+      if (!userMetadata?.userIsAdmin) {
+        throw new Error('Unauthorized: Only admins can manage partners');
+      }
+      return ctx.db.partner.update({
+        where: { id: input.id },
+        data: { status: input.status },
+      });
+    }),
+
   getReferralStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.auth.userId;
 

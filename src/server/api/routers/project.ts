@@ -74,6 +74,7 @@ export const projectRouter = createTRPCRouter({
         searchQuery: z.string().optional(),
         page: z.number().optional(),
         favorites: z.boolean().optional(),
+        nonRefundable: z.boolean().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -168,6 +169,10 @@ export const projectRouter = createTRPCRouter({
             ? investor.favoriteProjects.map(project => project.id)
             : (vc?.favoriteProjects.map(project => project.id) ?? []),
         };
+      }
+
+      if (input.nonRefundable) {
+        where.nonRefundable = true;
       }
 
       const [total, projects] = await Promise.all([
@@ -277,6 +282,7 @@ export const projectRouter = createTRPCRouter({
           })
         ),
         visibility: z.nativeEnum(ProjectVisibility),
+        nonRefundable: z.boolean().optional(),
         // Add social impact fields
         socialImpactDescription: z.string().optional(),
         socialImpactBeneficiaries: z.number().optional(),
@@ -324,6 +330,7 @@ export const projectRouter = createTRPCRouter({
         investorSlots: input.investorSlots,
         annualRevenue: input.annualRevenue,
         visibility: input.visibility,
+        nonRefundable: input.nonRefundable ?? false,
         monthsToReturn: input.monthsToReturn,
         equity: input.equity,
         investmentGoal: input.investmentGoal,
@@ -437,6 +444,7 @@ export const projectRouter = createTRPCRouter({
         photo4Caption: z.string().optional(),
         videoUrl: z.string().optional(),
         videoPitchUrl: z.string().optional(),
+        nonRefundable: z.boolean().optional(),
         faqs: z.array(
           z.object({
             question: z.string(),
@@ -501,6 +509,7 @@ export const projectRouter = createTRPCRouter({
           photo4Caption: input.photo4Caption,
           videoUrl: input.videoUrl,
           videoPitchUrl: input.videoPitchUrl,
+          nonRefundable: input.nonRefundable,
           currency: input.currency,
           faqs: {
             create: input.faqs,
@@ -661,6 +670,20 @@ export const projectRouter = createTRPCRouter({
         });
       }
 
+      const requestingUser = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+        include: {
+          investor: true,
+          vcGroup: true,
+        },
+      });
+
+      const requestingUserName = requestingUser?.investor
+        ? `${requestingUser.investor.firstName} ${requestingUser.investor.lastName}`
+        : requestingUser?.vcGroup
+          ? requestingUser.vcGroup.name
+          : 'An investor';
+
       // Create connection between the requesting user and the entrepreneur
       const existingConnection = await ctx.db.connection.findUnique({
         where: {
@@ -680,12 +703,18 @@ export const projectRouter = createTRPCRouter({
         });
       }
 
+      await createNotifications(
+        ctx.db,
+        [project.Entrepreneur.userId],
+        NotificationType.VIDEO_ACCESS_REQUESTED
+      );
+
       await sendEmail(
         project.Entrepreneur.firstName,
-        'Video access requested',
-        'A user has requested access to your video presentation.',
+        'Company Video Access Requested',
+        `${requestingUserName} has requested access to your company video for the project "${project.name}".`,
         [project.Entrepreneur.user.email],
-        'Video access requested'
+        'Company Video Access Requested'
       );
 
       return { success: true, videoUrl: project.videoUrl };

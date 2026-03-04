@@ -29,6 +29,7 @@ import {
   adminGradients,
   adminIconColors
 } from "~/components/admin/shared";
+import { SendEmailDialog } from "~/components/admin/send-email-dialog";
 
 export default function DashboardPage() {
   return (
@@ -349,18 +350,24 @@ export function Dashboard() {
                       />
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10"
-                          >
-                            <UserX className="h-3 w-3 mr-1" />
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="sm:max-w-lg">
+                      <div className="flex items-center gap-2">
+                        <SendEmailDialog
+                          userId={user.id}
+                          userEmail={user.email}
+                          userName={user.name || `${user.firstName} ${user.lastName}`.trim()}
+                        />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10"
+                            >
+                              <UserX className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="sm:max-w-lg">
                           <AlertDialogHeader>
                             <AlertDialogTitle className="text-lg">Force Delete User Account</AlertDialogTitle>
                             <AlertDialogDescription className="text-sm">
@@ -449,6 +456,7 @@ export function Dashboard() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

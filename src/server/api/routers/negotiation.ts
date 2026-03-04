@@ -6,6 +6,7 @@ import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { createDailyCall } from '~/utils/daily';
 import { createNotifications } from './notifications';
 import { sendEmail } from '~/utils/email';
+import { generateIcsBuffer } from '~/utils/ics';
 
 export const negotiationRouter = createTRPCRouter({
   getNegotiationByProjectIdAndInvestorIdOrVcGroupId: protectedProcedure
@@ -138,7 +139,16 @@ export const negotiationRouter = createTRPCRouter({
       const meetingUrl = (await meetingDetails).url;
       const recipientEmails: string[] = [];
 
-      // Add entrepreneur/incubator email (they need to accept/reject the meeting)
+      const icsBuffer = generateIcsBuffer({
+        title: 'Im-Vestor Pitch Meeting',
+        startDate: input.date,
+        endDate: addHours(input.date, 1),
+        url: meetingUrl,
+        description: 'Pitch meeting on Im-Vestor platform.',
+      });
+      const attachments = [{ filename: 'meeting.ics', content: icsBuffer, content_type: 'text/calendar' }];
+
+      // Add entrepreneur/incubator email
       if (entrepreneur?.user.email) {
         recipientEmails.push(entrepreneur.user.email);
       }
@@ -146,18 +156,31 @@ export const negotiationRouter = createTRPCRouter({
         recipientEmails.push(incubator.email);
       }
 
-      // Send email to entrepreneur/incubator about the meeting request
       if (recipientEmails.length > 0) {
         const recipientName = entrepreneur ? entrepreneur.firstName : (incubator?.name ?? '');
-        void sendEmail(
-          recipientName,
-          'New pitch meeting request',
-          `An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.`,
-          recipientEmails,
-          'New pitch meeting request',
-          meetingUrl,
-          'View Meeting Details'
-        );
+        if (input.instantMeeting) {
+          void sendEmail(
+            recipientName,
+            'Pitch meeting starting now',
+            `An investor has started an instant pitch meeting. Join now using the link below.`,
+            recipientEmails,
+            'Pitch meeting starting now',
+            meetingUrl,
+            'Join Meeting',
+            attachments
+          );
+        } else {
+          void sendEmail(
+            recipientName,
+            'New pitch meeting request',
+            `An investor has requested a pitch meeting. Please check your dashboard to accept or reject the request.`,
+            recipientEmails,
+            'New pitch meeting request',
+            meetingUrl,
+            'View Meeting Details',
+            attachments
+          );
+        }
       }
 
       // Send confirmation email to investor/VC group
@@ -171,15 +194,29 @@ export const negotiationRouter = createTRPCRouter({
 
       if (investorEmails.length > 0) {
         const investorName = investor ? investor.firstName : (vcGroup?.name ?? '');
-        void sendEmail(
-          investorName,
-          'Pitch meeting request sent',
-          `Your pitch meeting request has been sent. You will be notified once the entrepreneur responds.`,
-          investorEmails,
-          'Pitch meeting request sent',
-          meetingUrl,
-          'View Meeting Details'
-        );
+        if (input.instantMeeting) {
+          void sendEmail(
+            investorName,
+            'Pitch meeting starting now',
+            `Your instant pitch meeting has been created. Share the link below with the other participant to join.`,
+            investorEmails,
+            'Pitch meeting starting now',
+            meetingUrl,
+            'Join Meeting',
+            attachments
+          );
+        } else {
+          void sendEmail(
+            investorName,
+            'Pitch meeting request sent',
+            `Your pitch meeting request has been sent. You will be notified once the entrepreneur responds.`,
+            investorEmails,
+            'Pitch meeting request sent',
+            meetingUrl,
+            'View Meeting Details',
+            attachments
+          );
+        }
       }
 
       void createNotifications(
@@ -263,13 +300,44 @@ export const negotiationRouter = createTRPCRouter({
         },
       });
 
-      void sendEmail(
-        entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? ''),
-        'New meeting request',
-        `An investor has requested a new meeting. Please check your dashboard to accept or reject the request or use the link below ${(await meetingDetails).url}`,
-        [entrepreneur?.user.email ?? '', incubator?.email ?? ''],
-        'New meeting request'
-      );
+      const resolvedMeeting = await meetingDetails;
+      const otherMeetingUrl = resolvedMeeting.url;
+
+      const otherIcsBuffer = generateIcsBuffer({
+        title: 'Im-Vestor Meeting',
+        startDate: input.date,
+        endDate: addHours(input.date, 1),
+        url: otherMeetingUrl,
+        description: 'Meeting on Im-Vestor platform.',
+      });
+      const otherAttachments = [{ filename: 'meeting.ics', content: otherIcsBuffer, content_type: 'text/calendar' }];
+
+      const recipientName = entrepreneur ? (entrepreneur?.firstName ?? '') : (incubator?.name ?? '');
+      const recipientEmail = [entrepreneur?.user.email ?? '', incubator?.email ?? ''];
+
+      if (input.instantMeeting) {
+        void sendEmail(
+          recipientName,
+          'Meeting starting now',
+          `An investor has started an instant meeting. Join now using the link below.`,
+          recipientEmail,
+          'Meeting starting now',
+          otherMeetingUrl,
+          'Join Meeting',
+          otherAttachments
+        );
+      } else {
+        void sendEmail(
+          recipientName,
+          'New meeting request',
+          `An investor has requested a new meeting. Please check your dashboard to accept or reject the request or use the link below ${otherMeetingUrl}`,
+          recipientEmail,
+          'New meeting request',
+          undefined,
+          undefined,
+          otherAttachments
+        );
+      }
 
       return existingNegotiation;
     }),

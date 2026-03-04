@@ -9,13 +9,15 @@ export async function sendEmail(
   to: Array<string>,
   subject: string,
   link?: string,
-  buttonText?: string
+  buttonText?: string,
+  attachments?: Array<{ filename: string; content: Buffer; content_type?: string }>
 ) {
   const { data, error } = await resend.emails.send({
     from: 'Im-Vestor <hey@updates.im-vestor.com>',
     to: to.filter(email => email && email.trim() !== ''),
     subject: subject,
     react: EmailTemplate({ name, firstText, secondText, link, buttonText }),
+    attachments,
   });
 
   if (error) {

@@ -334,7 +334,6 @@ model Project {
   videoPitchUrl             String?
   boostedUntil              DateTime?
   actionPlan                String?
-  nonRefundable             Boolean                 @default(false)
   files                     File[]
   incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
   investorNotes             InvestorProjectNote[]
@@ -568,7 +567,6 @@ enum HyperTrainItemType {
   PROJECT
   INVESTOR
   NEWS
-  PUBLIC_PITCH
 }
 
 enum ProjectStatus {
@@ -639,8 +637,6 @@ enum NotificationType {
   SUPPORT_TICKET_CREATED
   SUPPORT_TICKET_RECEIVED
   PITCH_REQUEST
-  PITCH_TICKET_PURCHASED
-  VIDEO_ACCESS_REQUESTED
 }
 
 model PitchOfTheWeek {

@@ -72,7 +72,6 @@ export const PartnerForm = ({ partner, onCancel }: PartnerFormProps) => {
 
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-
   const { mutate: updatePartner, isPending: isUpdatingPartner } = api.partner.update.useMutation({
     onSuccess: () => {
       toast.success('Profile updated successfully!');
