@@ -28,7 +28,7 @@ export function generateIcsBuffer(params: {
     `DESCRIPTION:${description}`,
   ];
 
-  if (params.url && params.url.startsWith('http')) {
+  if (params.url?.startsWith('http')) {
     lines.push(`URL:${params.url}`);
   }
 

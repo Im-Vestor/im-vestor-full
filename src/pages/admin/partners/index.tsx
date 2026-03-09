@@ -258,7 +258,7 @@ export default function AdminPartnersPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-all text-xs font-bold"
                           title="Ver prova de publicidade"
                         >
-                          {partner.adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+                          {/\.(mp4|webm|mov|avi)$/i.exec(partner.adProofUrl) ? (
                             <Film className="h-3 w-3" />
                           ) : (
                             <Eye className="h-3 w-3" />
@@ -473,7 +473,7 @@ export default function AdminPartnersPage() {
           </SheetHeader>
           {adProofUrl && (
             <div className="rounded-xl overflow-hidden border border-white/10 bg-black/20">
-              {adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+              {/\.(mp4|webm|mov|avi)$/i.exec(adProofUrl) ? (
                 <video src={adProofUrl} controls className="w-full" />
               ) : (
                 <img src={adProofUrl} alt="Ad Proof" className="w-full object-contain" />

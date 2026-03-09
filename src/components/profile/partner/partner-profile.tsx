@@ -491,7 +491,7 @@ export const PartnerProfile = ({ userId }: { userId?: string }) => {
                 {partner?.adProofUrl ? (
                   <div className="space-y-3">
                     <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black/20">
-                      {partner.adProofUrl.match(/\.(mp4|webm|mov|avi)$/i) ? (
+                      {/\.(mp4|webm|mov|avi)$/i.exec(partner.adProofUrl) ? (
                         <video src={partner.adProofUrl} controls className="w-full max-h-48 object-contain" />
                       ) : (
                         <img src={partner.adProofUrl} alt="Prova de publicidade" className="w-full max-h-48 object-contain" />

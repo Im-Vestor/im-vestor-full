@@ -1,4 +1,4 @@
-import DailyIframe from '@daily-co/daily-js';
+import DailyIframe, { type DailyCall as DailyCallType } from '@daily-co/daily-js';
 import { useEffect, useRef } from 'react';
 
 interface DailyCallProps {
@@ -8,7 +8,7 @@ interface DailyCallProps {
 
 export function DailyCall({ url, onLeave }: DailyCallProps) {
   const callRef = useRef<HTMLDivElement>(null);
-  const callFrameRef = useRef<DailyIframe.DailyCall | null>(null);
+  const callFrameRef = useRef<DailyCallType | null>(null);
 
   useEffect(() => {
     if (!callRef.current || callFrameRef.current) return;
