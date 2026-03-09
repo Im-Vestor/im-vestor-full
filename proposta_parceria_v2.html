@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta de Parceria im-vestor.com</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a2f4a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0a1929 0%, #1a2f4a 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f0d686 0%, #d4af37 50%, #f0d686 100%);
+        }
+        
+        .logo {
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #f0d686;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        
+        .content {
+            padding: 50px 40px;
+        }
+        
+        .greeting {
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f0d686;
+        }
+        
+        .section p {
+            color: #333;
+            line-height: 1.8;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #fff9f0 0%, #fffbf5 100%);
+            border-left: 5px solid #d4af37;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .highlight-box h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .highlight-box p {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .benefit-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #f0d686;
+        }
+        
+        .benefit-card h4 {
+            color: #d4af37;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .benefit-card p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        .example-box {
+            background: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .example-box .label {
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        
+        .example-box .value {
+            color: #1b5e20;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .warning-box p {
+            color: #856404;
+            line-height: 1.7;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #0a1929 0%, #1a2f4a 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .cta-section h3 {
+            color: #f0d686;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            color: white;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #f0d686 0%, #d4af37 100%);
+            color: #0a1929;
+            padding: 18px 45px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2em;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 20px rgba(240, 214, 134, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(240, 214, 134, 0.6);
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .features-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #333;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+        
+        .features-list li:before {
+            content: "💎";
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+        
+        .cost-highlight {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 3px solid #28a745;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cost-highlight h3 {
+            color: #155724;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .cost-highlight p {
+            color: #155724;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 3px solid #f0d686;
+        }
+        
+        .footer p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .footer .contact {
+            color: #d4af37;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg width="140" height="60" viewBox="0 0 221.35 91.15">
+                    <path fill="#f0d686" d="M135.26,18.36s.04-.08.06-.12c.04-.11.08-.22.1-.34,0-.02,0-.04,0-.06.02-.1.03-.2.03-.3v-.02s0-.07-.01-.1c0-.08,0-.16-.02-.24,0-.05-.02-.1-.03-.15-.02-.06-.03-.13-.06-.19-.02-.05-.04-.1-.06-.15-.03-.06-.05-.11-.08-.17-.03-.05-.06-.1-.1-.14-.02-.03-.04-.06-.06-.09L122.65.67c-.34-.43-.83-.67-1.35-.67h-26.59c-.52,0-1.01.24-1.35.67l-12.37,15.59s-.04.06-.06.09c-.03.05-.06.1-.1.14-.03.06-.06.11-.09.18-.02.05-.04.1-.06.14-.03.07-.05.14-.06.21-.01.04-.02.08-.03.13-.02.09-.02.18-.03.27,0,.02,0,.05,0,.07v.02c0,.12.01.24.03.36h0c.02.13.06.25.1.36,0,.02.02.05.03.07.04.08.08.17.13.25.03.05.06.08.1.13.03.05.06.1.11.14l25.77,28.88c.34.37.8.59,1.28.59.48,0,.95-.22,1.28-.59l25.56-28.88s.06-.09.1-.14.07-.08.1-.13c.04-.06.07-.13.1-.2h0ZM96.93,19.43l6.9,19.39-17.3-19.39h10.4ZM115.3,19.43l-7.2,20.68-7.36-20.68h14.56,0ZM101.67,15.59l6.34-9.92,6.34,9.92s-12.69,0-12.69,0ZM119.1,19.43h10.42l-17.18,19.41,6.76-19.41ZM129.81,15.59h-11.14l-7.52-11.75h9.33l9.33,11.75ZM95.53,3.84h9.33l-7.52,11.75h-11.13l9.33-11.75h0Z"/>
+                </svg>
+            </div>
+            <h1>Proposta de Parceria</h1>
+            <p class="subtitle">Junte-se à comunidade empreendedora e gere receita passiva</p>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                <p>Prezado/a parceiro/a,</p>
+                <p>Obrigado pelo interesse demonstrado na nossa conversa telefónica. Este documento explica em detalhe a oportunidade de parceria com a <strong>im-vestor.com</strong> e como pode beneficiar do crescimento da nossa comunidade empreendedora.</p>
+            </div>
+            
+            <div class="section">
+                <h2>Quem Somos</h2>
+                <p>A <strong>im-vestor.com</strong> é uma plataforma de empreendedorismo que conecta empreendedores a investidores, incubadoras e grupos de investimento.</p>
+                
+                <div class="highlight-box">
+                    <h3>A Nossa Missão</h3>
+                    <p>O nosso objetivo foi criar uma plataforma que acompanhe o nascimento e crescimento de novas ideias e negócios num ambiente <strong>seguro, ágil e intuitivo</strong>.</p>
+                    <p>Queremos simplificar o acesso ao investimento e facilitar as conexões que transformam ideias em empresas de sucesso.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Porque Esta Parceria é Importante</h2>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <h4>Para Nós</h4>
+                        <p>A exposição nacional através dos nossos parceiros ajuda-nos a crescer esta comunidade empreendedora. Cada estabelecimento parceiro é uma porta de entrada para novos talentos e oportunidades.</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <h4>Para Si</h4>
+                        <p>Identificámos que o seu público existente pode gerar uma receita passiva que, caso contrário, seria perdida. Sem esforço da sua parte, o seu espaço torna-se numa fonte de rendimento adicional.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Sistema de Referência: Transparência Total</h2>
+                
+                <div class="warning-box">
+                    <h3>⚠️ Isto NÃO é um Esquema Pirâmide</h3>
+                    <p>O que fazemos é um <strong>sistema de referência e partilha completamente legal</strong> que lhe permite receber metade do valor de entrada e comissões das taxas de sucesso cobradas aos seus referidos.</p>
+                    <p>Não há recrutamento em cascata, não há níveis, não há investimento da sua parte. Apenas um código QR que liga pessoas à plataforma.</p>
+                </div>
+                
+                <h3 style="color: #d4af37; margin: 30px 0 20px 0; font-size: 1.4em;">Como Funciona a Remuneração</h3>
+                
+                <p><strong>Você recebe comissões em duas situações:</strong></p>
+                
+                <div class="example-box">
+                    <p class="label">📌 Situação 1: Um referido seu entra na plataforma</p>
+                    <p class="value">Você ganha: 12,50€ (antes de impostos)</p>
+                    <p style="color: #666; margin-top: 10px; font-size: 0.95em;">*Preço de lançamento do 1º ano: 25€ por inscrição (apenas para utilizadores que entrem através de um parceiro). A im-vestor.com e o parceiro dividem 50%/50% o valor da inscrição. No 2º ano, será 99,99€ — apenas para novos utilizadores.</p>
+                </div>
+                
+                <div class="example-box">
+                    <p class="label">📌 Situação 2: Um referido seu fecha um negócio na plataforma (se você for o único parceiro)</p>
+                    <p class="value">Você recebe: Mínimo 2.500€ (antes de impostos)</p>
+                    <p style="color: #666; margin-top: 10px; font-size: 0.95em;">*Exemplo: Negócio de 100.000€ → Comissão de 5% = 5.000€ → Você recebe 50% = 2.500€</p>
+                </div>
+                
+                <div class="example-box">
+                    <p class="label">📌 Situação 3: Um referido seu fecha negócio com outro utilizador também referenciado por outro parceiro (máx. 2 parceiros por negócio)</p>
+                    <p class="value">Você recebe: Mínimo 1.250€ (antes de impostos)</p>
+                    <p style="color: #666; margin-top: 10px; font-size: 0.95em;">*Neste caso, a comissão é dividida pelos parceiros referentes envolvidos no negócio</p>
+                </div>
+                
+                <p style="margin-top: 25px; color: #d4af37; font-weight: 600; font-size: 1.1em;">💡 E isto é recorrente: cada pessoa que referenciar pode gerar receita durante anos!</p>
+            </div>
+            
+            <div class="section">
+                <h2>O Que Esperamos de Si</h2>
+                
+                <p><strong>Não lhe queremos dar trabalho.</strong> Esperamos que compreenda que quanto maior for a exposição do seu Código QR de referência ao seu público, maiores são as hipóteses do seu público interagir e juntar-se à comunidade.</p>
+                
+                <div class="highlight-box">
+                    <h3>O Que Oferecemos</h3>
+                    <ul class="features-list">
+                        <li><strong>Dashboard personalizado</strong> onde tem acesso ao seu material de marketing</li>
+                        <li><strong>Acompanhamento em tempo real</strong> do fluxo de novos referidos</li>
+                        <li><strong>Status do seu negócio</strong> atualizado ao segundo</li>
+                        <li><strong>Simulação de potenciais comissões</strong> baseada na sua atividade</li>
+                        <li><strong>Suporte dedicado</strong> sempre que precisar</li>
+                    </ul>
+                </div>
+                
+                <p style="margin-top: 20px;">Tudo o que precisa de fazer é colocar o código QR em locais visíveis do seu estabelecimento. O resto é connosco.</p>
+            </div>
+            
+            <div class="cost-highlight">
+                <h3>💰 Custo de Adesão</h3>
+                <p>0€ (ZERO EUROS)</p>
+                <p style="font-size: 1em; margin-top: 10px;">Sem taxas escondidas. Sem mensalidades. Sem custos.</p>
+            </div>
+            
+            <div class="section">
+                <h2>🌟 Condições Especiais de Parceiro Pioneiro</h2>
+                <p>Como está entre os primeiros parceiros a juntar-se à im-vestor, beneficia de condições especiais que serão comunicadas após a adesão. Os parceiros pioneiros têm vantagens exclusivas no crescimento da plataforma.</p>
+            </div>
+            
+            <div class="cta-section">
+                <h3>Pronto para Começar?</h3>
+                <p>Para se tornar nosso parceiro, basta aceder ao link abaixo e completar o registo:</p>
+                <a href="https://www.im-vestor.com/sign-up/partner" class="cta-button">Tornar-me Parceiro</a>
+                <p style="margin-top: 25px; font-size: 0.95em; opacity: 0.9;">Após o registo, receberá imediatamente acesso ao seu dashboard e aos materiais de marketing.</p>
+            </div>
+            
+            <div class="section" style="text-align: center; margin-top: 40px;">
+                <h2 style="text-align: center; border: none; padding-bottom: 0;">Sejam Bem-Vindos ao im-vestor.com</h2>
+                <p style="font-size: 1.1em; color: #d4af37; margin-top: 15px;">Juntos, vamos construir a maior comunidade empreendedora de Portugal. 🚀</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Tem dúvidas?</strong></p>
+            <p class="contact">Contacte-nos ou visite o nosso site em <a href="https://www.im-vestor.com" style="color: #d4af37;">www.im-vestor.com</a></p>
+            <p style="margin-top: 20px; font-size: 0.9em; color: #999;">© 2026 im-vestor.com - Todos os direitos reservados</p>
+        </div>
+    </div>
+</body>
+</html>

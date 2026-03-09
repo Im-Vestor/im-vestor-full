@@ -18,10 +18,35 @@ import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Button } from '~/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '~/hooks/use-translation';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { useRouter } from 'next/router';
+
+function useCountdown(targetDate: Date) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    function calc() {
+      const diff = targetDate.getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor(diff / 3600000) % 24,
+        minutes: Math.floor(diff / 60000) % 60,
+        seconds: Math.floor(diff / 1000) % 60,
+      });
+    }
+    calc();
+    const id = setInterval(calc, 1000);
+    return () => clearInterval(id);
+  }, [targetDate]);
+
+  return timeLeft;
+}
 
 const StarField = dynamic(() => import('~/components/ui/StarField'), {
   ssr: false,
@@ -42,10 +67,13 @@ const PartnersMarquee = dynamic(() => import('~/components/landing/PartnersMarqu
   loading: () => <div className="min-h-[300px]" />,
 });
 
+const LAUNCH_DATE = new Date('2026-06-01T00:00:00');
+
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const t = useTranslation();
   const router = useRouter();
+  const countdown = useCountdown(LAUNCH_DATE);
 
   useEffect(() => {
     if (isVideoPlaying) {
@@ -61,6 +89,22 @@ export default function Home() {
 
   return (
     <div className="w-full">
+      <Link href="/count-down">
+        <div className="w-full bg-[#f0d686] py-2 px-4 flex items-center justify-center gap-3 text-sm cursor-pointer hover:brightness-95 transition-all z-[60] relative">
+          <span className="text-[#0a1929]/70 font-medium tracking-wide uppercase text-xs hidden sm:block">Launching in</span>
+          <div className="flex items-center gap-2 font-mono font-bold text-[#0a1929]">
+            <span>{String(countdown.days).padStart(3, '0')}d</span>
+            <span className="opacity-40">:</span>
+            <span>{String(countdown.hours).padStart(2, '0')}h</span>
+            <span className="opacity-40">:</span>
+            <span>{String(countdown.minutes).padStart(2, '0')}m</span>
+            <span className="opacity-40">:</span>
+            <span>{String(countdown.seconds).padStart(2, '0')}s</span>
+          </div>
+          <span className="text-[#0a1929]/60 text-xs hidden sm:block">— 1 June 2026</span>
+          <ArrowRight className="h-3 w-3 text-[#0a1929]/60" />
+        </div>
+      </Link>
       <main className="min-h-screen pt-32">
         <div className="absolute -top-[500px] left-1/2 h-[600px] w-[500px] -translate-x-1/2 rounded-full bg-[#E5CD82]/10 blur-3xl md:w-[1000px] z-[10] hidden md:block" />
         <header className="md:m-6 flex justify-end gap-2 fixed top-0 md:top-10 md:right-2 bg-background/90 border md:border-none md:bg-transparent border-white/10 w-full sm:right-40 z-50 py-2 px-2 md:py-4 md:px-6">
