@@ -5,7 +5,7 @@ import { env } from '~/env.js';
 import { db } from '~/server/db';
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-05-28.basil',
+  apiVersion: '2026-02-25.clover',
 });
 
 interface Product {

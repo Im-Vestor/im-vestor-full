@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-05-28.basil' as any,
+    apiVersion: '2026-02-25.clover' as any,
   });
 
   const signature = req.headers['stripe-signature'] as string;
