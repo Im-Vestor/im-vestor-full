@@ -69,26 +69,28 @@ model User {
   referralCode                String               @unique
   userType                    UserType
   availablePokes              Int                  @default(0)
-  availablePublicPitchTickets Int                  @default(0)
   stripeCustomerId            String?
   availableBoosts             Int                  @default(0)
   status                      UserStatus           @default(ACTIVE)
   createdAt                   DateTime?            @default(now())
   updatedAt                   DateTime?            @default(now()) @updatedAt
+  availablePublicPitchTickets Int                  @default(0)
   followingConnections        Connection[]         @relation("Follower")
   followerConnections         Connection[]         @relation("Following")
   entrepreneur                Entrepreneur?
   incubator                   Incubator?
   investor                    Investor?
+  Message                     Message[]
   NewsLike                    NewsLike[]
   Notification                Notification[]
   partner                     Partner?
+  pitchOfTheWeeks             PitchOfTheWeek[]
   referralsAsReferred         Referral[]           @relation("ReferredToUser")
   referralsAsReferrer         Referral[]           @relation("ReferrerToUser")
   supportTickets              SupportTicket[]
   supportTicketReplies        SupportTicketReply[] @relation("AdminReplies")
   vcGroup                     VcGroup?
-  pitchOfTheWeeks             PitchOfTheWeek[]
+  Conversation                Conversation[]       @relation("ConversationParticipants")
 
   @@index([userType])
 }
@@ -198,8 +200,8 @@ model Partner {
   isFeatured      Boolean          @default(false)
   marqueeLinkType MarqueeLinkType?
   marqueeLinkUrl  String?
-  status          PartnerStatus    @default(STANDBY)
   adProofUrl      String?
+  status          PartnerStatus    @default(STANDBY)
   user            User             @relation(fields: [userId], references: [id])
 }
 
@@ -331,15 +333,16 @@ model Project {
   photo2Caption             String?
   photo3Caption             String?
   photo4Caption             String?
-  videoPitchUrl             String?
   boostedUntil              DateTime?
   actionPlan                String?
+  videoPitchUrl             String?
   nonRefundable             Boolean                 @default(false)
   files                     File[]
   incubatorEntrepreneurs    IncubatorEntrepreneur[] @relation("IncubatorEntrepreneurs")
   investorNotes             InvestorProjectNote[]
   knowYourNumbers           KnowYourNumbers?
   negotiations              Negotiation[]
+  pitchOfTheWeeks           PitchOfTheWeek[]
   country                   Country?                @relation(fields: [countryId], references: [id])
   Entrepreneur              Entrepreneur?           @relation(fields: [entrepreneurId], references: [id])
   Incubator                 Incubator?              @relation(fields: [incubatorId], references: [id])
@@ -351,7 +354,6 @@ model Project {
   favoriteVcGroups          VcGroup[]               @relation("FavoriteVcGroups")
   investedInvestors         Investor[]              @relation("InvestedInvestors")
   investedVcGroups          VcGroup[]               @relation("InvestedVcGroups")
-  pitchOfTheWeeks           PitchOfTheWeek[]
 
   @@index([sectorId])
   @@index([visibility, status, boostedUntil, createdAt])
@@ -464,6 +466,7 @@ model Notification {
   userId     String
   investorId String?
   message    String?
+  senderId   String?
   user       User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
@@ -549,6 +552,52 @@ model NewsLike {
   User         User     @relation(fields: [userId], references: [id])
 
   @@unique([notionPageId, userId])
+}
+
+model Conversation {
+  id        String    @id
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Message   Message[]
+  User      User[]    @relation("ConversationParticipants")
+
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String       @id
+  content        String
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+  senderId       String
+  conversationId String
+  Conversation   Conversation @relation(fields: [conversationId], references: [id])
+  User           User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, readAt])
+  @@index([senderId])
+}
+
+model PitchOfTheWeek {
+  id               String               @id @default(uuid())
+  userId           String
+  projectId        String?
+  image            String
+  video            String?
+  date1            DateTime
+  date2            DateTime
+  dailyRoomName1   String?
+  dailyRoomUrl1    String?
+  dailyRoomName2   String?
+  dailyRoomUrl2    String?
+  status           PitchOfTheWeekStatus @default(PENDING)
+  hyperTrainItemId String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  hyperTrainItem   HyperTrainItem?      @relation(fields: [hyperTrainItemId], references: [id])
+  project          Project?             @relation(fields: [projectId], references: [id])
+  user             User                 @relation(fields: [userId], references: [id])
 }
 
 enum MarqueeLinkType {
@@ -642,28 +691,7 @@ enum NotificationType {
   PITCH_REQUEST
   PITCH_TICKET_PURCHASED
   VIDEO_ACCESS_REQUESTED
-}
-
-model PitchOfTheWeek {
-  id               String               @id @default(uuid())
-  userId           String
-  projectId        String?
-  image            String
-  video            String?
-  date1            DateTime
-  date2            DateTime
-  dailyRoomName1   String?
-  dailyRoomUrl1    String?
-  dailyRoomName2   String?
-  dailyRoomUrl2    String?
-  status           PitchOfTheWeekStatus @default(PENDING)
-  hyperTrainItemId String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-
-  user           User            @relation(fields: [userId], references: [id])
-  project        Project?        @relation(fields: [projectId], references: [id])
-  hyperTrainItem HyperTrainItem? @relation(fields: [hyperTrainItemId], references: [id])
+  MESSAGE_RECEIVED
 }
 
 enum PitchOfTheWeekStatus {
