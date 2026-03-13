@@ -467,7 +467,7 @@ export const negotiationRouter = createTRPCRouter({
               negotiation.stage === NegotiationStage.PITCH
                 ? NegotiationStage.NEGOTIATION
                 : negotiation.stage === NegotiationStage.NEGOTIATION
-                  ? NegotiationStage.DETAILS
+                  ? NegotiationStage.CLOSING
                   : NegotiationStage.CLOSED,
           },
         });

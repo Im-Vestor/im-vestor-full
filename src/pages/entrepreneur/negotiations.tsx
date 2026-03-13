@@ -22,14 +22,14 @@ import { api } from '~/utils/api';
 const NEGOTIATION_STEPS = [
   { label: 'Pitch' },
   { label: 'Negotiation' },
-  { label: 'Details' },
+  { label: 'Closing' },
   { label: 'Closed' },
 ];
 
 const STAGE_TO_STEP_MAP = {
   PITCH: 0,
   NEGOTIATION: 1,
-  DETAILS: 2,
+  CLOSING: 2,
   CLOSED: 3,
 };
 

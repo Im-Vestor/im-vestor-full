@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 const NEGOTIATION_STAGE_LABELS = {
   PITCH: 'Pitch',
   NEGOTIATION: 'Negotiation',
-  DETAILS: 'Details',
+  CLOSING: 'Closing',
   CLOSED: 'Closed',
   CANCELLED: 'Cancelled',
 };
@@ -33,7 +33,7 @@ const NEGOTIATION_STAGE_LABELS = {
 const NEGOTIATION_STAGE_COLORS = {
   PITCH: 'bg-blue-100 text-blue-800',
   NEGOTIATION: 'bg-yellow-100 text-yellow-800',
-  DETAILS: 'bg-purple-100 text-purple-800',
+  CLOSING: 'bg-purple-100 text-purple-800',
   CLOSED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
 };

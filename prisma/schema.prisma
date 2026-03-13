@@ -671,7 +671,7 @@ enum ProjectStage {
 enum NegotiationStage {
   PITCH
   NEGOTIATION
-  DETAILS
+  CLOSING
   CLOSED
   CANCELLED
 }
