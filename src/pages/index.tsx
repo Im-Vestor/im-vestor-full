@@ -91,7 +91,9 @@ export default function Home() {
     <div className="w-full">
       <Link href="/count-down">
         <div className="w-full bg-[#f0d686] py-2 px-4 flex items-center justify-center gap-3 text-sm cursor-pointer hover:brightness-95 transition-all z-[60] relative">
-          <span className="text-[#0a1929]/70 font-medium tracking-wide uppercase text-xs hidden sm:block">Launching in</span>
+          <span className="text-[#0a1929]/70 font-medium tracking-wide uppercase text-xs hidden sm:block">
+            Launching in
+          </span>
           <div className="flex items-center gap-2 font-mono font-bold text-[#0a1929]">
             <span>{String(countdown.days).padStart(3, '0')}d</span>
             <span className="opacity-40">:</span>
@@ -116,7 +118,10 @@ export default function Home() {
             <div className="flex items-center justify-end gap-2">
               <LanguageSwitcher />
               <Link href="/login">
-                <Button variant="outline" className="opacity-100 border-2 border-white/15 hover:opacity-80">
+                <Button
+                  variant="outline"
+                  className="opacity-100 border-2 border-white/15 hover:opacity-80"
+                >
                   <LogIn className="h-6 w-6" />
                   {t('signIn')}
                 </Button>
@@ -130,9 +135,7 @@ export default function Home() {
             <div className="relative">
               <Image src="/logo/imvestor.png" alt="Imvestor" width={64} height={64} />
             </div>
-            <span className="mt-2 text-2xl font-medium">
-              Im-Vestor
-            </span>
+            <span className="mt-2 text-2xl font-medium">Im-Vestor</span>
             <h1 className="mt-8 md:mt-16 px-4 font-['Segoe UI'] text-3xl sm:text-5xl md:text-[84px] leading-[120%] bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
               {t('weMeanBusiness')}
             </h1>
@@ -339,9 +342,7 @@ export default function Home() {
             <LoginSection />
           </StarField>
 
-          <StarField>
-            <PartnersMarquee />
-          </StarField>
+          <PartnersMarquee />
 
           <StarField>
             <footer className="mx-auto mb-16 mt-16 md:mt-32 w-full max-w-7xl px-6 md:px-12">

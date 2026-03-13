@@ -30,6 +30,7 @@ export type NotificationLog = {
   userId: string;
   investorId: string | null;
   message: string | null;
+  senderId: string | null;
   user: {
     email: string;
     userType: UserType;
