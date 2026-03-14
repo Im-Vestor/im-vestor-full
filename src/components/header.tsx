@@ -66,7 +66,7 @@ const INVESTOR_MENUS = [
     href: '/home',
   },
   {
-    label: 'portfolio',
+    label: 'Portfolio',
     href: '/investor/portfolio',
   },
   {
@@ -278,7 +278,7 @@ export const Header = () => {
                 key={menu.href}
                 variant="ghost"
                 size="sm"
-                className={`${path === menu.href ? 'text-[#EFD687]' : ''} relative`}
+                className={`${path === menu.href ? 'text-[#EFD687]' : ''} relative capitalize`}
                 onClick={() => void handleNavigation(menu.href, menu.label)}
               >
                 {menu.label}
