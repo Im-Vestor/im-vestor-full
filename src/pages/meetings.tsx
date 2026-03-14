@@ -210,9 +210,7 @@ export default function Meetings() {
     <main className="mx-auto min-h-screen max-w-6xl p-8">
       <Header />
 
-      {/* Calendar + Day meetings */}
       <div className="mt-12 flex max-h-[450px] items-stretch gap-6">
-        {/* Calendar panel */}
         <div className="flex w-2/5 flex-col rounded-xl border-2 border-white/10 bg-card p-6">
           <div className="mb-5 flex items-center gap-3">
             <div className="rounded-xl bg-[#EFD687] p-3">
@@ -236,7 +234,6 @@ export default function Meetings() {
           </div>
         </div>
 
-        {/* Day meetings panel */}
         <div className="flex w-3/5 flex-col rounded-xl border-2 border-white/10 bg-card p-6">
           {isEntrepreneur ? (
             <div className="mb-4 flex h-[44px] shrink-0 items-center justify-between rounded-lg border border-white/8 bg-white/[0.03] px-4">
@@ -278,7 +275,6 @@ export default function Meetings() {
                         : 'border-white/8 bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]'
                     }`}
                   >
-                    {/* Card body */}
                     <div className="flex items-start gap-3 p-4">
                       <div className="shrink-0">
                         <ProjectLogo
@@ -325,7 +321,6 @@ export default function Meetings() {
                       </div>
                     </div>
 
-                    {/* Card footer */}
                     <div className="flex items-center justify-between border-t border-white/[0.06] bg-white/[0.015] px-4 py-2.5">
                       <div className="flex items-center gap-1">
                         {isEntrepreneur ? (
@@ -393,7 +388,6 @@ export default function Meetings() {
         </div>
       </div>
 
-      {/* Upcoming meetings */}
       <div className="mt-6 rounded-xl border-2 border-white/10 bg-card p-8">
         <div className="mb-6 flex items-center gap-3">
           <div className="rounded-xl bg-white/5 p-2.5">
