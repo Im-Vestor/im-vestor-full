@@ -627,14 +627,18 @@ export const projectRouter = createTRPCRouter({
         return;
       }
 
+      const ownerId = project.Entrepreneur?.userId ?? project.Incubator?.userId;
+
       const [, projectView] = await Promise.all([
-        ctx.db.notification.create({
-          data: {
-            userId: project.Entrepreneur?.userId ?? project.Incubator?.userId ?? '',
-            type: NotificationType.PROJECT_VIEW,
-            investorId: investor.id,
-          },
-        }),
+        ownerId
+          ? ctx.db.notification.create({
+              data: {
+                userId: ownerId,
+                type: NotificationType.PROJECT_VIEW,
+                investorId: investor.id,
+              },
+            })
+          : Promise.resolve(null),
         ctx.db.projectView.create({
           data: {
             projectId: input.projectId,

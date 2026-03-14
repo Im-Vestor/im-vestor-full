@@ -163,21 +163,21 @@ function ProjectCard({
         <div className="flex lg:flex-col gap-2 lg:items-end flex-wrap">
           <Link
             href={`/projects/${project.id}`}
-            className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
+            className="flex h-8 w-full justify-center items-center  rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
           >
             <Eye className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>View</span>
           </Link>
           <Link
             href={`/projects/${project.id}/edit`}
-            className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
+            className="flex h-8 w-full justify-center items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
           >
             <Pencil className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>Edit</span>
           </Link>
           <Link
             href={`/projects/${project.id}/know-your-numbers`}
-            className="flex h-8 w-fit items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
+            className="flex h-8 w-full justify-center items-center rounded-md border border-white/10 bg-white/5 px-2 sm:px-3 text-xs sm:text-sm hover:bg-white/10 transition-colors"
           >
             <DollarSign className="mr-1 sm:mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>Numbers</span>

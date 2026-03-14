@@ -19,12 +19,14 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
         <div className="absolute left-4 right-4 top-1/4 h-[2px] -translate-y-1/2 bg-white/10" />
 
         {/* Progress line */}
-        <div
-          className="absolute left-4 right-4 top-1/4 h-[2px] -translate-y-1/2 bg-[#EFD687] transition-all duration-300"
-          style={{
-            width: `${(currentStep / (steps.length - 1)) * 100}%`,
-          }}
-        />
+        <div className="absolute left-4 right-4 top-1/4 h-[2px] -translate-y-1/2 overflow-hidden">
+          <div
+            className="h-full bg-[#EFD687] transition-all duration-300"
+            style={{
+              width: `${(currentStep / (steps.length - 1)) * 100}%`,
+            }}
+          />
+        </div>
 
         {steps.map((step, index) => {
           const isCompleted = currentStep > index;

@@ -360,7 +360,7 @@ export default function Meetings() {
                           }`}
                           onClick={() => window.open(meeting.url ?? '', '_blank')}
                         >
-                          {isLive ? '▶ Enter Now' : 'Enter Meeting'}
+                          {isLive ? 'Enter Now' : 'Enter Meeting'}
                         </Button>
                       </div>
                     </div>

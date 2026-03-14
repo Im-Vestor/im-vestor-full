@@ -386,6 +386,7 @@ model Negotiation {
   projectId                         String
   vcGroupId                         String?
   meetings                          Meeting[]
+  files                             File[]
   investor                          Investor?        @relation(fields: [investorId], references: [id])
   project                           Project          @relation(fields: [projectId], references: [id])
   VcGroup                           VcGroup?         @relation(fields: [vcGroupId], references: [id])
@@ -394,6 +395,8 @@ model Negotiation {
   @@index([projectId])
   @@index([vcGroupId])
   @@index([stage])
+  @@index([projectId, investorId])
+  @@index([projectId, vcGroupId])
 }
 
 model KnowYourNumbers {
@@ -436,13 +439,20 @@ model ProjectView {
 }
 
 model File {
-  id        String   @id @default(uuid())
-  name      String
-  type      String
-  size      Int
-  url       String
-  projectId String?
-  Project   Project? @relation(fields: [projectId], references: [id])
+  id            String       @id @default(uuid())
+  name          String
+  type          String
+  size          Int
+  url           String
+  createdAt     DateTime     @default(now())
+  uploadedBy    String?
+  projectId     String?
+  negotiationId String?
+  Project       Project?     @relation(fields: [projectId], references: [id])
+  Negotiation   Negotiation? @relation(fields: [negotiationId], references: [id])
+
+  @@index([projectId])
+  @@index([negotiationId])
 }
 
 model Connection {

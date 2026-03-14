@@ -67,13 +67,18 @@ async function queryAllDatabasePages(databaseId: string) {
 async function resolveGeneralPageIdFromNewsRoot() {
   if (!env.NOTION_NEWS_PAGE_ID) return undefined;
 
-  const children = await listAllBlockChildren(env.NOTION_NEWS_PAGE_ID);
-  const general = children.find((b) => {
-    if (!isFullBlock(b) || b.type !== 'child_page') return false;
-    const title = (b as any).child_page?.title as string | undefined;
-    return title?.trim().toLowerCase() === 'geral';
-  });
-  return general?.id;
+  try {
+    const children = await listAllBlockChildren(env.NOTION_NEWS_PAGE_ID);
+    const general = children.find((b) => {
+      if (!isFullBlock(b) || b.type !== 'child_page') return false;
+      const title = (b as any).child_page?.title as string | undefined;
+      return title?.trim().toLowerCase() === 'geral';
+    });
+    return general?.id;
+  } catch {
+    console.warn('Could not resolve GERAL page from NOTION_NEWS_PAGE_ID — block not accessible to integration.');
+    return undefined;
+  }
 }
 
 async function collectNewsItemsFromContainer(containerId: string) {

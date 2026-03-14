@@ -30,7 +30,6 @@ import { useTranslation } from '~/hooks/use-translation';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
 import { Header } from '~/components/header';
 import { ProjectDialog } from '~/components/hypertrain/project-dialog';
-import { NextStepDialog } from '~/components/next-step/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +51,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog';
-import { Stepper } from '~/components/ui/stepper';
+
 import { capitalize, cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
@@ -78,20 +77,6 @@ const availableHours = [
   '00:00',
 ];
 
-const NEGOTIATION_STEPS = [
-  { label: 'Pitch' },
-  { label: 'Negotiation' },
-  { label: 'Closing' },
-  { label: 'Closed' },
-];
-
-const STAGE_TO_STEP_MAP = {
-  PITCH: 0,
-  NEGOTIATION: 1,
-  CLOSING: 2,
-  CLOSED: 3,
-};
-
 export default function CompanyDetails() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
@@ -101,8 +86,6 @@ export default function CompanyDetails() {
 
   const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
   const isVc = user?.publicMetadata.userType === 'VC_GROUP';
-  const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
-  const isIncubator = user?.publicMetadata.userType === 'INCUBATOR';
 
   const tomorrow = startOfTomorrow();
 
@@ -164,36 +147,20 @@ export default function CompanyDetails() {
       toast.error(error.message);
     },
   });
-  const schedulePitchMeetingMutation = api.negotiation.createAndSchedulePitchMeeting.useMutation({
+  const scheduleMeetingMutation = api.negotiation.scheduleMeeting.useMutation({
     onSuccess: () => {
       toast.success('Meeting scheduled successfully');
       setIsConfirmModalOpen(false);
       setOpenScheduleMeeting(false);
       setTime(null);
       setSelectedDate(tomorrow);
-      router.push('/meetings');
+      void router.push('/meetings');
     },
     onError: error => {
       toast.error(error.message);
       setIsConfirmModalOpen(false);
     },
   });
-
-  const scheduleOtherStageMeetingMutation =
-    api.negotiation.createAndScheduleOtherStageMeeting.useMutation({
-      onSuccess: () => {
-        toast.success('Meeting scheduled successfully');
-        setIsConfirmModalOpen(false);
-        setOpenScheduleMeeting(false);
-        setTime(null);
-        setSelectedDate(tomorrow);
-        router.push('/meetings');
-      },
-      onError: error => {
-        toast.error(error.message);
-        setIsConfirmModalOpen(false);
-      },
-    });
 
   const isFavorite = useMemo(() => {
     if (!projectId) return false;
@@ -247,57 +214,36 @@ export default function CompanyDetails() {
     }
   };
 
-  const handleScheduleMeeting = async () => {
+  const handleScheduleMeeting = () => {
     if (projectId && selectedDate && time) {
       const meetingDateTime = new Date(selectedDate);
       meetingDateTime.setHours(parseInt(time.split(':')[0] ?? '0'));
-
-      if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
-        schedulePitchMeetingMutation.mutate({
-          entrepreneurId: project?.Entrepreneur?.id ?? '',
-          incubatorId: project?.Incubator?.id ?? '',
-          date: meetingDateTime,
-          investorId: investor?.id ?? '',
-          vcGroupId: vcGroup?.id ?? '',
-          projectId: projectId as string,
-        });
-      } else {
-        scheduleOtherStageMeetingMutation.mutate({
-          entrepreneurId: project?.Entrepreneur?.id ?? '',
-          incubatorId: project?.Incubator?.id ?? '',
-          date: meetingDateTime,
-          investorId: investor?.id ?? '',
-          vcGroupId: vcGroup?.id ?? '',
-          projectId: projectId as string,
-        });
-      }
+      scheduleMeetingMutation.mutate({
+        entrepreneurId: project?.Entrepreneur?.id ?? '',
+        incubatorId: project?.Incubator?.id ?? '',
+        date: meetingDateTime,
+        investorId: investor?.id ?? '',
+        vcGroupId: vcGroup?.id ?? '',
+        projectId: projectId as string,
+      });
     }
   };
 
-  const handleScheduleMeetingNow = async () => {
-    if (projectId && project?.Entrepreneur?.id && (investor?.id || vcGroup?.id)) {
-      const now = new Date();
-      if (!negotiation || negotiation?.stage === NegotiationStage.PITCH) {
-        schedulePitchMeetingMutation.mutate({
-          entrepreneurId: project?.Entrepreneur?.id ?? '',
-          incubatorId: project?.Incubator?.id ?? '',
-          date: now,
-          investorId: investor?.id ?? '',
-          vcGroupId: vcGroup?.id ?? '',
-          projectId: projectId as string,
-          instantMeeting: true,
-        });
-      } else {
-        scheduleOtherStageMeetingMutation.mutate({
-          entrepreneurId: project?.Entrepreneur?.id ?? '',
-          incubatorId: project?.Incubator?.id ?? '',
-          date: now,
-          investorId: investor?.id ?? '',
-          vcGroupId: vcGroup?.id ?? '',
-          projectId: projectId as string,
-          instantMeeting: true,
-        });
-      }
+  const handleScheduleMeetingNow = () => {
+    if (
+      projectId &&
+      (investor?.id ?? vcGroup?.id) &&
+      (project?.Entrepreneur?.id ?? project?.Incubator?.id)
+    ) {
+      scheduleMeetingMutation.mutate({
+        entrepreneurId: project?.Entrepreneur?.id ?? '',
+        incubatorId: project?.Incubator?.id ?? '',
+        date: new Date(),
+        investorId: investor?.id ?? '',
+        vcGroupId: vcGroup?.id ?? '',
+        projectId: projectId as string,
+        instantMeeting: true,
+      });
     } else {
       toast.error('Could not schedule meeting. Missing required information.');
     }
@@ -460,14 +406,8 @@ export default function CompanyDetails() {
                     <>
                       <Dialog open={openScheduleMeeting} onOpenChange={setOpenScheduleMeeting}>
                         <DialogTrigger asChild>
-                          <Button
-                            disabled={
-                              negotiation?.entrepreneurActionNeeded &&
-                              negotiation?.investorActionNeeded
-                            }
-                          >
-                            <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule{' '}
-                            {capitalize(negotiation?.stage ?? 'Pitch')} Meeting
+                          <Button>
+                            <Calendar1Icon className="mr-2 h-4 w-4" /> Schedule Meeting
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-3xl w-full mx-6">
@@ -567,13 +507,9 @@ export default function CompanyDetails() {
                             <Button
                               variant="secondary"
                               onClick={handleScheduleMeetingNow}
-                              disabled={
-                                schedulePitchMeetingMutation.isPending ||
-                                scheduleOtherStageMeetingMutation.isPending
-                              }
+                              disabled={scheduleMeetingMutation.isPending}
                             >
-                              {schedulePitchMeetingMutation.isPending ||
-                              scheduleOtherStageMeetingMutation.isPending ? (
+                              {scheduleMeetingMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <Video className="mr-2 h-4 w-4" />
@@ -582,12 +518,7 @@ export default function CompanyDetails() {
                             </Button>
                             <Button
                               onClick={handleOpenConfirmDialog}
-                              disabled={
-                                !selectedDate ||
-                                !time ||
-                                schedulePitchMeetingMutation.isPending ||
-                                scheduleOtherStageMeetingMutation.isPending
-                              }
+                              disabled={!selectedDate || !time || scheduleMeetingMutation.isPending}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               Review Schedule
@@ -734,13 +665,6 @@ export default function CompanyDetails() {
           </>
         )}
 
-        {(isInvestor || isVc) && negotiation?.investorActionNeeded && (
-          <NextStepDialog negotiationId={negotiation.id} />
-        )}
-
-        {(isEntrepreneur || isIncubator) && negotiation?.entrepreneurActionNeeded && (
-          <NextStepDialog negotiationId={negotiation.id} />
-        )}
         {/* Pitch Video Section */}
         {project.videoPitchUrl &&
           (isProjectOwner ||
@@ -842,25 +766,6 @@ export default function CompanyDetails() {
                   </div>
                 </>
               )}
-
-            {negotiation && (
-              <>
-                <h2 className="text-lg font-semibold sm:text-xl mt-6">Negotiation Stage</h2>
-                <div className="mt-6">
-                  {negotiation.stage === NegotiationStage.CANCELLED ? (
-                    <p className="text-red-500 bg-red-500/10 rounded-md p-2 flex items-center gap-2">
-                      <X className="size-4" />
-                      Negotiation cancelled
-                    </p>
-                  ) : (
-                    <Stepper
-                      steps={NEGOTIATION_STEPS}
-                      currentStep={STAGE_TO_STEP_MAP[negotiation?.stage ?? 'PITCH']}
-                    />
-                  )}
-                </div>
-              </>
-            )}
 
             <h2 className="mt-6 text-lg font-semibold sm:mt-8 sm:text-xl">Founder</h2>
             {project.Entrepreneur ? (
@@ -1017,9 +922,7 @@ export default function CompanyDetails() {
         title="Confirm Meeting Schedule"
         onConfirm={handleScheduleMeeting}
         confirmText="Confirm Schedule"
-        isConfirming={
-          schedulePitchMeetingMutation.isPending || scheduleOtherStageMeetingMutation.isPending
-        }
+        isConfirming={scheduleMeetingMutation.isPending}
       >
         <div className="py-6 space-y-4">
           <div className="flex items-center gap-6 rounded-lg border border-white/10 p-4 bg-card">

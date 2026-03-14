@@ -99,8 +99,8 @@ function NegotiationCard({
 }) {
   return (
     <Link
-      href={`/projects/${negotiation.project.id}`}
-      className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20 relative grid grid-cols-3 gap-4 items-center justify-between"
+      href={`/negotiations/${negotiation.id}`}
+      className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-6 transition-all hover:border-white/20 relative grid grid-cols-3 justify-between gap-4 items-center"
     >
       <div className="col-span-1 flex gap-4">
         {negotiation.project.logo ? (

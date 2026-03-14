@@ -2,7 +2,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { env } from '~/env';
 
-const s3Client = new S3Client({
+export const s3Client = new S3Client({
   region: 'auto',
   endpoint: `https://${env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {

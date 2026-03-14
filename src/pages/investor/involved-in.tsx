@@ -42,6 +42,7 @@ interface ProjectCardProps {
   project: any;
   projectType: 'negotiation' | 'favorite' | 'invested';
   negotiationStage?: string | null;
+  negotiationId?: string | null;
   meetings?: any[];
   notes: Record<string, string>;
   editingNotes: string | null;
@@ -53,8 +54,9 @@ interface ProjectCardProps {
 
 const ProjectCard = ({
   project,
-  projectType: _projectType,
+  projectType,
   negotiationStage = null,
+  negotiationId = null,
   meetings: _meetings = [],
   notes,
   editingNotes,
@@ -191,6 +193,19 @@ const ProjectCard = ({
                 }
               </Badge>
             </div>
+          )}
+
+          {/* View Negotiation link */}
+          {projectType === 'negotiation' && negotiationId && (
+            <Link href={`/negotiations/${negotiationId}`}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full border-white/10 text-white/70 hover:text-white"
+              >
+                View Negotiation
+              </Button>
+            </Link>
           )}
 
           {/* Notes Section */}
@@ -361,6 +376,7 @@ export default function MyProjects() {
       ...negotiation.project,
       projectType: 'negotiation' as const,
       negotiationStage: negotiation.stage,
+      negotiationId: negotiation.id,
       meetings: negotiation.meetings || [],
     })) || []),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -476,6 +492,7 @@ export default function MyProjects() {
                   project={project}
                   projectType={project.projectType}
                   negotiationStage={project.negotiationStage}
+                  negotiationId={'negotiationId' in project ? project.negotiationId : null}
                   meetings={project.meetings}
                   notes={notes}
                   editingNotes={editingNotes}
