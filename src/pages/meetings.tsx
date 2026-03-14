@@ -267,6 +267,7 @@ export default function Meetings() {
                   !isBefore(now, subMinutes(meetingStartDate, 5));
                 const isLive =
                   meeting.url && !isBefore(now, meetingStartDate) && !isAfter(now, meetingEndDate);
+                const isExpired = isAfter(now, meetingEndDate);
 
                 return (
                   <div
@@ -343,15 +344,17 @@ export default function Meetings() {
                         ) : null}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-3 text-xs text-white/40 hover:bg-red-500/10 hover:text-red-400"
-                          onClick={() => handleCancelClick(meeting.id)}
-                          disabled={isCancellingMeeting}
-                        >
-                          Cancel
-                        </Button>
+                        {!isExpired ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-3 text-xs text-white/40 hover:bg-red-500/10 hover:text-red-400"
+                            onClick={() => handleCancelClick(meeting.id)}
+                            disabled={isCancellingMeeting}
+                          >
+                            Cancel
+                          </Button>
+                        ) : null}
                         <Button
                           size="sm"
                           disabled={!canEnterMeeting}
