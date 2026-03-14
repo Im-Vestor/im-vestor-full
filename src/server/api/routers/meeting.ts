@@ -10,57 +10,30 @@ export const meetingRouter = createTRPCRouter({
   getMeetingsByDate: protectedProcedure
     .input(z.object({ date: z.date() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.db.user.findUnique({
-        where: {
-          id: ctx.auth.userId,
-        },
-        select: {
-          userType: true,
-          entrepreneur: true,
-          investor: true,
-          vcGroup: true,
-          incubator: true,
-        },
-      });
-
-      const userType = user?.userType;
+      const userId = ctx.auth.userId;
+      const userType = ctx.auth.sessionClaims?.publicMetadata?.userType;
 
       const whereClause =
         userType === UserType.ENTREPRENEUR
-          ? {
-            entrepreneurId: user?.entrepreneur?.id,
-          }
+          ? { entrepreneur: { userId } }
           : userType === UserType.INCUBATOR
-            ? {
-              incubators: {
-                some: {
-                  id: user?.incubator?.id,
-                },
-              },
-            }
+            ? { incubators: { some: { userId } } }
             : {
-              ...(user?.investor && {
-                investors: {
-                  some: {
-                    id: user?.investor?.id,
-                  },
-                },
-              }),
-              ...(user?.vcGroup && {
-                vcGroups: {
-                  some: {
-                    id: user?.vcGroup?.id,
-                  },
-                },
-              }),
+              OR: [
+                { investors: { some: { userId } } },
+                { vcGroups: { some: { userId } } },
+              ],
             };
+
+      const startOfDay = new Date(input.date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
 
       const meetings = await ctx.db.meeting.findMany({
         where: {
           ...whereClause,
           startDate: {
-            gte: input.date,
-            lte: addDays(input.date, 1),
+            gte: startOfDay,
+            lte: addDays(startOfDay, 1),
           },
         },
         include: {
@@ -84,20 +57,105 @@ export const meetingRouter = createTRPCRouter({
               },
             },
           },
-          entrepreneur: true,
-          incubators: true,
+          entrepreneur: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              user: {
+                select: {
+                  imageUrl: true,
+                },
+              },
+            },
+          },
           investors: {
-            include: {
-              user: true,
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              user: {
+                select: {
+                  imageUrl: true,
+                },
+              },
             },
           },
         },
         orderBy: {
-          startDate: 'desc',
+          startDate: 'asc',
         },
       });
 
       return meetings;
+    }),
+  getUpcomingMeetings: protectedProcedure
+    .query(async ({ ctx }) => {
+      const userId = ctx.auth.userId;
+      const userType = ctx.auth.sessionClaims?.publicMetadata?.userType;
+
+      const whereClause =
+        userType === UserType.ENTREPRENEUR
+          ? { entrepreneur: { userId } }
+          : userType === UserType.INCUBATOR
+            ? { incubators: { some: { userId } } }
+            : {
+              OR: [
+                { investors: { some: { userId } } },
+                { vcGroups: { some: { userId } } },
+              ],
+            };
+
+      const now = new Date();
+
+      return ctx.db.meeting.findMany({
+        where: {
+          ...whereClause,
+          startDate: { gte: now },
+        },
+        select: {
+          id: true,
+          startDate: true,
+          endDate: true,
+          negotiation: {
+            select: {
+              project: {
+                select: {
+                  name: true,
+                  logo: true,
+                },
+              },
+            },
+          },
+          entrepreneur: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          investors: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          vcGroups: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          incubators: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { startDate: 'asc' },
+        take: 10,
+      });
     }),
   enterMeeting: protectedProcedure
     .input(z.object({ negotiationId: z.string(), meetingId: z.string() }))
