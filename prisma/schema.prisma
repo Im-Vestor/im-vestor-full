@@ -90,7 +90,9 @@ model User {
   supportTickets              SupportTicket[]
   supportTicketReplies        SupportTicketReply[] @relation("AdminReplies")
   vcGroup                     VcGroup?
-  Conversation                Conversation[]       @relation("ConversationParticipants")
+  pitchOfTheWeeks             PitchOfTheWeek[]
+  conversations               Conversation[]   @relation("ConversationParticipants")
+  sentMessages                Message[]        @relation("SentMessages")
 
   @@index([userType])
 }
@@ -469,15 +471,15 @@ model Connection {
 }
 
 model Notification {
-  id         String           @id @default(uuid())
-  createdAt  DateTime         @default(now())
-  type       NotificationType
-  read       Boolean          @default(false)
-  userId     String
-  investorId String?
-  message    String?
-  senderId   String?
-  user       User             @relation(fields: [userId], references: [id])
+  id             String           @id @default(uuid())
+  createdAt      DateTime         @default(now())
+  type           NotificationType
+  read           Boolean          @default(false)
+  userId         String
+  investorId     String?
+  message        String?
+  senderId       String?
+  user           User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([type])
@@ -702,6 +704,53 @@ enum NotificationType {
   PITCH_TICKET_PURCHASED
   VIDEO_ACCESS_REQUESTED
   MESSAGE_RECEIVED
+}
+
+model PitchOfTheWeek {
+  id               String               @id @default(uuid())
+  userId           String
+  projectId        String?
+  image            String
+  video            String?
+  date1            DateTime
+  date2            DateTime
+  dailyRoomName1   String?
+  dailyRoomUrl1    String?
+  dailyRoomName2   String?
+  dailyRoomUrl2    String?
+  status           PitchOfTheWeekStatus @default(PENDING)
+  hyperTrainItemId String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  project        Project?        @relation(fields: [projectId], references: [id])
+  hyperTrainItem HyperTrainItem? @relation(fields: [hyperTrainItemId], references: [id])
+}
+
+model Conversation {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messages     Message[]
+  participants User[]    @relation("ConversationParticipants")
+
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+  senderId       String
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, readAt])
+  @@index([senderId])
 }
 
 enum PitchOfTheWeekStatus {

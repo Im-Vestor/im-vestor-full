@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { LanguageSwitcher } from './ui/language-switcher';
+import { ThemeSwitcher } from './theme-switcher';
 
 const ENTREPRENEUR_MENUS = [
   {
@@ -57,6 +58,10 @@ const ENTREPRENEUR_MENUS = [
   {
     label: 'Shop',
     href: '/shop',
+  },
+  {
+    label: 'Messages',
+    href: '/messages',
   },
 ];
 
@@ -89,6 +94,10 @@ const INVESTOR_MENUS = [
     label: 'Shop',
     href: '/shop',
   },
+  {
+    label: 'Messages',
+    href: '/messages',
+  },
 ];
 
 const VC_MENUS = [
@@ -116,6 +125,10 @@ const VC_MENUS = [
     label: 'Shop',
     href: '/shop',
   },
+  {
+    label: 'Messages',
+    href: '/messages',
+  },
 ];
 
 const PARTNER_MENUS = [
@@ -130,6 +143,10 @@ const PARTNER_MENUS = [
   {
     label: 'News',
     href: '/news?type=partner',
+  },
+  {
+    label: 'Messages',
+    href: '/messages',
   },
 ];
 
@@ -157,6 +174,10 @@ const INCUBATOR_MENUS = [
   {
     label: 'Shop',
     href: '/shop',
+  },
+  {
+    label: 'Messages',
+    href: '/messages',
   },
 ];
 
@@ -186,6 +207,14 @@ export const Header = () => {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasNewNews, setHasNewNews] = useState(false);
+
+  const { data: unreadMessages } = api.messages.getUnreadCount.useQuery(undefined, {
+    enabled: !!userType && isLoaded && !!isSignedIn,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+  const unreadMsgCount = unreadMessages?.count ?? 0;
 
   // Fetch news to check for updates - defer until user type is available
   const { data: newsData } = api.news.getUserTypeNews.useQuery(
@@ -285,6 +314,11 @@ export const Header = () => {
                 {menu.label === 'News' && hasNewNews && (
                   <span className="absolute top-1.5 right-1 h-2 w-2 rounded-full bg-red-500" />
                 )}
+                {menu.label === 'Messages' && unreadMsgCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-black">
+                    {unreadMsgCount > 99 ? '99+' : unreadMsgCount}
+                  </span>
+                )}
               </Button>
             ))}
           </div>
@@ -293,7 +327,8 @@ export const Header = () => {
         {/* User Profile / Login */}
         {isLoaded && isSignedIn ? (
           <div className="flex items-center">
-            <Notifications userDetails={userDetails ?? { openNegotiations: [] }} />
+            <ThemeSwitcher />
+            <Notifications />
             <FloatingSupportButton />
 
             <DropdownMenu>
@@ -390,7 +425,10 @@ export const Header = () => {
             </Button>
           </div>
         ) : (
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <LanguageSwitcher />
+          </div>
         )}
       </div>
 
@@ -417,6 +455,11 @@ export const Header = () => {
               {menu.label}
               {menu.label === 'News' && hasNewNews && (
                 <span className="ml-2 h-2 w-2 rounded-full bg-red-500" />
+              )}
+              {menu.label === 'Messages' && unreadMsgCount > 0 && (
+                <span className="ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-black">
+                  {unreadMsgCount > 99 ? '99+' : unreadMsgCount}
+                </span>
               )}
             </Button>
           ))}

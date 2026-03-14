@@ -19,15 +19,21 @@ export default function Connections() {
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
-      <div className="rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
-        <button
-          type="button"
-          className="mb-4 flex items-center gap-2 hover:opacity-75 sm:mb-0"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
-        <div className="mt-4 flex flex-col gap-4">
+      <div className="mt-12">
+        <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <button
+              type="button"
+              className="mb-4 flex items-center gap-2 hover:opacity-75"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </button>
+            <h1 className="text-3xl font-semibold">Connections</h1>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4">
           {data?.connections && data.connections.length > 0 ? (
             data.connections.map(connection => (
               <ConnectionCard
@@ -62,6 +68,7 @@ export default function Connections() {
             Next
           </Button>
         </div>
+      </div>
       </div>
     </main>
   );

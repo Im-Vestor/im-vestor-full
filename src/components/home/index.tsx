@@ -11,7 +11,6 @@ import {
   Ticket,
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useMemo, memo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { NewsGrid } from '~/components/news/NewsCard';
@@ -34,12 +33,85 @@ const PartnersSection = dynamic(() => import('~/components/ui/partners-section')
 const Hypertrain = dynamic(() => import('../hypertrain/hypertrain').then(mod => ({ default: mod.Hypertrain })), {
   loading: () => (
     <div className="space-y-4">
-      <Skeleton className="h-6 w-32" />
-      <Skeleton className="h-32 w-full rounded-xl" />
+      <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
+      <div className="rounded-xl bg-card/30 p-6">
+        <div className="flex gap-4 overflow-hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="w-72 min-w-72 h-40 rounded-xl shrink-0" />
+          ))}
+        </div>
+      </div>
     </div>
   ),
   ssr: false,
 });
+
+export function HomeSkeleton() {
+  return (
+    <div className="space-y-8">
+      {/* Action Cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+      </div>
+
+      {/* Hypertrain */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
+        <div className="rounded-xl bg-card/30 p-6">
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="w-72 min-w-72 h-40 rounded-xl shrink-0" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Latest News */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">
+              {/* Cover image */}
+              <Skeleton className="h-48 w-full rounded-none" />
+              {/* Content */}
+              <div className="p-6 space-y-3">
+                {/* Date */}
+                <Skeleton className="h-4 w-24" />
+                {/* Title */}
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+                {/* Description */}
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                {/* Read more */}
+                <Skeleton className="h-4 w-24 mt-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Partners */}
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64 mx-auto" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+      </div>
+
+      {/* Footer Utility Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+        <Skeleton className="h-[72px] w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
 
 // Memoize the component to prevent unnecessary re-renders
 const Home = memo(function Home() {
@@ -47,7 +119,7 @@ const Home = memo(function Home() {
   const userType = user?.publicMetadata.userType as UserType;
   const t = useTranslation();
 
-  const { data: userData, isLoading: isLoadingUser } = api.user.getUser.useQuery(undefined, {
+  const { data: userData } = api.user.getUser.useQuery(undefined, {
     enabled: isLoaded && isSignedIn && !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
@@ -65,7 +137,7 @@ const Home = memo(function Home() {
   );
 
   // Defer hypertrain loading - only fetch when component is visible
-  const { data: hypertrainItems } = api.hypertrain.getHyperTrainItems.useQuery(undefined, {
+  const { data: hypertrainItems, isLoading: isLoadingHypertrain } = api.hypertrain.getHyperTrainItems.useQuery(undefined, {
     enabled: isLoaded && !!user,
     staleTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
@@ -104,42 +176,8 @@ const Home = memo(function Home() {
 
   // Don't render until authentication is loaded
   if (!isLoaded) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center gap-6">
-          <div className="h-16 w-16 bg-card rounded-full border-2 border-white/10 animate-pulse"></div>
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-card rounded border-2 border-white/10 animate-pulse"></div>
-            <div className="h-4 w-32 bg-card rounded border-2 border-white/10 animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <HomeSkeleton />;
   }
-
-  // Get the user's name based on their type
-  const getUserName = () => {
-    if (!userData) return '';
-
-    switch (userType) {
-      case 'ENTREPRENEUR':
-        return userData.entrepreneur
-          ? `${userData.entrepreneur.firstName} ${userData.entrepreneur.lastName}`
-          : '';
-      case 'INVESTOR':
-        return userData.investor
-          ? `${userData.investor.firstName} ${userData.investor.lastName}`
-          : '';
-      case 'PARTNER':
-        return userData.partner ? `${userData.partner.firstName} ${userData.partner.lastName}` : '';
-      case 'INCUBATOR':
-        return userData.incubator ? userData.incubator.name : '';
-      case 'VC_GROUP':
-        return userData.vcGroup ? userData.vcGroup.name : '';
-      default:
-        return '';
-    }
-  };
 
   // Get the first news article for the featured section
   const firstNewsArticle = news?.blocks?.[0];
@@ -151,43 +189,6 @@ const Home = memo(function Home() {
 
   return (
     <div className="space-y-8">
-      {/* User Greeting Section */}
-      <div className="flex items-center gap-6">
-        {isLoadingUser ? (
-          <>
-            <Skeleton className="h-16 w-16 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="w-16 h-16 rounded-full border-2 border-white/10 overflow-hidden">
-              {userData?.imageUrl ? (
-                <Image
-                  src={userData.imageUrl}
-                  alt={`${getUserName()}'s profile`}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full bg-card flex items-center justify-center">
-                  <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-                </div>
-              )}
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Welcome back, {getUserName()}</h1>
-              <p className="text-lg text-white/70 uppercase">{userType.replace('_', ' ')}</p>
-            </div>
-          </>
-        )}
-      </div>
-
       {/* Referrer Information */}
       {referrerName && (
         <div className="rounded-xl border-2 border-[#E5CD82]/20 bg-[#E5CD82]/10 p-4">
@@ -249,16 +250,33 @@ const Home = memo(function Home() {
       </div>
 
       {/* Hypertrain Area - Lazy loaded */}
-      {hypertrainItems && hypertrainItems.length > 0 && (
+      {isLoadingHypertrain ? (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
+          <div className="rounded-xl bg-card/30 p-6">
+            <div className="flex gap-4 overflow-hidden">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="w-72 min-w-72 h-40 rounded-xl shrink-0" />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : hypertrainItems && hypertrainItems.length > 0 ? (
         <Suspense fallback={
           <div className="space-y-4">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-32 w-full rounded-xl" />
+            <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
+            <div className="rounded-xl bg-card/30 p-6">
+              <div className="flex gap-4 overflow-hidden">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="w-72 min-w-72 h-40 rounded-xl shrink-0" />
+                ))}
+              </div>
+            </div>
           </div>
         }>
           <Hypertrain />
         </Suspense>
-      )}
+      ) : null}
 
       {/* Latest News Section */}
       <div className="space-y-4">
@@ -274,18 +292,38 @@ const Home = memo(function Home() {
         </div>
 
         {isLoadingNews ? (
-          <div className="rounded-xl border-2 border-white/10 bg-card p-6">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">
+                <Skeleton className="h-48 w-full rounded-none" />
+                <div className="p-6 space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-4 w-24 mt-1" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : hasNews ? (
           <Suspense fallback={
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-64 w-full rounded-xl" />
+                <div key={i} className="rounded-xl border-2 border-white/10 bg-card overflow-hidden">
+                  <Skeleton className="h-48 w-full rounded-none" />
+                  <div className="p-6 space-y-3">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-24 mt-1" />
+                  </div>
+                </div>
               ))}
             </div>
           }>

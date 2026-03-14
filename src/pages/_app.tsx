@@ -6,13 +6,14 @@ import { api } from '~/utils/api';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProviderWithTheme } from '~/components/clerk-provider-with-theme';
 import Head from 'next/head';
 import '~/styles/globals.css';
-import { Toaster } from 'sonner';
+import { Toaster } from '~/components/ui/sonner';
 import { LanguageProvider } from '~/contexts/LanguageContext';
 import { GoogleAnalytics } from '~/lib/GoogleAnalytics';
 import { CookieConsent } from '~/components/ui/cookie-consent';
+import { ThemeProvider } from '~/components/theme-provider';
 import { useEffect, useState } from 'react';
 
 const roboto = Roboto({
@@ -38,46 +39,42 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   }, []);
 
   return (
-    <ClerkProvider>
-      <LanguageProvider>
-        <Toaster
-          theme="dark"
-          position="top-right"
-          expand={false}
-          richColors
-          closeButton
-        />
-        {analyticsEnabled && (
-          <>
-            <SpeedInsights />
-            <Analytics />
-            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID ?? ''} />
-          </>
-        )}
-        <Head>
-          <title>Im-Vestor</title>
-          <meta name="description" content="Imvestor" />
-          <link rel="icon" href="/favicon.ico" />
+    <ThemeProvider>
+      <ClerkProviderWithTheme>
+        <LanguageProvider>
+          <Toaster position="top-right" expand={false} richColors closeButton />
+          {analyticsEnabled && (
+            <>
+              <SpeedInsights />
+              <Analytics />
+              <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID ?? ''} />
+            </>
+          )}
+          <Head>
+            <title>Im-Vestor</title>
+            <meta name="description" content="Imvestor" />
+            <link rel="icon" href="/favicon.ico" />
 
-          {/* Open Graph meta tags */}
-          <meta property="og:title" content="Im-Vestor" />
-          <meta property="og:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
-          <meta property="og:image" content="/images/og-image.jpg" />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://im-vestor.com" />
+            {/* Open Graph meta tags */}
+            <meta property="og:title" content="Im-Vestor" />
+            <meta property="og:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
+            <meta property="og:image" content="/images/og-image.jpg" />
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://im-vestor.com" />
 
-          {/* Twitter Card meta tags */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Im-Vestor" />
-          <meta name="twitter:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
-          <meta name="twitter:image" content="/images/og-image.jpg" />
-        </Head>
-        <div className={`${roboto.className} ${roboto.variable} bg-background text-ui-text`}>
-          <Component {...pageProps} />
-        </div>
-        <CookieConsent />
-      </LanguageProvider>
-    </ClerkProvider>
+            {/* Twitter Card meta tags */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Im-Vestor" />
+            <meta name="twitter:description" content="Connecting visionary entrepreneurs with strategic investors in the expanding universe of opportunity" />
+            <meta name="twitter:image" content="/images/og-image.jpg" />
+          </Head>
+          <div className={`${roboto.className} ${roboto.variable} bg-background text-ui-text`}>
+            <Component {...pageProps} />
+          </div>
+          <CookieConsent />
+        </LanguageProvider>
+      </ClerkProviderWithTheme>
+    </ThemeProvider>
   );
 };
 

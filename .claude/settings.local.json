@@ -5,7 +5,10 @@
       "Bash(npx lighthouse:*)",
       "Bash(node -e:*)",
       "Bash(node:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(wc -l /c/Users/rickm/Documents/Code/im-vestor-full/src/pages/*.tsx)",
+      "Bash(npm run check)",
+      "Bash(npx prisma generate)"
     ]
   }
 }

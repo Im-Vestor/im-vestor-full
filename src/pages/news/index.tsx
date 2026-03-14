@@ -34,12 +34,16 @@ export default function NewsPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto min-h-screen max-w-6xl p-8">
+      <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
         <Header />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
-            <p className="text-gray-400">Loading news...</p>
+        <div className="mt-12">
+          <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-primary" />
+                <p className="text-gray-400">Loading news...</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -48,12 +52,16 @@ export default function NewsPage() {
 
   if (error) {
     return (
-      <main className="mx-auto min-h-screen max-w-6xl p-8">
+      <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
         <Header />
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-red-400 mb-4">Error loading news</p>
-            <p className="text-gray-400 text-sm">{error.message}</p>
+        <div className="mt-12">
+          <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className="text-center">
+                <p className="mb-4 text-red-400">Error loading news</p>
+                <p className="text-sm text-gray-400">{error.message}</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -65,17 +73,17 @@ export default function NewsPage() {
   const currentUserType = newsData?.userType ?? userMetadata?.userType ?? 'ENTREPRENEUR';
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
-
-      {/* Featured Articles */}
-      <section className="mb-16">
-        <NewsGrid
-          blocks={blocks}
-          title={sectionTitle}
-          description={getNewsDescription(currentUserType as NewsUserType)}
-        />
-      </section>
+      <div className="mt-12">
+        <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+          <NewsGrid
+            blocks={blocks}
+            title={sectionTitle}
+            description={getNewsDescription(currentUserType as NewsUserType)}
+          />
+        </div>
+      </div>
     </main>
   );
 }

@@ -3,6 +3,12 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const notificationsRouter = createTRPCRouter({
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.notification.findMany({
+      where: { userId: ctx.auth.userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }),
   getUnreadNotifications: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.notification.findMany({
       where: {
@@ -40,13 +46,15 @@ export const createNotifications = async (
   db: PrismaClient,
   userIds: string[],
   type: NotificationType,
-  message?: string
+  message?: string,
+  senderId?: string
 ) => {
   await db.notification.createMany({
     data: userIds.map(userId => ({
       userId: userId ?? '',
       type: type,
       ...(message && { message }),
+      ...(senderId && { senderId }),
     })),
   });
 };

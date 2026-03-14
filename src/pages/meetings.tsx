@@ -207,7 +207,7 @@ export default function Meetings() {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
 
       <div className="mt-12 flex max-h-[450px] items-stretch gap-6">
@@ -269,11 +269,10 @@ export default function Meetings() {
                 return (
                   <div
                     key={meeting.id}
-                    className={`rounded-xl border transition-colors ${
-                      isLive
+                    className={`rounded-xl border transition-colors ${isLive
                         ? 'border-[#EFD687]/40 bg-[#EFD687]/[0.04]'
                         : 'border-white/8 bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-3 p-4">
                       <div className="shrink-0">
@@ -353,11 +352,10 @@ export default function Meetings() {
                         <Button
                           size="sm"
                           disabled={!canEnterMeeting}
-                          className={`h-7 px-3 text-xs ${
-                            canEnterMeeting
+                          className={`h-7 px-3 text-xs ${canEnterMeeting
                               ? 'bg-[#EFD687] text-black hover:bg-[#EFD687]/90'
                               : 'opacity-40'
-                          }`}
+                            }`}
                           onClick={() => window.open(meeting.url ?? '', '_blank')}
                         >
                           {isLive ? 'Enter Now' : 'Enter Meeting'}
@@ -413,10 +411,10 @@ export default function Meetings() {
 
               const counterparts: string[] = isEntrepreneur
                 ? [
-                    ...meeting.investors.map(inv => `${inv.firstName} ${inv.lastName}`),
-                    ...meeting.vcGroups.map(vc => vc.name),
-                    ...meeting.incubators.map(inc => inc.name),
-                  ]
+                  ...meeting.investors.map(inv => `${inv.firstName} ${inv.lastName}`),
+                  ...meeting.vcGroups.map(vc => vc.name),
+                  ...meeting.incubators.map(inc => inc.name),
+                ]
                 : (isInvestor || isVC || isIncubator) && meeting.entrepreneur
                   ? [`${meeting.entrepreneur.firstName} ${meeting.entrepreneur.lastName}`]
                   : [];
@@ -456,9 +454,8 @@ export default function Meetings() {
 
                   <div className="flex shrink-0 flex-col items-end gap-0.5">
                     <span
-                      className={`text-xs font-semibold ${
-                        isToday ? 'text-[#EFD687]' : isTomorrow ? 'text-white/70' : 'text-white/50'
-                      }`}
+                      className={`text-xs font-semibold ${isToday ? 'text-[#EFD687]' : isTomorrow ? 'text-white/70' : 'text-white/50'
+                        }`}
                     >
                       {dayLabel}
                     </span>

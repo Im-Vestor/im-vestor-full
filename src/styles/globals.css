@@ -83,55 +83,55 @@
     --sidebar-ring: 47 84% 73%;
   }
 
-  /* Light Mode Theme */
+  /* Light Mode Theme - tons azul-violeta do Clerk */
   .light {
-    /* Primary Theme Colors - mantendo o dourado para consistência */
-    --primary: 47 84% 73%;
-    --primary-from: #edd689;
-    --primary-to: #d3b662;
+    /* Primary Theme Colors - azul-violeta Clerk (#6C47FF) em vez do dourado */
+    --primary: 248 100% 64%;
+    --primary-from: #6c47ff;
+    --primary-to: #4f35d4;
 
     /* Sidebar Theme Variables para Light Mode */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 47 84% 73%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 47 84% 73%;
+    --sidebar-background: 240 20% 98%;
+    --sidebar-foreground: 240 10% 15%;
+    --sidebar-primary: 248 100% 64%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 94%;
+    --sidebar-accent-foreground: 240 10% 15%;
+    --sidebar-border: 240 10% 88%;
+    --sidebar-ring: 248 100% 64%;
 
     /* Background Colors para Light Mode */
-    --background: 0 0% 100%;
-    --background-card: 0 0% 98%;
-    --background-gradient-from: #f8f9fa;
-    --background-gradient-to: #ffffff;
+    --background: 240 20% 98%;
+    --background-card: 240 15% 96%;
+    --background-gradient-from: #f0f0f8;
+    --background-gradient-to: #f8f8fc;
 
     /* Text Colors para Light Mode */
-    --text-primary: 0 0% 9%;
-    --text-secondary: 0 0% 45%;
-    --text-muted: 0 0% 60%;
+    --text-primary: 240 10% 10%;
+    --text-secondary: 240 5% 40%;
+    --text-muted: 240 5% 55%;
 
     /* Border Colors para Light Mode */
-    --border: 0 0% 90%;
-    --border-muted: 0 0% 95%;
+    --border: 240 10% 88%;
+    --border-muted: 240 10% 93%;
 
     /* Card Colors para Light Mode */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
-    --card-border: 0 0% 90%;
+    --card-foreground: 240 10% 10%;
+    --card-border: 240 10% 88%;
 
     /* Input Colors para Light Mode */
     --input: 0 0% 100%;
-    --input-border: 0 0% 90%;
-    --input-focus: 0 0% 80%;
+    --input-border: 240 10% 85%;
+    --input-focus: 248 100% 64%;
 
     /* Button Colors para Light Mode */
-    --button-primary: 47 84% 73%;
-    --button-primary-foreground: 0 0% 0%;
-    --button-secondary: 0 0% 96%;
-    --button-secondary-foreground: 0 0% 9%;
-    --button-outline: 0 0% 90%;
-    --button-outline-foreground: 0 0% 9%;
+    --button-primary: 248 100% 64%;
+    --button-primary-foreground: 0 0% 100%;
+    --button-secondary: 240 10% 94%;
+    --button-secondary-foreground: 240 10% 10%;
+    --button-outline: 240 10% 88%;
+    --button-outline-foreground: 240 10% 10%;
 
     /* Destructive Colors para Light Mode */
     --destructive: 0 84% 60%;
@@ -186,16 +186,19 @@
     @apply border-black/10;
   }
 
-  .light .bg-background {
-    background-color: hsl(var(--background));
+  .light .bg-background,
+  .light body,
+  .light [class*='bg-background'] {
+    background-color: hsl(var(--background)) !important;
   }
 
   .light .bg-background-card {
     background-color: hsl(var(--background-card));
   }
 
-  .light .text-ui-text {
-    color: hsl(var(--text-primary));
+  .light .text-ui-text,
+  .light body {
+    color: hsl(var(--text-primary)) !important;
   }
 
   .light .text-ui-text-muted {
@@ -204,6 +207,144 @@
 
   .light .border-ui-border {
     border-color: hsl(var(--border));
+  }
+
+  /* Light Mode: azul-violeta Clerk em vez do dourado */
+  .light .bg-primary {
+    background: linear-gradient(to right, var(--primary-from), var(--primary-to));
+  }
+
+  .light .text-primary {
+    background: linear-gradient(to right, var(--primary-from), var(--primary-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .light .from-primary {
+    --tw-gradient-from: var(--primary-from);
+  }
+
+  .light .to-primary {
+    --tw-gradient-to: var(--primary-to);
+  }
+
+  /* Light mode card border */
+  .light .border-white\/10 {
+    border-color: hsl(var(--border));
+  }
+
+  .light .border-white\/20 {
+    border-color: hsl(240 10% 82%);
+  }
+
+  /* Light mode ring */
+  .light .ring-white\/10 {
+    --tw-ring-color: hsl(var(--border));
+  }
+
+  .light .ring-white\/20 {
+    --tw-ring-color: hsl(240 10% 82%);
+  }
+
+  /* Light mode bg-card */
+  .light .bg-card {
+    background-color: hsl(var(--card));
+  }
+
+  /* Light mode: text-white e variantes com opacidade → texto escuro */
+  .light .text-white,
+  .light .text-white\/90,
+  .light .text-white\/80,
+  .light .text-white\/70,
+  .light .text-white\/60,
+  .light .text-white\/50,
+  .light .text-white\/40,
+  .light .text-white\/30,
+  .light .text-white\/20 {
+    color: hsl(var(--text-primary)) !important;
+  }
+
+  /* Variantes mais opacas → texto secundário (override acima) */
+  .light .text-white\/70,
+  .light .text-white\/60,
+  .light .text-white\/50,
+  .light .text-white\/40,
+  .light .text-white\/30 {
+    color: hsl(var(--text-secondary)) !important;
+  }
+
+  /* text-muted-foreground */
+  .light .text-muted-foreground {
+    color: hsl(var(--text-secondary)) !important;
+  }
+
+  /* SVG icons com cor inline (ex: color="#EFD687") no light mode */
+  .light [color='#EFD687'] {
+    color: #6c47ff !important;
+  }
+
+  /* Light mode hover:border-white/20 */
+  .light .hover\:border-white\/20:hover {
+    border-color: hsl(240 10% 75%);
+  }
+
+  /* Light mode input */
+  .light input,
+  .light textarea,
+  .light select {
+    background-color: white !important;
+    color: hsl(var(--text-primary)) !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
+
+  .light input::placeholder,
+  .light textarea::placeholder {
+    color: hsl(var(--text-muted)) !important;
+  }
+
+  .light input:focus-visible,
+  .light textarea:focus-visible {
+    outline: 2px solid #6c47ff !important;
+    outline-offset: 0px;
+  }
+
+  /* Light mode dropdown content */
+  .light [data-radix-popper-content-wrapper] [class*='bg-background'] {
+    background-color: white;
+    color: hsl(var(--text-primary));
+    border-color: hsl(var(--border));
+  }
+
+  /* Light mode text-[#EFD687] (active nav item) → azul Clerk */
+  .light .text-\[\#EFD687\] {
+    color: #6c47ff;
+  }
+
+  /* Light mode: bg-white/* transparentes → fundo claro */
+  .light .bg-white\/5,
+  .light .bg-white\/10,
+  .light .bg-white\/20 {
+    background-color: hsl(var(--background-card)) !important;
+  }
+
+  /* Light mode: badges/pills com fundo escuro hardcoded */
+  .light .bg-\[\#323645\],
+  .light .group-hover\:bg-\[\#3a3f50\]:hover,
+  .light .group:hover .group-hover\:bg-\[\#3a3f50\] {
+    background-color: hsl(240 10% 90%) !important;
+  }
+
+  /* Light mode bg-background-card (card backgrounds) */
+  .light .bg-background-card {
+    background-color: hsl(var(--background-card));
+  }
+
+  /* Light mode focus ring azul Clerk */
+  .light .focus-visible\:ring-neutral-950:focus-visible {
+    --tw-ring-color: #6c47ff;
   }
 
   /* Cookie consent solid background */

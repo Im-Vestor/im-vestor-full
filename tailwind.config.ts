@@ -108,6 +108,7 @@ export default {
       },
       backgroundImage: {
         'primary-gradient': 'linear-gradient(to right, #EDD689, #D3B662)',
+        'primary-gradient-light': 'linear-gradient(to right, #6C47FF, #4F35D4)',
       },
       keyframes: {
         'accordion-down': {

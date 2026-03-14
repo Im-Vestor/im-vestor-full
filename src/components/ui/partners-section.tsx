@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useTheme } from 'next-themes';
 import { Marquee } from '~/components/ui/marquee';
 import { api } from '~/utils/api';
 import { useTranslation } from '~/hooks/use-translation';
@@ -30,6 +31,8 @@ interface PartnersSectionProps {
 
 export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
   const t = useTranslation();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   // Fetch partners data for the marquee - defer loading
   const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery(undefined, {
@@ -86,98 +89,97 @@ export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
             <Marquee className="py-4" pauseOnHover={true} repeat={6}>
               {isLoadingPartners
                 ? // Loading skeleton
-                  Array.from({ length: 8 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
-                    >
-                      <div className="w-20 h-3 bg-white/20 rounded"></div>
-                    </div>
-                  ))
+                Array.from({ length: 8 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 animate-pulse"
+                  >
+                    <div className="w-20 h-3 bg-white/20 rounded"></div>
+                  </div>
+                ))
                 : partners && partners.length >= 3
                   ? // Real partner data
-                    partners.map(partner => {
-                      const getMarqueeUrl = () => {
-                        // If admin has set a custom URL, use it
-                        if (partner.marqueeLinkUrl) {
-                          const url =
-                            partner.marqueeLinkUrl.startsWith('http://') ||
+                  partners.map(partner => {
+                    const getMarqueeUrl = () => {
+                      // If admin has set a custom URL, use it
+                      if (partner.marqueeLinkUrl) {
+                        const url =
+                          partner.marqueeLinkUrl.startsWith('http://') ||
                             partner.marqueeLinkUrl.startsWith('https://')
-                              ? partner.marqueeLinkUrl
-                              : `https://${partner.marqueeLinkUrl}`;
-                          return url;
-                        }
+                            ? partner.marqueeLinkUrl
+                            : `https://${partner.marqueeLinkUrl}`;
+                        return url;
+                      }
 
-                        // Otherwise, use the URL based on the selected type
-                        let url: string | null | undefined;
-                        switch (partner.marqueeLinkType) {
-                          case 'WEBSITE':
-                            url = partner.website;
-                            break;
-                          case 'FACEBOOK':
-                            url = partner.facebook;
-                            break;
-                          case 'INSTAGRAM':
-                            url = partner.instagram;
-                            break;
-                          case 'LINKEDIN':
-                            url = partner.linkedinUrl;
-                            break;
-                          case 'TWITTER':
-                            url = partner.twitter;
-                            break;
-                          default:
-                            // Fallback to website if no type is selected
-                            url = partner.website;
-                        }
+                      // Otherwise, use the URL based on the selected type
+                      let url: string | null | undefined;
+                      switch (partner.marqueeLinkType) {
+                        case 'WEBSITE':
+                          url = partner.website;
+                          break;
+                        case 'FACEBOOK':
+                          url = partner.facebook;
+                          break;
+                        case 'INSTAGRAM':
+                          url = partner.instagram;
+                          break;
+                        case 'LINKEDIN':
+                          url = partner.linkedinUrl;
+                          break;
+                        case 'TWITTER':
+                          url = partner.twitter;
+                          break;
+                        default:
+                          // Fallback to website if no type is selected
+                          url = partner.website;
+                      }
 
-                        if (!url) return null;
+                      if (!url) return null;
 
-                        // Ensure URL has protocol
-                        return url.startsWith('http://') || url.startsWith('https://')
-                          ? url
-                          : `https://${url}`;
-                      };
+                      // Ensure URL has protocol
+                      return url.startsWith('http://') || url.startsWith('https://')
+                        ? url
+                        : `https://${url}`;
+                    };
 
-                      const handleClick = () => {
-                        const url = getMarqueeUrl();
-                        if (url) {
-                          window.open(url, '_blank', 'noopener,noreferrer');
-                        }
-                      };
+                    const handleClick = () => {
+                      const url = getMarqueeUrl();
+                      if (url) {
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                      }
+                    };
 
-                      const marqueeUrl = getMarqueeUrl();
+                    const marqueeUrl = getMarqueeUrl();
 
-                      return (
-                        <div
-                          key={partner.id}
-                          onClick={handleClick}
-                          className={`flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${
-                            marqueeUrl ? 'hover:bg-white/10 cursor-pointer' : 'hover:bg-white/10'
+                    return (
+                      <div
+                        key={partner.id}
+                        onClick={handleClick}
+                        className={`flex items-center justify-center w-32 h-16 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-300 group ${marqueeUrl ? 'hover:bg-white/10 cursor-pointer' : 'hover:bg-white/10'
                           }`}
-                        >
-                          {partner.companyLogoUrl ? (
-                            // Show company logo if available
-                            <div className="relative w-24 h-8">
-                              <Image
-                                src={partner.companyLogoUrl}
-                                alt={
-                                  partner.companyName ?? `${partner.firstName} ${partner.lastName}`
-                                }
-                                fill
-                                className="object-contain"
-                                sizes="96px"
-                              />
-                            </div>
-                          ) : (
-                            // Fallback to company name
-                            <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-xs tracking-wider text-center">
-                              {partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
+                      >
+                        {partner.companyLogoUrl ? (
+                          // Show company logo if available
+                          <div className="relative w-24 h-8">
+                            <Image
+                              src={partner.companyLogoUrl}
+                              alt={
+                                partner.companyName ?? `${partner.firstName} ${partner.lastName}`
+                              }
+                              fill
+                              className="object-contain"
+                              sizes="96px"
+                            />
+                          </div>
+                        ) : (
+                          // Fallback to company name
+                          <div className="text-white/70 group-hover:text-white transition-colors duration-300 font-bold text-xs tracking-wider text-center">
+                            {partner.companyName ?? `${partner.firstName} ${partner.lastName}`}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                   : null}
             </Marquee>
           </div>

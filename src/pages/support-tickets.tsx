@@ -92,13 +92,14 @@ export default function SupportTickets() {
   };
 
   return (
-    <>
-      <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
-        <Header />
-        <div className="space-y-6">
-          <h1 className="text-2xl font-bold">Support Tickets</h1>
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
+      <Header />
+      <div className="mt-12">
+        <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+          <h1 className="mb-8 text-3xl font-semibold">Support Tickets</h1>
+
           {isLoading && (
-            <div className="flex justify-center">
+            <div className="flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           )}
@@ -123,7 +124,7 @@ export default function SupportTickets() {
                   key={ticket.id}
                   value={ticket.id}
                   className={cn(
-                    'border rounded-lg overflow-hidden',
+                    'overflow-hidden rounded-lg border',
                     'hover:border-white/20 hover:shadow-lg',
                     'bg-gradient-to-br from-background to-background/50'
                   )}
@@ -131,8 +132,8 @@ export default function SupportTickets() {
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex flex-1 items-center justify-between gap-4">
                       <div className="flex-1 text-left">
-                        <h3 className="font-medium text-lg">{ticket.subject}</h3>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                        <h3 className="text-lg font-medium">{ticket.subject}</h3>
+                        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
                           <Badge className={cn('px-3 py-1', getStatusColor(ticket.status))}>
                             {getStatusLabel(ticket.status)}
                           </Badge>
@@ -146,30 +147,30 @@ export default function SupportTickets() {
                           </div>
                         </div>
                       </div>
-                    </div >
-                  </AccordionTrigger >
+                    </div>
+                  </AccordionTrigger>
                   <AccordionContent>
-                    <div className="px-4 py-3 border-t border-white/10">
+                    <div className="border-t border-white/10 px-4 py-3">
                       {/* Original Message */}
-                      <div className="flex items-start gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <div className="mb-6 flex items-start gap-3">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
                           <span className="text-[10px] font-medium text-primary">User</span>
                         </div>
                         <div className="flex-1">
-                          <div className="bg-white/5 rounded-lg rounded-tl-none p-4 border border-white/10">
-                            <div className="flex items-center gap-2 mb-2">
+                          <div className="rounded-lg rounded-tl-none border border-white/10 bg-white/5 p-4">
+                            <div className="mb-2 flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">
                                 {new Date(ticket.createdAt).toLocaleString()}
                               </span>
                             </div>
-                            <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
+                            <p className="whitespace-pre-wrap text-sm">{ticket.message}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Replies */}
                       {ticket.replies && ticket.replies.length > 0 && (
-                        <div className="space-y-6 mt-6">
+                        <div className="mt-6 space-y-6">
                           {ticket.replies.map(reply => {
                             const isUserReply = reply.adminId === ticket.userId;
                             return (
@@ -182,7 +183,7 @@ export default function SupportTickets() {
                               >
                                 <div
                                   className={cn(
-                                    'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+                                    'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
                                     isUserReply ? 'bg-primary/10' : 'bg-blue-500/20'
                                   )}
                                 >
@@ -204,15 +205,15 @@ export default function SupportTickets() {
                                   <div
                                     className={cn(
                                       'max-w-[85%]',
-                                      'rounded-lg p-4 border',
+                                      'rounded-lg border p-4',
                                       isUserReply
-                                        ? 'bg-white/5 rounded-tl-none border-white/10'
-                                        : 'bg-blue-500/10 rounded-tr-none border-blue-500/20'
+                                        ? 'rounded-tl-none border-white/10 bg-white/5'
+                                        : 'rounded-tr-none border-blue-500/20 bg-blue-500/10'
                                     )}
                                   >
                                     <div
                                       className={cn(
-                                        'flex items-center gap-2 mb-2',
+                                        'mb-2 flex items-center gap-2',
                                         isUserReply ? '' : 'flex-row-reverse'
                                       )}
                                     >
@@ -220,94 +221,91 @@ export default function SupportTickets() {
                                         {new Date(reply.createdAt).toLocaleString()}
                                       </span>
                                     </div>
-                                    <p className="text-sm whitespace-pre-wrap">{reply.message}</p>
+                                    <p className="whitespace-pre-wrap text-sm">{reply.message}</p>
                                   </div>
                                 </div>
                               </div>
                             );
-                          })
-                          }
-                        </div >
+                          })}
+                        </div>
                       )}
 
                       {/* Reply Input - Only show for open tickets */}
-                      {
-                        ticket.status === 'OPEN' && (
-                          <div className="mt-6 pt-6 border-t border-white/10">
-                            <Collapsible
-                              open={isReplyBoxOpen === ticket.id}
-                              onOpenChange={open => {
-                                setIsReplyBoxOpen(open ? ticket.id : null);
-                                if (open) {
-                                  setReplyingToTicket(ticket.id);
-                                } else {
-                                  setReplyMessage('');
-                                  setReplyingToTicket(null);
-                                }
-                              }}
-                            >
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    'w-full justify-center gap-2',
-                                    isReplyBoxOpen === ticket.id && 'mb-4'
-                                  )}
-                                >
-                                  {isReplyBoxOpen === ticket.id ? (
-                                    <>
-                                      <X className="h-4 w-4" />
-                                      Close Reply
-                                    </>
-                                  ) : (
-                                    <>
-                                      <MessageCircle className="h-4 w-4" />
-                                      Reply to Ticket
-                                    </>
-                                  )}
-                                </Button>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent className="space-y-4">
-                                <div className="flex gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-[10px] font-medium text-primary">You</span>
-                                  </div>
-                                  <div className="flex-1 space-y-2">
-                                    <Textarea
-                                      placeholder="Type your reply..."
-                                      value={replyMessage}
-                                      onChange={e => setReplyMessage(e.target.value)}
-                                      className="min-h-[100px] bg-white/5 border-white/10"
-                                    />
-                                    <div className="flex justify-end">
-                                      <Button
-                                        onClick={() => handleReply(ticket.id)}
-                                        disabled={isAddingReply && replyingToTicket === ticket.id}
-                                        className="gap-2"
-                                      >
-                                        {isAddingReply && replyingToTicket === ticket.id ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                          <Send className="h-4 w-4" />
-                                        )}
-                                        Send Reply
-                                      </Button>
-                                    </div>
+                      {ticket.status === 'OPEN' && (
+                        <div className="mt-6 border-t border-white/10 pt-6">
+                          <Collapsible
+                            open={isReplyBoxOpen === ticket.id}
+                            onOpenChange={open => {
+                              setIsReplyBoxOpen(open ? ticket.id : null);
+                              if (open) {
+                                setReplyingToTicket(ticket.id);
+                              } else {
+                                setReplyMessage('');
+                                setReplyingToTicket(null);
+                              }
+                            }}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  'w-full justify-center gap-2',
+                                  isReplyBoxOpen === ticket.id && 'mb-4'
+                                )}
+                              >
+                                {isReplyBoxOpen === ticket.id ? (
+                                  <>
+                                    <X className="h-4 w-4" />
+                                    Close Reply
+                                  </>
+                                ) : (
+                                  <>
+                                    <MessageCircle className="h-4 w-4" />
+                                    Reply to Ticket
+                                  </>
+                                )}
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="space-y-4">
+                              <div className="flex gap-3">
+                                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                  <span className="text-[10px] font-medium text-primary">You</span>
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                  <Textarea
+                                    placeholder="Type your reply..."
+                                    value={replyMessage}
+                                    onChange={e => setReplyMessage(e.target.value)}
+                                    className="min-h-[100px] border-white/10 bg-white/5"
+                                  />
+                                  <div className="flex justify-end">
+                                    <Button
+                                      onClick={() => handleReply(ticket.id)}
+                                      disabled={isAddingReply && replyingToTicket === ticket.id}
+                                      className="gap-2"
+                                    >
+                                      {isAddingReply && replyingToTicket === ticket.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Send className="h-4 w-4" />
+                                      )}
+                                      Send Reply
+                                    </Button>
                                   </div>
                                 </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </div>
-                        )
-                      }
-                    </div >
-                  </AccordionContent >
-                </AccordionItem >
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </Accordion >
+            </Accordion>
           )}
-        </div >
-      </main >
-    </>
+        </div>
+      </div>
+    </main>
   );
 }

@@ -217,7 +217,7 @@ export function Hypertrain() {
         <h2 className="text-xl font-semibold text-white">Hypertrain</h2>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl bg-card/30 p-6">
+      <div className="relative overflow-hidden rounded-xl">
         {!hypertrainItems || hypertrainItems.length === 0 ? (
           <div className="flex items-center justify-center w-full h-full py-8">
             <p className="text-neutral-400">No items found</p>

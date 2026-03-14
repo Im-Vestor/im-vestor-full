@@ -26,6 +26,7 @@ import { hypertrainRouter } from './routers/hypertrain';
 import { contentRouter } from './routers/content';
 import { validationRouter } from './routers/validation';
 import { pitchRouter } from './routers/pitch';
+import { messagesRouter } from './routers/messages';
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -55,6 +56,7 @@ export const appRouter = createTRPCRouter({
   content: contentRouter,
   validation: validationRouter,
   pitch: pitchRouter,
+  messages: messagesRouter,
 });
 
 export type AppRouter = typeof appRouter;

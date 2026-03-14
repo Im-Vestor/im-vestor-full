@@ -170,7 +170,7 @@ export default function NotionPageView() {
       {/* Content */}
       {pageData && pageData.blocks.length > 0 ? (
         <article className="mb-16">
-          <div className="space-y-6 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-12">
+          <div className="space-y-6 rounded-xl border border-white/10 bg-card md:px-16 px-4 py-12">
             <NotionBlockRenderer blocks={pageData.blocks} />
           </div>
         </article>

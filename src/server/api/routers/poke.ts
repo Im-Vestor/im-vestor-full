@@ -61,7 +61,7 @@ export const pokeRouter = createTRPCRouter({
       );
 
       // send notification
-      await createNotifications(ctx.db, [investor.user.id], NotificationType.POKE);
+      await createNotifications(ctx.db, [investor.user.id], NotificationType.POKE, message, entrepreneur.id);
 
       // remove 1 poke from user
       await ctx.db.user.update({
@@ -126,7 +126,7 @@ export const pokeRouter = createTRPCRouter({
       );
 
       // send notification
-      await createNotifications(ctx.db, [vcGroup.user.id], NotificationType.POKE);
+      await createNotifications(ctx.db, [vcGroup.user.id], NotificationType.POKE, message, entrepreneur.id);
 
       // remove 1 poke from user
       await ctx.db.user.update({

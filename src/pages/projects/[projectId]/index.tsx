@@ -276,7 +276,7 @@ export default function CompanyDetails() {
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8 pb-48">
       <Header />
-      <div className="rounded-xl border-2 border-white/10 bg-card p-4 sm:p-8">
+      <div className="rounded-xl border border-white/10 bg-card p-4 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"

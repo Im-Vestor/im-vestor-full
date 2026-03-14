@@ -339,13 +339,13 @@ export default function MyProjects() {
       <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
         <Header />
         <div className="mt-12">
-          <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
+          <div className="flex flex-col rounded-xl border border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
             <div className="animate-pulse">
               <div className="h-8 w-64 bg-white/10 rounded mb-2"></div>
               <div className="h-4 w-96 bg-white/10 rounded mb-8"></div>
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="rounded-xl border-2 border-white/10 bg-card p-6">
+                  <div key={i} className="rounded-xl border border-white/10 bg-card p-6">
                     <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                       <div className="h-[72px] w-[72px] bg-white/10 rounded-lg flex-shrink-0"></div>
                       <div className="flex flex-col gap-2 w-full">
@@ -412,11 +412,11 @@ export default function MyProjects() {
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
       <div className="mt-12">
-        <div className="flex flex-col rounded-xl border-2 border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
+        <div className="flex flex-col rounded-xl border border-white/10 bg-card px-4 py-6 md:px-16 md:py-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">portfolio</h1>
+            <h1 className="text-3xl font-bold mb-2">Portfolio</h1>
             <p className="text-muted-foreground">
-              Projects you are portfolio through investments, negotiations, and favorites
+              Projects you are involved in through investments, negotiations, and favorites
             </p>
             <div className="mt-4 flex gap-4 text-sm text-white/70">
               <div className="flex items-center gap-1">
@@ -454,7 +454,7 @@ export default function MyProjects() {
           </div>
 
           {totalProjects === 0 ? (
-            <div className="rounded-xl border-2 border-white/10 bg-card p-12">
+            <div className="rounded-xl border border-white/10 bg-card p-12">
               <div className="flex flex-col items-center justify-center">
                 <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
@@ -469,7 +469,7 @@ export default function MyProjects() {
               </div>
             </div>
           ) : filteredCount === 0 && searchQuery ? (
-            <div className="rounded-xl border-2 border-white/10 bg-card p-12">
+            <div className="rounded-xl border border-white/10 bg-card p-12">
               <div className="flex flex-col items-center justify-center">
                 <Search className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Projects Found</h3>

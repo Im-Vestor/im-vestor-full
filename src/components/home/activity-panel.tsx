@@ -4,22 +4,23 @@ import { useUser } from '@clerk/nextjs';
 
 import { api } from '~/utils/api';
 import Link from 'next/link';
-import { type Notification } from '@prisma/client';
-
 export function ActivityPanel() {
   const { isSignedIn, isLoaded } = useUser();
 
-  const { data: notifications } = api.notifications.getUnreadNotifications.useQuery(undefined, {
+  const { data: unreadMessages } = api.messages.getUnreadCount.useQuery(undefined, {
     enabled: isLoaded && !!isSignedIn,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
     retry: (failureCount, error) => {
-      // Retry up to 3 times for auth errors
       if (error?.data?.code === 'UNAUTHORIZED' && failureCount < 3) {
         return true;
       }
       return false;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
   const { data: negotiations } = api.user.getUser.useQuery(undefined, {
     enabled: isLoaded && !!isSignedIn,
     staleTime: 5 * 60 * 1000, // 5 minutes - cache user data to avoid unnecessary requests
@@ -49,7 +50,7 @@ export function ActivityPanel() {
               <div>
                 <p className="text-lg font-medium text-white">New Messages</p>
                 <p className="text-muted-foreground text-xs">
-                  {notifications?.filter((n: Notification) => n.type === 'POKE').length ?? 0} unread messages
+                  {unreadMessages?.count ?? 0} unread messages
                 </p>
               </div>
             </div>

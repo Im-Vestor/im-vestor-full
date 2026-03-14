@@ -82,24 +82,27 @@ export default function PreferredHours() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
+    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
       <Header />
-      <div className="mt-12 flex gap-6">
-        <div className="w-full rounded-xl border-2 border-white/10 bg-card p-12">
-          <button
-            type="button"
-            className="mb-4 flex items-center gap-2 hover:opacity-75 sm:mb-0"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
-          <div className="mt-4 flex flex-col gap-4">
-            <h1 className="text-2xl font-bold">Preferred Hours</h1>
-            <p className="text-sm text-white/50">
-              Set your preferred hours for meetings with investors
-            </p>
+      <div className="mt-12">
+        <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <button
+                type="button"
+                className="mb-4 flex items-center gap-2 hover:opacity-75"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="h-4 w-4" /> Back
+              </button>
+              <h1 className="text-3xl font-semibold">Preferred Hours</h1>
+              <p className="text-sm text-white/50">
+                Set your preferred hours for meetings with investors
+              </p>
+            </div>
+          </div>
 
-            <div className="mt-8 flex flex-col gap-8">
+          <div className="flex flex-col gap-8">
               {/* Add new preferred hour */}
               <div className="flex items-end gap-4">
                 <div className="flex flex-col gap-2">
@@ -196,7 +199,6 @@ export default function PreferredHours() {
                   <p className="text-center text-sm text-white/50">No preferred hours set yet</p>
                 )}
               </div>
-            </div>
           </div>
         </div>
       </div>

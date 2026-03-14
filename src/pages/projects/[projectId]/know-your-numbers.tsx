@@ -78,7 +78,7 @@ export default function EditCompany() {
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
-        <div className="mt-4 space-y-6 rounded-xl border-2 border-white/10 bg-card md:px-16 px-4 py-8">
+        <div className="mt-4 space-y-6 rounded-xl border border-white/10 bg-card md:px-16 px-4 py-8">
           <h1 className="text-lg font-bold">Know Your Numbers</h1>
           <div className="space-y-6">
             <div className="flex justify-between">
