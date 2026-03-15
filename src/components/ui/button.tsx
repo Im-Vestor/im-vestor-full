@@ -16,7 +16,7 @@ const buttonVariants = cva(
           'border border-bg-white/10 bg-background-card text-ui-text hover:opacity-100 opacity-70',
         secondary:
           'bg-background-card text-ui-text hover:bg-background-card/90 border border-bg-white/10',
-        ghost: 'text-ui-text hover:bg-background-card hover:text-ui-text',
+        ghost: 'text-ui-text hover:bg-transparent hover:text-ui-text',
         link: 'text-ui-text underline-offset-4 hover:underline',
       },
       size: {

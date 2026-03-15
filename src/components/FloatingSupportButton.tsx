@@ -20,9 +20,9 @@ export function FloatingSupportButton() {
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
               <Button
-                variant="default"
+                variant="outline"
                 size="icon"
-                className="fixed bottom-20 right-20 rounded-full h-14 w-14 shadow-lg z-50"
+                className="fixed bottom-20 right-20 rounded-full h-14 w-14 shadow-lg z-50 bg-card border-white/10 hover:bg-card/90"
               >
                 <MessageSquare className="h-6 w-6" />
                 <span className="sr-only">Open Support</span>

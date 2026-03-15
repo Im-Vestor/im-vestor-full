@@ -1,5 +1,5 @@
 import { useUser } from '@clerk/nextjs';
-import { ArrowLeft, Loader2, MapPin, MessageCircle, User } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, MessageCircle, MessageSquare, User } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
@@ -26,6 +26,7 @@ export default function VcGroupDetails() {
   const [pokeMessage, setPokeMessage] = useState('Hello, I am interested in connecting with you!');
 
   const isEntrepreneur = user?.publicMetadata.userType === 'ENTREPRENEUR';
+  const isInvestor = user?.publicMetadata.userType === 'INVESTOR';
 
   const { data: loggedInUser, refetch: refetchUser } = api.user.getUserById.useQuery({
     userId: user?.id ?? '',
@@ -35,6 +36,15 @@ export default function VcGroupDetails() {
     { id: vcId as string },
     { enabled: !!vcId }
   );
+
+  const sendMessageMutation = api.messages.getOrCreateConversation.useMutation({
+    onSuccess: data => {
+      void router.push(`/messages/${data.conversationId}`);
+    },
+    onError: () => {
+      toast.error('Failed to start conversation.');
+    },
+  });
 
   const { mutate: sendPoke, isPending: isSendingPoke } = api.poke.sendPokeToVcGroup.useMutation({
     onSuccess: () => {
@@ -132,19 +142,36 @@ export default function VcGroupDetails() {
             </div>
           </div>
 
-          {isEntrepreneur && (
-            <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
+            {isEntrepreneur && (
+              <>
+                <Button
+                  size="sm"
+                  disabled={!loggedInUser || loggedInUser?.availablePokes === 0}
+                  onClick={() => setIsPokeDialogOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Poke
+                </Button>
+                <p className="text-sm text-white/70">{loggedInUser?.availablePokes} pokes left</p>
+              </>
+            )}
+            {isInvestor && vcGroup.userId && (
               <Button
                 size="sm"
-                disabled={!loggedInUser || loggedInUser?.availablePokes === 0}
-                onClick={() => setIsPokeDialogOpen(true)}
+                variant="outline"
+                disabled={sendMessageMutation.isPending}
+                onClick={() => sendMessageMutation.mutate({ targetUserId: vcGroup.userId })}
               >
-                <MessageCircle className="h-4 w-4" />
-                Poke
+                {sendMessageMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquare className="h-4 w-4" />
+                )}
+                Message
               </Button>
-              <p className="text-sm text-white/70">{loggedInUser?.availablePokes} pokes left</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <hr className="my-6 border-white/10 sm:my-8" />

@@ -83,12 +83,10 @@
     --sidebar-ring: 47 84% 73%;
   }
 
-  /* Light Mode Theme - tons azul-violeta do Clerk */
   .light {
-    /* Primary Theme Colors - azul-violeta Clerk (#6C47FF) em vez do dourado */
     --primary: 248 100% 64%;
-    --primary-from: #6c47ff;
-    --primary-to: #4f35d4;
+    --primary-from: #EFD687;
+    --primary-to: #eed277;
 
     /* Sidebar Theme Variables para Light Mode */
     --sidebar-background: 240 20% 98%;
@@ -281,7 +279,7 @@
 
   /* SVG icons com cor inline (ex: color="#EFD687") no light mode */
   .light [color='#EFD687'] {
-    color: #6c47ff !important;
+    color: #EFD687 !important;
   }
 
   /* Light mode hover:border-white/20 */
@@ -307,7 +305,7 @@
 
   .light input:focus-visible,
   .light textarea:focus-visible {
-    outline: 2px solid #6c47ff !important;
+    outline: 2px solid #EFD687 !important;
     outline-offset: 0px;
   }
 
@@ -320,7 +318,7 @@
 
   /* Light mode text-[#EFD687] (active nav item) → azul Clerk */
   .light .text-\[\#EFD687\] {
-    color: #6c47ff;
+    color: #EFD687;
   }
 
   /* Light mode: bg-white/* transparentes → fundo claro */
@@ -344,7 +342,7 @@
 
   /* Light mode focus ring azul Clerk */
   .light .focus-visible\:ring-neutral-950:focus-visible {
-    --tw-ring-color: #6c47ff;
+    --tw-ring-color: #EFD687;
   }
 
   /* Cookie consent solid background */

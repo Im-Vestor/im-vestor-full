@@ -551,25 +551,28 @@ export default function CompanyDetails() {
                           Request Pitch
                         </Button>
                       )}
-                      {project.Entrepreneur?.userId && (
-                        <Button
-                          variant="outline"
-                          onClick={() =>
-                            sendMessageMutation.mutate({
-                              targetUserId: project.Entrepreneur!.userId,
-                            })
-                          }
-                          disabled={sendMessageMutation.isPending}
-                        >
-                          {sendMessageMutation.isPending ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                          )}
-                          Message
-                        </Button>
-                      )}
                     </>
+                  )}
+                {(isInvestor || isVc) &&
+                  !isProjectOwner &&
+                  (project.Entrepreneur?.userId ?? project.Incubator?.userId) && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        sendMessageMutation.mutate({
+                          targetUserId:
+                            project.Entrepreneur?.userId ?? project.Incubator!.userId,
+                        })
+                      }
+                      disabled={sendMessageMutation.isPending}
+                    >
+                      {sendMessageMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                      )}
+                      Message
+                    </Button>
                   )}
               </div>
             </div>
