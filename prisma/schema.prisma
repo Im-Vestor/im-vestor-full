@@ -80,7 +80,6 @@ model User {
   entrepreneur                Entrepreneur?
   incubator                   Incubator?
   investor                    Investor?
-  Message                     Message[]
   NewsLike                    NewsLike[]
   Notification                Notification[]
   partner                     Partner?
@@ -90,7 +89,6 @@ model User {
   supportTickets              SupportTicket[]
   supportTicketReplies        SupportTicketReply[] @relation("AdminReplies")
   vcGroup                     VcGroup?
-  pitchOfTheWeeks             PitchOfTheWeek[]
   conversations               Conversation[]   @relation("ConversationParticipants")
   sentMessages                Message[]        @relation("SentMessages")
 
@@ -566,51 +564,6 @@ model NewsLike {
   @@unique([notionPageId, userId])
 }
 
-model Conversation {
-  id        String    @id
-  createdAt DateTime  @default(now())
-  updatedAt DateTime
-  Message   Message[]
-  User      User[]    @relation("ConversationParticipants")
-
-  @@index([updatedAt])
-}
-
-model Message {
-  id             String       @id
-  content        String
-  createdAt      DateTime     @default(now())
-  readAt         DateTime?
-  senderId       String
-  conversationId String
-  Conversation   Conversation @relation(fields: [conversationId], references: [id])
-  User           User         @relation(fields: [senderId], references: [id])
-
-  @@index([conversationId, createdAt])
-  @@index([conversationId, readAt])
-  @@index([senderId])
-}
-
-model PitchOfTheWeek {
-  id               String               @id @default(uuid())
-  userId           String
-  projectId        String?
-  image            String
-  video            String?
-  date1            DateTime
-  date2            DateTime
-  dailyRoomName1   String?
-  dailyRoomUrl1    String?
-  dailyRoomName2   String?
-  dailyRoomUrl2    String?
-  status           PitchOfTheWeekStatus @default(PENDING)
-  hyperTrainItemId String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  hyperTrainItem   HyperTrainItem?      @relation(fields: [hyperTrainItemId], references: [id])
-  project          Project?             @relation(fields: [projectId], references: [id])
-  user             User                 @relation(fields: [userId], references: [id])
-}
 
 enum MarqueeLinkType {
   WEBSITE
@@ -683,7 +636,7 @@ enum ProjectStage {
 enum NegotiationStage {
   PITCH
   NEGOTIATION
-  CLOSING
+  DETAILS
   CLOSED
   CANCELLED
 }

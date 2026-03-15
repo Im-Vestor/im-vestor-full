@@ -439,7 +439,7 @@ export const negotiationRouter = createTRPCRouter({
               negotiation.stage === NegotiationStage.PITCH
                 ? NegotiationStage.NEGOTIATION
                 : negotiation.stage === NegotiationStage.NEGOTIATION
-                  ? NegotiationStage.CLOSING
+                  ? NegotiationStage.DETAILS
                   : NegotiationStage.CLOSED,
           },
         });

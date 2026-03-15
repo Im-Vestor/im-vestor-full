@@ -8,7 +8,8 @@
       "Bash(del:*)",
       "Bash(wc -l /c/Users/rickm/Documents/Code/im-vestor-full/src/pages/*.tsx)",
       "Bash(npm run check)",
-      "Bash(npx prisma generate)"
+      "Bash(npx prisma generate)",
+      "Bash(npm run:*)"
     ]
   }
 }

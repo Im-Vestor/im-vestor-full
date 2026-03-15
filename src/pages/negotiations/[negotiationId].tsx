@@ -59,7 +59,7 @@ const NEGOTIATION_STEPS = [
 const STAGE_TO_STEP_MAP: Record<string, number> = {
   PITCH: 0,
   NEGOTIATION: 1,
-  CLOSING: 2,
+  DETAILS: 2,
   CLOSED: 3,
 };
 
