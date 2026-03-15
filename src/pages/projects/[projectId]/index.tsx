@@ -18,7 +18,6 @@ import {
   Share,
   User,
   Video,
-  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -52,7 +51,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 
-import { capitalize, cn } from '~/lib/utils';
+import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
 

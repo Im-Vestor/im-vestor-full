@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { api } from '~/utils/api';
 
 const DailyCall = dynamic(() => import('~/components/daily-call').then(mod => mod.DailyCall), {

@@ -55,7 +55,6 @@ function combineDateAndTime(date: Date, time: string): Date {
 export default function CreatePitch() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
-  const [isUploading, setIsUploading] = useState(false);
   const [time1, setTime1] = useState('18:00');
   const [time2, setTime2] = useState('18:00');
 
