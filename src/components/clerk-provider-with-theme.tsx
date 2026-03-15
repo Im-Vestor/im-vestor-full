@@ -1,7 +1,6 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
-import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 
 type ClerkAppearance = React.ComponentProps<typeof ClerkProvider>['appearance'];
@@ -58,14 +57,11 @@ const clerkDarkAppearance: ClerkAppearance = {
 };
 
 export function ClerkProviderWithTheme({ children }: { children: React.ReactNode; }) {
-  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const appearance = !mounted || theme !== 'light' ? clerkDarkAppearance : clerkLightAppearance;
-
-  return <ClerkProvider appearance={appearance}>{children}</ClerkProvider>;
+  return <ClerkProvider appearance={clerkDarkAppearance}>{children}</ClerkProvider>;
 }

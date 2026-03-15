@@ -9,7 +9,8 @@
       "Bash(wc -l /c/Users/rickm/Documents/Code/im-vestor-full/src/pages/*.tsx)",
       "Bash(npm run check)",
       "Bash(npx prisma generate)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

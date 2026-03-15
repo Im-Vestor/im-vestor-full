@@ -476,7 +476,7 @@ export default function AdminPartnersPage() {
               {/\.(mp4|webm|mov|avi)$/i.exec(adProofUrl) ? (
                 <video src={adProofUrl} controls className="w-full" />
               ) : (
-                <img src={adProofUrl} alt="Ad Proof" className="w-full object-contain" />
+                <Image src={adProofUrl} alt="Ad Proof" width={500} height={400} className="w-full object-contain" />
               )}
             </div>
           )}

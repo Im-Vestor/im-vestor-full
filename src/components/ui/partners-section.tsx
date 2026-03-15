@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { Marquee } from '~/components/ui/marquee';
 import { api } from '~/utils/api';
 import { useTranslation } from '~/hooks/use-translation';
@@ -31,8 +30,6 @@ interface PartnersSectionProps {
 
 export function PartnersSection({ variant = 'landing' }: PartnersSectionProps) {
   const t = useTranslation();
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
 
   // Fetch partners data for the marquee - defer loading
   const { data: partners, isLoading: isLoadingPartners } = api.partner.getAll.useQuery(undefined, {
