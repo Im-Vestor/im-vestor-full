@@ -57,6 +57,7 @@ export default function CreatePitch() {
   const { user, isLoaded } = useUser();
   const [time1, setTime1] = useState('18:00');
   const [time2, setTime2] = useState('18:00');
+  const [isUploading, setIsUploading] = useState(false);
 
   const isFromCheckout = router.query.checkout === 'success';
   const [waitingForWebhook, setWaitingForWebhook] = useState(false);

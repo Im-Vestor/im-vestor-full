@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
+    "postinstall": "prisma generate",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
