@@ -26,11 +26,12 @@ const NEGOTIATION_STEPS = [
   { label: 'Closed' },
 ];
 
-const STAGE_TO_STEP_MAP = {
+const STAGE_TO_STEP_MAP: Record<NegotiationStage, number> = {
   PITCH: 0,
   NEGOTIATION: 1,
   DETAILS: 2,
   CLOSED: 3,
+  CANCELLED: 3,
 };
 
 export default function EntrepreneurNegotiations() {

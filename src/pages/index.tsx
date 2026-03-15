@@ -12,13 +12,12 @@ import {
   Play,
   ArrowUpRight,
   LogIn,
-  Flag,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Button } from '~/components/ui/button';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from '~/hooks/use-translation';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { useRouter } from 'next/router';

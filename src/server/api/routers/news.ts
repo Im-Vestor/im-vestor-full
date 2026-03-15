@@ -25,7 +25,7 @@ async function listAllBlockChildren(blockId: string) {
   let cursor: string | undefined = undefined;
 
   // Defensive pagination: Notion returns max 100, we use 50 to keep payloads smaller
-  for (;;) {
+  for (; ;) {
     const resp = await notion.blocks.children.list({
       block_id: blockId,
       page_size: 50,
@@ -43,7 +43,7 @@ async function queryAllDatabasePages(databaseId: string) {
   const pages: PageObjectResponse[] = [];
   let cursor: string | undefined = undefined;
 
-  for (;;) {
+  for (; ;) {
     const resp = await notion.databases.query({
       database_id: databaseId,
       page_size: 50,
@@ -148,7 +148,7 @@ async function collectNewsItemsFromContainer(containerId: string) {
               }
             }
           } catch (error) {
-            // ignore databases we can't access
+            console.error('Error fetching database pages:', error);
           }
         }
         continue;

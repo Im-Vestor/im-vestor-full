@@ -4,7 +4,6 @@ import {
   type Investor,
   type State,
   type User,
-  type UserType,
   type VcGroup,
 } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
@@ -43,8 +42,7 @@ type UserWithRelations = User & {
 };
 
 export default function Investors() {
-  const { user } = useUser();
-  // const userType = user?.publicMetadata.userType as UserType;
+  useUser();
 
   const { data: areas } = api.area.getAll.useQuery();
   const [visibleAreasCount, setVisibleAreasCount] = useState(5);
