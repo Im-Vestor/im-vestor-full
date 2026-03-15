@@ -14,6 +14,7 @@ import {
   Heart,
   Loader2,
   MapPin,
+  MessageSquare,
   Presentation,
   Share,
   User,
@@ -195,6 +196,15 @@ export default function CompanyDetails() {
     },
     onError: () => {
       toast.error('Failed to update connection status.');
+    },
+  });
+
+  const sendMessageMutation = api.messages.getOrCreateConversation.useMutation({
+    onSuccess: data => {
+      void router.push(`/messages/${data.conversationId}`);
+    },
+    onError: () => {
+      toast.error('Failed to start conversation.');
     },
   });
 
@@ -539,6 +549,24 @@ export default function CompanyDetails() {
                             <Presentation className="mr-2 h-4 w-4" />
                           )}
                           Request Pitch
+                        </Button>
+                      )}
+                      {project.Entrepreneur?.userId && (
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            sendMessageMutation.mutate({
+                              targetUserId: project.Entrepreneur!.userId,
+                            })
+                          }
+                          disabled={sendMessageMutation.isPending}
+                        >
+                          {sendMessageMutation.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                          )}
+                          Message
                         </Button>
                       )}
                     </>

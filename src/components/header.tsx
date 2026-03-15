@@ -6,8 +6,10 @@ import {
   LogOut,
   Mail,
   Menu,
+  Moon,
   Settings,
   SquareUser,
+  Sun,
   User,
   Users,
   X,
@@ -15,6 +17,7 @@ import {
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
+import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { toNewsUserType } from '~/types/news';
 import { api } from '~/utils/api';
@@ -203,6 +206,7 @@ export const Header = () => {
   );
 
   const { signOut } = useClerk();
+  const { theme, setTheme } = useTheme();
 
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -327,7 +331,6 @@ export const Header = () => {
         {/* User Profile / Login */}
         {isLoaded && isSignedIn ? (
           <div className="flex items-center">
-            <ThemeSwitcher />
             <Notifications />
             <FloatingSupportButton />
 
@@ -404,6 +407,17 @@ export const Header = () => {
                     Admin
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="hover:cursor-pointer"
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Moon className="h-4 w-4 mr-2" />
+                  )}
+                  {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ redirectUrl: '/login' })}
                   className="hover:cursor-pointer"

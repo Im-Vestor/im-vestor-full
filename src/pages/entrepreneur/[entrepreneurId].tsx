@@ -8,6 +8,7 @@ import {
   Globe,
   Loader2,
   MapPin,
+  MessageSquare,
   User,
   UserPlus,
   Video,
@@ -56,6 +57,15 @@ export default function EntrepreneurDetails() {
     },
     onError: () => {
       toast.error('Failed to update connection status.');
+    },
+  });
+
+  const sendMessageMutation = api.messages.getOrCreateConversation.useMutation({
+    onSuccess: data => {
+      void router.push(`/messages/${data.conversationId}`);
+    },
+    onError: () => {
+      toast.error('Failed to start conversation.');
     },
   });
 
@@ -135,22 +145,39 @@ export default function EntrepreneurDetails() {
               </div>
 
               {isInvestor && (
-                <Button
-                  onClick={handleConnectClick}
-                  variant="secondary"
-                  disabled={isConnected || connectMutation.isPending}
-                  className="mt-4 sm:mt-0"
-                >
-                  {isConnected ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4" /> Connected
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" /> Connect
-                    </>
-                  )}
-                </Button>
+                <div className="mt-4 flex gap-2 sm:mt-0">
+                  <Button
+                    onClick={handleConnectClick}
+                    variant="secondary"
+                    disabled={isConnected || connectMutation.isPending}
+                  >
+                    {isConnected ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" /> Connected
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" /> Connect
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (entrepreneur?.user.id) {
+                        sendMessageMutation.mutate({ targetUserId: entrepreneur.user.id });
+                      }
+                    }}
+                    variant="outline"
+                    disabled={sendMessageMutation.isPending}
+                  >
+                    {sendMessageMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                    )}
+                    Message
+                  </Button>
+                </div>
               )}
             </div>
           </div>

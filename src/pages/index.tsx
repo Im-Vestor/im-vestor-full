@@ -18,6 +18,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Button } from '~/components/ui/button';
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useTranslation } from '~/hooks/use-translation';
 import { LanguageSwitcher } from '~/components/ui/language-switcher';
 import { useRouter } from 'next/router';
@@ -70,9 +71,23 @@ const LAUNCH_DATE = new Date('2026-06-01T00:00:00');
 
 export default function Home() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const { theme, setTheme } = useTheme();
   const t = useTranslation();
   const router = useRouter();
   const countdown = useCountdown(LAUNCH_DATE);
+
+  useEffect(() => {
+    const previousTheme = theme;
+    if (theme !== 'dark') {
+      setTheme('dark');
+    }
+    return () => {
+      if (previousTheme && previousTheme !== 'dark') {
+        setTheme(previousTheme);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isVideoPlaying) {
