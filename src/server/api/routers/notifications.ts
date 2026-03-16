@@ -1,13 +1,42 @@
-import { type NotificationType, type PrismaClient } from '@prisma/client';
+import { NotificationType, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const notificationsRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.notification.findMany({
-      where: { userId: ctx.auth.userId },
-      orderBy: { createdAt: 'desc' },
+  getAll: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.string().optional(),
+        limit: z.number().min(1).max(100).default(20),
+        types: z.array(z.nativeEnum(NotificationType)).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { cursor, limit, types } = input;
+
+      const notifications = await ctx.db.notification.findMany({
+        where: {
+          userId: ctx.auth.userId,
+          ...(types && types.length > 0 && { type: { in: types } }),
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+      });
+
+      let nextCursor: string | undefined;
+      if (notifications.length > limit) {
+        nextCursor = notifications[limit]?.id;
+        notifications.splice(limit, 1);
+      }
+
+      return { notifications, nextCursor };
+    }),
+  getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+    const count = await ctx.db.notification.count({
+      where: { userId: ctx.auth.userId, read: false },
     });
+    return { count };
   }),
   getUnreadNotifications: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.notification.findMany({
@@ -18,6 +47,7 @@ export const notificationsRouter = createTRPCRouter({
       orderBy: {
         createdAt: 'desc',
       },
+      take: 50,
     });
   }),
   readNotification: protectedProcedure

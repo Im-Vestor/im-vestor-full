@@ -67,9 +67,18 @@ export const messagesRouter = createTRPCRouter({
 
   getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.auth.userId;
+
+    // Two fast indexed queries instead of one expensive join across all messages
+    const conversations = await ctx.db.conversation.findMany({
+      where: { participants: { some: { id: userId } } },
+      select: { id: true },
+    });
+
+    if (conversations.length === 0) return { count: 0 };
+
     const count = await ctx.db.message.count({
       where: {
-        conversation: { participants: { some: { id: userId } } },
+        conversationId: { in: conversations.map((c) => c.id) },
         senderId: { not: userId },
         readAt: null,
       },
@@ -129,22 +138,26 @@ export const messagesRouter = createTRPCRouter({
       const userId = ctx.auth.userId;
       const { conversationId, cursor, limit } = input;
 
-      const conversation = await ctx.db.conversation.findFirst({
-        where: { id: conversationId, participants: { some: { id: userId } } },
-      });
+      // Run auth check and message fetch in parallel
+      const [conversation, messages] = await Promise.all([
+        ctx.db.conversation.findFirst({
+          where: { id: conversationId, participants: { some: { id: userId } } },
+          select: { id: true },
+        }),
+        ctx.db.message.findMany({
+          where: { conversationId },
+          orderBy: { createdAt: 'desc' },
+          take: limit + 1,
+          cursor: cursor ? { id: cursor } : undefined,
+          include: {
+            sender: { select: participantSelect },
+          },
+        }),
+      ]);
+
       if (!conversation) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Conversation not found' });
       }
-
-      const messages = await ctx.db.message.findMany({
-        where: { conversationId },
-        orderBy: { createdAt: 'desc' },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        include: {
-          sender: { select: participantSelect },
-        },
-      });
 
       let nextCursor: string | undefined;
       if (messages.length > limit) {
@@ -197,6 +210,42 @@ export const messagesRouter = createTRPCRouter({
 
       return message;
     }),
+
+  getOrCreateSupportConversation: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.auth.userId;
+
+    const adminUser = await ctx.db.user.findFirst({
+      where: { userType: 'ADMIN', id: { not: userId } },
+      select: { id: true },
+    });
+    if (!adminUser) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Support is unavailable right now' });
+    }
+
+    return ctx.db.$transaction(async tx => {
+      const existing = await tx.conversation.findFirst({
+        where: {
+          AND: [
+            { participants: { some: { id: userId } } },
+            { participants: { some: { id: adminUser.id } } },
+          ],
+        },
+        include: { participants: { select: { id: true } } },
+      });
+
+      if (existing && existing.participants.length === 2) {
+        return { conversationId: existing.id };
+      }
+
+      const created = await tx.conversation.create({
+        data: {
+          participants: { connect: [{ id: userId }, { id: adminUser.id }] },
+        },
+      });
+
+      return { conversationId: created.id };
+    });
+  }),
 
   markAsRead: protectedProcedure
     .input(z.object({ conversationId: z.string() }))

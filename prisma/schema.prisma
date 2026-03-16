@@ -72,6 +72,7 @@ model User {
   stripeCustomerId            String?
   availableBoosts             Int                  @default(0)
   status                      UserStatus           @default(ACTIVE)
+  lastSeenAt                  DateTime?
   createdAt                   DateTime?            @default(now())
   updatedAt                   DateTime?            @default(now()) @updatedAt
   availablePublicPitchTickets Int                  @default(0)
@@ -702,7 +703,7 @@ model Message {
   sender         User         @relation("SentMessages", fields: [senderId], references: [id])
 
   @@index([conversationId, createdAt])
-  @@index([conversationId, readAt])
+  @@index([conversationId, senderId, readAt])
   @@index([senderId])
 }
 

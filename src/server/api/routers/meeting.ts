@@ -64,6 +64,7 @@ export const meetingRouter = createTRPCRouter({
               lastName: true,
               user: {
                 select: {
+                  id: true,
                   imageUrl: true,
                 },
               },
@@ -76,6 +77,7 @@ export const meetingRouter = createTRPCRouter({
               lastName: true,
               user: {
                 select: {
+                  id: true,
                   imageUrl: true,
                 },
               },

@@ -1,11 +1,12 @@
-import { ArrowLeft, Loader2, UserRound } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Header } from '~/components/header';
+import { UserAvatar } from '~/components/UserAvatar';
 import { Button } from '~/components/ui/button';
+import { useOnlineStatuses } from '~/hooks/use-presence';
 import type { ConnectionResponse } from '~/server/api/routers/connection';
 import { api } from '~/utils/api';
 
@@ -15,6 +16,12 @@ export default function Connections() {
   const { data, isLoading } = api.connection.getMyConnections.useQuery({
     page,
   });
+
+  const connectionUserIds = useMemo(
+    () => (data?.connections ?? []).map(c => c.user.id).filter(Boolean),
+    [data?.connections],
+  );
+  const onlineStatuses = useOnlineStatuses(connectionUserIds);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
@@ -39,6 +46,7 @@ export default function Connections() {
               <ConnectionCard
                 key={connection.connection.id}
                 connection={connection as ConnectionResponse}
+                isOnline={!!onlineStatuses[connection.user.id]}
               />
             ))
           ) : isLoading ? (
@@ -74,7 +82,7 @@ export default function Connections() {
   );
 }
 
-function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
+function ConnectionCard({ connection, isOnline }: { connection: ConnectionResponse; isOnline: boolean }) {
   const user = connection.user;
   const userType = user.userType;
   const firstName =
@@ -90,21 +98,12 @@ function ConnectionCard({ connection }: { connection: ConnectionResponse }) {
         className="rounded-xl border-2 border-white/10 bg-card p-6 transition-all hover:border-white/20"
       >
         <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-          {user.imageUrl ? (
-            <div className="h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-lg">
-              <Image
-                src={user.imageUrl}
-                alt={`${user.email} Photo`}
-                width={72}
-                height={72}
-                className="h-full w-full rounded-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
-              <UserRound className="size-8 text-neutral-500" />
-            </div>
-          )}
+          <UserAvatar
+            imageUrl={user.imageUrl}
+            alt={`${user.email} Photo`}
+            size={72}
+            isOnline={isOnline}
+          />
 
           <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
             <div className="flex flex-col">

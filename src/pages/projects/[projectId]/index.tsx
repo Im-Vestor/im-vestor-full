@@ -175,7 +175,10 @@ export default function CompanyDetails() {
     onSuccess: async () => {
       await utils.project.getById.invalidate();
       if (isInvestor) {
-        await utils.investor.getByUserId.invalidate();
+        await Promise.all([
+          utils.investor.getByUserId.invalidate(),
+          utils.investor.getMyProjects.invalidate(),
+        ]);
       }
       if (isVc) {
         await utils.vcGroup.getByUserId.invalidate();

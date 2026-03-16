@@ -6,8 +6,10 @@ import {
   LogOut,
   Mail,
   Menu,
+  MessageSquare,
   Moon,
   Settings,
+  ShoppingCart,
   SquareUser,
   Sun,
   User,
@@ -21,6 +23,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { toNewsUserType } from '~/types/news';
 import { api } from '~/utils/api';
+import { UserAvatar } from './UserAvatar';
 import { FloatingSupportButton } from './FloatingSupportButton';
 import { Notifications } from './notifications';
 import { Button } from './ui/button';
@@ -58,14 +61,6 @@ const ENTREPRENEUR_MENUS = [
     label: 'News',
     href: '/news?type=entrepreneur',
   },
-  {
-    label: 'Shop',
-    href: '/shop',
-  },
-  {
-    label: 'Messages',
-    href: '/messages',
-  },
 ];
 
 const INVESTOR_MENUS = [
@@ -93,14 +88,6 @@ const INVESTOR_MENUS = [
     label: 'News',
     href: '/news?type=investor',
   },
-  {
-    label: 'Shop',
-    href: '/shop',
-  },
-  {
-    label: 'Messages',
-    href: '/messages',
-  },
 ];
 
 const VC_MENUS = [
@@ -124,14 +111,6 @@ const VC_MENUS = [
     label: 'News',
     href: '/news?type=vc',
   },
-  {
-    label: 'Shop',
-    href: '/shop',
-  },
-  {
-    label: 'Messages',
-    href: '/messages',
-  },
 ];
 
 const PARTNER_MENUS = [
@@ -146,10 +125,6 @@ const PARTNER_MENUS = [
   {
     label: 'News',
     href: '/news?type=partner',
-  },
-  {
-    label: 'Messages',
-    href: '/messages',
   },
 ];
 
@@ -173,14 +148,6 @@ const INCUBATOR_MENUS = [
   {
     label: 'News',
     href: '/news?type=entrepreneur',
-  },
-  {
-    label: 'Shop',
-    href: '/shop',
-  },
-  {
-    label: 'Messages',
-    href: '/messages',
   },
 ];
 
@@ -331,6 +298,26 @@ export const Header = () => {
         {/* User Profile / Login */}
         {isLoaded && isSignedIn ? (
           <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative"
+              onClick={() => void handleNavigation('/messages')}
+            >
+              <MessageSquare className={`h-5 w-5 ${path === '/messages' ? 'text-[#EFD687]' : ''}`} />
+              {unreadMsgCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-black">
+                  {unreadMsgCount > 99 ? '99+' : unreadMsgCount}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleNavigation('/shop')}
+            >
+              <ShoppingCart className={`h-5 w-5 ${path === '/shop' ? 'text-[#EFD687]' : ''}`} />
+            </Button>
             <Notifications />
             <FloatingSupportButton />
 
@@ -340,16 +327,13 @@ export const Header = () => {
                   <span className="hidden md:inline">{user?.firstName}</span>
                   {isLoadingUserDetails ? (
                     <div className="w-6 h-6 bg-gray-600 rounded-full animate-pulse"></div>
-                  ) : userDetails?.imageUrl ? (
-                    <Image
-                      src={userDetails.imageUrl}
-                      alt="Profile"
-                      width={24}
-                      height={24}
-                      className="size-6 rounded-full object-cover"
-                    />
                   ) : (
-                    <User className="size-6" />
+                    <UserAvatar
+                      imageUrl={userDetails?.imageUrl}
+                      alt="Profile"
+                      size={24}
+                      isOnline={true}
+                    />
                   )}
                 </Button>
               </DropdownMenuTrigger>
@@ -470,13 +454,31 @@ export const Header = () => {
               {menu.label === 'News' && hasNewNews && (
                 <span className="ml-2 h-2 w-2 rounded-full bg-red-500" />
               )}
-              {menu.label === 'Messages' && unreadMsgCount > 0 && (
-                <span className="ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-black">
-                  {unreadMsgCount > 99 ? '99+' : unreadMsgCount}
-                </span>
-              )}
             </Button>
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`justify-start ${path === '/messages' ? 'text-[#EFD687]' : ''}`}
+            onClick={() => void handleMobileNavigation('/messages')}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Messages
+            {unreadMsgCount > 0 && (
+              <span className="ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-black">
+                {unreadMsgCount > 99 ? '99+' : unreadMsgCount}
+              </span>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`justify-start ${path === '/shop' ? 'text-[#EFD687]' : ''}`}
+            onClick={() => void handleMobileNavigation('/shop')}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Shop
+          </Button>
           <Button
             variant="ghost"
             size="sm"

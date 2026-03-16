@@ -15,6 +15,7 @@ import { GoogleAnalytics } from '~/lib/GoogleAnalytics';
 import { CookieConsent } from '~/components/ui/cookie-consent';
 import { ThemeProvider } from '~/components/theme-provider';
 import { useEffect, useState } from 'react';
+import { usePresenceHeartbeat } from '~/hooks/use-presence';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -25,6 +26,11 @@ const roboto = Roboto({
 
 interface CookieSettings {
   analytics: boolean;
+}
+
+function PresenceTracker() {
+  usePresenceHeartbeat();
+  return null;
 }
 
 const MyApp: AppType = ({ Component, pageProps }) => {
@@ -42,6 +48,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <ThemeProvider>
       <ClerkProviderWithTheme>
         <LanguageProvider>
+          <PresenceTracker />
           <Toaster position="top-right" expand={false} richColors closeButton />
           {analyticsEnabled && (
             <>

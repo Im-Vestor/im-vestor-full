@@ -12,7 +12,7 @@ import { Building2, CalendarIcon, ClockIcon, ListIcon, User } from 'lucide-react
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '~/components/confirmation-dialog';
@@ -20,6 +20,8 @@ import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
+import { UserAvatar } from '~/components/UserAvatar';
+import { useOnlineStatuses } from '~/hooks/use-presence';
 import { api } from '~/utils/api';
 
 const DAY_PICKER_CLASS_NAMES = {
@@ -58,24 +60,22 @@ function getDayLabel(date: Date): { label: string; isToday: boolean; isTomorrow:
   return { label: format(date, 'EEE, MMM d'), isToday: false, isTomorrow: false };
 }
 
-function ParticipantAvatar({ imageUrl, name }: { imageUrl?: string | null; name: string }) {
+function ParticipantAvatar({
+  imageUrl,
+  name,
+  isOnline,
+}: {
+  imageUrl?: string | null;
+  name: string;
+  isOnline?: boolean;
+}) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={name}
-              width={24}
-              height={24}
-              className="h-6 w-6 rounded-full object-cover ring-1 ring-white/10"
-            />
-          ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/10">
-              <User className="h-3.5 w-3.5 text-white/40" />
-            </div>
-          )}
+          <div>
+            <UserAvatar imageUrl={imageUrl} alt={name} size={24} isOnline={isOnline} />
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p>{name}</p>
@@ -178,6 +178,17 @@ export default function Meetings() {
 
   const { data: upcomingMeetings, isLoading: isLoadingUpcoming } =
     api.meeting.getUpcomingMeetings.useQuery();
+
+  // Collect participant user IDs for online status tracking
+  const participantUserIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const m of meetings ?? []) {
+      for (const inv of m.investors) ids.add(inv.user.id);
+      if (m.entrepreneur) ids.add(m.entrepreneur.user.id);
+    }
+    return [...ids];
+  }, [meetings]);
+  const onlineStatuses = useOnlineStatuses(participantUserIds);
 
   const { mutateAsync: cancelMeeting, isPending: isCancellingMeeting } =
     api.meeting.cancelMeeting.useMutation({
@@ -328,12 +339,14 @@ export default function Meetings() {
                               key={inv.id}
                               imageUrl={inv.user.imageUrl}
                               name={`${inv.firstName} ${inv.lastName}`}
+                              isOnline={onlineStatuses[inv.user.id]}
                             />
                           ))
                         ) : meeting.entrepreneur ? (
                           <ParticipantAvatar
                             imageUrl={meeting.entrepreneur.user.imageUrl}
                             name={`${meeting.entrepreneur.firstName} ${meeting.entrepreneur.lastName}`}
+                            isOnline={onlineStatuses[meeting.entrepreneur.user.id]}
                           />
                         ) : null}
                       </div>

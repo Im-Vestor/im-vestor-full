@@ -1,8 +1,8 @@
-import { type NotificationType } from '@prisma/client';
+import { NotificationType, type NotificationType as NotificationTypeEnum } from '@prisma/client';
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
 import { Button } from '~/components/ui/button';
@@ -20,31 +20,68 @@ const TABS: { label: string; value: FilterTab }[] = [
   { label: 'Support', value: 'SUPPORT' },
 ];
 
-const matchesFilter = (type: NotificationType, filter: FilterTab): boolean => {
-  if (filter === 'ALL') return true;
-  return type.startsWith(filter);
+const TAB_TYPE_MAP: Record<FilterTab, NotificationTypeEnum[] | undefined> = {
+  ALL: undefined,
+  POKE: [NotificationType.POKE],
+  MEETING: [NotificationType.MEETING_CREATED, NotificationType.MEETING_CANCELLED],
+  NEGOTIATION: [
+    NotificationType.NEGOTIATION_CREATED,
+    NotificationType.NEGOTIATION_CANCELLED,
+    NotificationType.NEGOTIATION_GO_TO_NEXT_STAGE,
+  ],
+  SUPPORT: [
+    NotificationType.SUPPORT_TICKET_REPLY,
+    NotificationType.SUPPORT_TICKET_STATUS_UPDATED,
+    NotificationType.SUPPORT_TICKET_CREATED,
+    NotificationType.SUPPORT_TICKET_RECEIVED,
+  ],
 };
+
+const PAGE_SIZE = 20;
 
 export default function NotificationsPage() {
   const router = useRouter();
   const utils = api.useUtils();
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL');
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  const { data: notifications, isLoading } = api.notifications.getAll.useQuery(undefined, {
-    staleTime: 0,
-  });
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    api.notifications.getAll.useInfiniteQuery(
+      {
+        limit: PAGE_SIZE,
+        types: TAB_TYPE_MAP[activeTab],
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        staleTime: 5 * 60 * 1000,
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const notifications = data?.pages.flatMap((page) => page.notifications) ?? [];
 
   const { mutate: readAllNotifications } = api.notifications.readAllNotifications.useMutation({
-    onSuccess: () => {
+    onMutate: async () => {
+      await utils.notifications.getUnreadCount.cancel();
+      const previous = utils.notifications.getUnreadCount.getData();
+      utils.notifications.getUnreadCount.setData(undefined, { count: 0 });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        utils.notifications.getUnreadCount.setData(undefined, context.previous);
+      }
+    },
+    onSettled: () => {
       void utils.notifications.getAll.invalidate();
-      void utils.notifications.getUnreadNotifications.invalidate();
+      void utils.notifications.getUnreadCount.invalidate();
     },
   });
 
   const { mutate: readNotification } = api.notifications.readNotification.useMutation({
     onSuccess: () => {
       void utils.notifications.getAll.invalidate();
-      void utils.notifications.getUnreadNotifications.invalidate();
+      void utils.notifications.getUnreadCount.invalidate();
     },
     onError: () => {
       toast.error('Failed to update notification');
@@ -57,9 +94,27 @@ export default function NotificationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const handleNotificationClick = (notification: {
     id: string;
-    type: NotificationType;
+    type: NotificationTypeEnum;
     investorId?: string | null;
     senderId?: string | null;
     read: boolean;
@@ -83,8 +138,7 @@ export default function NotificationsPage() {
     void router.push(link);
   };
 
-  const filtered = notifications?.filter(n => matchesFilter(n.type, activeTab)) ?? [];
-  const hasUnread = notifications?.some(n => !n.read) ?? false;
+  const hasUnread = notifications.some((n) => !n.read);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
@@ -108,7 +162,7 @@ export default function NotificationsPage() {
 
           {/* Filter tabs */}
           <div className="mb-6 flex gap-1 border-b border-white/10">
-            {TABS.map(tab => (
+            {TABS.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
@@ -128,14 +182,14 @@ export default function NotificationsPage() {
             <div className="flex justify-center py-16">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
-          ) : filtered.length === 0 ? (
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
               <Bell className="size-10 opacity-40" />
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
             <div className="flex flex-col">
-              {filtered.map(notification => {
+              {notifications.map((notification) => {
                 const { icon: Icon, color } = getNotificationIcon(notification.type);
                 const entry = NotificationTextMap[notification.type];
                 const isUnread = !notification.read;
@@ -190,6 +244,12 @@ export default function NotificationsPage() {
                   </div>
                 );
               })}
+              <div ref={loadMoreRef} className="h-1" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
           )}
         </div>

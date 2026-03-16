@@ -64,8 +64,8 @@ const products = [
 
 const Product = ({ title, description, onBuy, isLoading, value, icon: Icon }: ProductProps) => {
   return (
-    <Card className="group relative flex h-full flex-col overflow-hidden border-2 border-white/5 bg-gradient-to-br from-card to-card/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary-solid/50 hover:shadow-2xl hover:shadow-primary-solid/10">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-solid/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <Card className="group relative flex h-full flex-col overflow-hidden border-2 border-white/5 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary-solid/10 transition-all duration-500">
+      <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <CardHeader className="relative z-10 pb-4">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-solid/10 text-primary-solid transition-colors duration-300 group-hover:bg-primary-solid group-hover:text-black">
@@ -142,7 +142,7 @@ export default function Shop() {
     api.hypertrain.getHyperTrainItemByExternalId.useQuery(
       userData?.investor?.id ?? '',
       {
-      enabled: userType === 'INVESTOR' && !!userData?.investor?.id,
+        enabled: userType === 'INVESTOR' && !!userData?.investor?.id,
       }
     );
 
@@ -262,36 +262,36 @@ export default function Shop() {
       <Header />
       <div className="mt-12">
         <div className="rounded-lg border border-white/10 bg-card p-6 md:p-12">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-semibold">Shop</h1>
-          {userData && (
-            <div className="rounded-lg bg-primary/10 px-3 py-2">
-              <span className="text-sm font-medium">
-                Available Pokes: {userData.availablePokes}
-              </span>
-            </div>
-          )}
-        </div>
+          <div className="mb-8 flex items-center justify-between">
+            <h1 className="text-3xl font-semibold">Shop</h1>
+            {userData && (
+              <div className="rounded-lg bg-primary/10 px-3 py-2">
+                <span className="text-sm font-medium">
+                  Available Pokes: {userData.availablePokes}
+                </span>
+              </div>
+            )}
+          </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {products
-            .filter(product => {
-              if (!userType) return false;
-              return product.availableUserTypes.includes(userType);
-            })
-            .map(product => (
-              <Product
-                key={product.id}
-                title={product.name}
-                description={product.description}
-                onBuy={() => handlePurchase(product.id)}
-                isLoading={isProcessing}
-                value={product.value}
-                icon={product.icon}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {products
+              .filter(product => {
+                if (!userType) return false;
+                return product.availableUserTypes.includes(userType);
+              })
+              .map(product => (
+                <Product
+                  key={product.id}
+                  title={product.name}
+                  description={product.description}
+                  onBuy={() => handlePurchase(product.id)}
+                  isLoading={isProcessing}
+                  value={product.value}
+                  icon={product.icon}
+                />
+              ))}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Project Selection Dialog for Entrepreneurs */}

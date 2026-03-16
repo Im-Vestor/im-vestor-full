@@ -9,7 +9,6 @@ import {
   Loader2,
   MapPin,
   MessageSquare,
-  User,
   UserPlus,
   Video,
 } from 'lucide-react';
@@ -19,7 +18,9 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Header } from '~/components/header';
+import { UserAvatar } from '~/components/UserAvatar';
 import { Button } from '~/components/ui/button';
+import { useOnlineStatuses } from '~/hooks/use-presence';
 import { api } from '~/utils/api';
 import { formatCurrency, formatStage } from '~/utils/format';
 
@@ -75,6 +76,9 @@ export default function EntrepreneurDetails() {
     }
   };
 
+  const entrepreneurUserId = entrepreneur?.user?.id;
+  const onlineStatuses = useOnlineStatuses(entrepreneurUserId ? [entrepreneurUserId] : []);
+
   if (isLoading || !entrepreneur) {
     return (
       <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
@@ -102,21 +106,13 @@ export default function EntrepreneurDetails() {
         </div>
 
         <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-          <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-full sm:h-32 sm:w-32">
-            {entrepreneur.photo ? (
-              <Image
-                src={entrepreneur.photo}
-                alt={`${entrepreneur.firstName} ${entrepreneur.lastName}`}
-                width={128}
-                height={128}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-white/10">
-                <User className="size-10 text-neutral-200 sm:size-12" />
-              </div>
-            )}
-          </div>
+          <UserAvatar
+            imageUrl={entrepreneur.photo}
+            alt={`${entrepreneur.firstName} ${entrepreneur.lastName}`}
+            size={128}
+            isOnline={entrepreneurUserId ? onlineStatuses[entrepreneurUserId] : undefined}
+            className="h-24 w-24 sm:h-32 sm:w-32"
+          />
 
           <div className="flex-1">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

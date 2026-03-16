@@ -1,43 +1,29 @@
-import { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { Button } from './ui/button';
-import { Dialog, DialogTrigger } from './ui/dialog';
-import { SupportModal } from './SupportModal';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function FloatingSupportButton() {
-  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const router = useRouter();
 
   return (
-    <Dialog open={isSupportModalOpen} onOpenChange={setIsSupportModalOpen}>
-      <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="fixed bottom-20 right-20 rounded-full h-14 w-14 shadow-lg z-50 bg-card border-white/10 hover:bg-card/90"
-              >
-                <MessageSquare className="h-6 w-6" />
-                <span className="sr-only">Open Support</span>
-              </Button>
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Support</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {isSupportModalOpen && (
-        <SupportModal onClose={() => setIsSupportModalOpen(false)} />
-      )}
-    </Dialog>
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-20 right-20 rounded-full h-14 w-14 shadow-lg z-50 bg-card border-white/10 hover:bg-primary hover:scale-[1.05] transition-all duration-500"
+            onClick={() => void router.push('/messages?support=1')}
+          >
+            <MessageSquare className="h-6 w-6" />
+            <span className="sr-only">Open Support</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <p>Support</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

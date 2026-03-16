@@ -1,6 +1,7 @@
 import { Building2, MapPin, Pencil, User } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { UserAvatar } from '~/components/UserAvatar';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
 import { SkeletonProfile } from '../skeleton-profile';
@@ -28,18 +29,13 @@ export const VcGroupProfile = ({ userId }: { userId?: string }) => {
 
   return (
     <div className={`rounded-lg border border-white/10 pb-20 bg-card`}>
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A] ml-12 mt-12">
-        {vcGroup?.logo ? (
-          <Image
-            src={vcGroup.logo}
-            alt="Profile"
-            width={96}
-            height={96}
-            className="h-24 w-24 rounded-full object-cover"
-          />
-        ) : (
-          <Building2 className="h-8 w-8 text-black" />
-        )}
+      <div className="ml-12 mt-12 w-fit ring-4 ring-[#1E202A] rounded-full">
+        <UserAvatar
+          imageUrl={vcGroup?.logo}
+          alt="Profile"
+          size={96}
+          isOnline={true}
+        />
       </div>
 
       <div className="md:px-12 px-6 pt-12">

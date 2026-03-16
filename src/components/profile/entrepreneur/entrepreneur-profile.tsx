@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
+import { UserAvatar } from '~/components/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { api } from '~/utils/api';
@@ -63,18 +64,13 @@ export const EntrepreneurProfile = ({ userId }: { userId?: string }) => {
         )}
 
         <div className="absolute bottom-0 left-12 translate-y-1/2">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#D1D5DB] ring-4 ring-[#1E202A]">
-            {entrepreneur?.photo ? (
-              <Image
-                src={entrepreneur.photo}
-                alt="Profile"
-                width={96}
-                height={96}
-                className="h-24 w-24 rounded-full object-cover"
-              />
-            ) : (
-              <User className="h-8 w-8 text-black" />
-            )}
+          <div className="ring-4 ring-[#1E202A] rounded-full">
+            <UserAvatar
+              imageUrl={entrepreneur?.photo}
+              alt="Profile"
+              size={96}
+              isOnline={true}
+            />
           </div>
         </div>
       </div>

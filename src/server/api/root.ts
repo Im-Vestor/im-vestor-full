@@ -27,6 +27,7 @@ import { contentRouter } from './routers/content';
 import { validationRouter } from './routers/validation';
 import { pitchRouter } from './routers/pitch';
 import { messagesRouter } from './routers/messages';
+import { presenceRouter } from './routers/presence';
 
 export const appRouter = createTRPCRouter({
   area: areaRouter,
@@ -57,6 +58,7 @@ export const appRouter = createTRPCRouter({
   validation: validationRouter,
   pitch: pitchRouter,
   messages: messagesRouter,
+  presence: presenceRouter,
 });
 
 export type AppRouter = typeof appRouter;

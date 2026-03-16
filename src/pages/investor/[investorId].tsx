@@ -1,8 +1,9 @@
-import { ArrowLeft, Loader2, MapPin, MessageCircle, User } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, Loader2, MapPin, MessageCircle } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Header } from '~/components/header';
+import { UserAvatar } from '~/components/UserAvatar';
+import { useOnlineStatuses } from '~/hooks/use-presence';
 import { api } from '~/utils/api';
 import { VideoRequestButton } from '../entrepreneur/[entrepreneurId]';
 import { useUser } from '@clerk/nextjs';
@@ -70,6 +71,9 @@ export default function InvestorDetails() {
     });
   };
 
+  const investorUserId = investor?.user?.id;
+  const onlineStatuses = useOnlineStatuses(investorUserId ? [investorUserId] : []);
+
   if (isLoading || !investor) {
     return (
       <main className="mx-auto min-h-screen max-w-6xl p-4 sm:p-8">
@@ -98,21 +102,13 @@ export default function InvestorDetails() {
 
         <div className="flex items-center justify-between">
           <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-full sm:h-32 sm:w-32">
-              {investor.photo ? (
-                <Image
-                  src={investor.photo}
-                  alt={`${investor.firstName} ${investor.lastName}`}
-                  width={128}
-                  height={128}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-white/10">
-                  <User className="size-10 text-neutral-200 sm:size-12" />
-                </div>
-              )}
-            </div>
+            <UserAvatar
+              imageUrl={investor.photo}
+              alt={`${investor.firstName} ${investor.lastName}`}
+              size={128}
+              isOnline={investorUserId ? onlineStatuses[investorUserId] : undefined}
+              className="h-24 w-24 sm:h-32 sm:w-32"
+            />
 
             <div className="flex-1">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

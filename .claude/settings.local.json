@@ -10,7 +10,8 @@
       "Bash(npm run check)",
       "Bash(npx prisma generate)",
       "Bash(npm run:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find /c/Users/rickm/Documents/Code/im-vestor-full -type f -name *notification*)"
     ]
   }
 }
