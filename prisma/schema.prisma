@@ -72,15 +72,16 @@ model User {
   stripeCustomerId            String?
   availableBoosts             Int                  @default(0)
   status                      UserStatus           @default(ACTIVE)
-  lastSeenAt                  DateTime?
   createdAt                   DateTime?            @default(now())
   updatedAt                   DateTime?            @default(now()) @updatedAt
   availablePublicPitchTickets Int                  @default(0)
+  lastSeenAt                  DateTime?
   followingConnections        Connection[]         @relation("Follower")
   followerConnections         Connection[]         @relation("Following")
   entrepreneur                Entrepreneur?
   incubator                   Incubator?
   investor                    Investor?
+  sentMessages                Message[]            @relation("SentMessages")
   NewsLike                    NewsLike[]
   Notification                Notification[]
   partner                     Partner?
@@ -90,8 +91,7 @@ model User {
   supportTickets              SupportTicket[]
   supportTicketReplies        SupportTicketReply[] @relation("AdminReplies")
   vcGroup                     VcGroup?
-  conversations               Conversation[]   @relation("ConversationParticipants")
-  sentMessages                Message[]        @relation("SentMessages")
+  conversations               Conversation[]       @relation("ConversationParticipants")
 
   @@index([userType])
 }
@@ -386,43 +386,30 @@ model Negotiation {
   investorId                        String?
   projectId                         String
   vcGroupId                         String?
-  
-  // Phase 1: Investment Amount Agreement
   agreedInvestmentAmount            Decimal?         @db.Decimal(15, 2)
-  investmentAmountProposedAt        DateTime?
   investmentAmountAcceptedAt        DateTime?
+  investmentAmountProposedAt        DateTime?
   investmentAmountProposedBy        String?
-  
-  // Phase 2: Contract Upload & Counter-Signature
-  contractUploadedByInvestor        Boolean          @default(false)
   contractUploadedByEntrepreneur    Boolean          @default(false)
-  investorContractUrl               String?
+  contractUploadedByInvestor        Boolean          @default(false)
+  entrepreneurContractUploadedAt    DateTime?
   entrepreneurContractUrl           String?
   investorContractUploadedAt        DateTime?
-  entrepreneurContractUploadedAt    DateTime?
-  
-  // Phase 3: Dual Completion Confirmation
-  investorCompletionConfirmedAt     DateTime?
+  investorContractUrl               String?
   entrepreneurCompletionConfirmedAt DateTime?
-  
-  // Phase 4: Stripe Payment Generation & Checkout
-  stripeCheckoutSessionId           String?
-  stripePaymentIntentId             String?
-  paymentStatus                     PaymentStatus        @default(PENDING)
+  investorCompletionConfirmedAt     DateTime?
+  fundsConfirmedAt                  DateTime?
+  fundsConfirmedByEntrepreneur      Boolean          @default(false)
   paidAt                            DateTime?
-  paymentAmount                     Decimal?             @db.Decimal(15, 2)
-  
-  // Phase 5: Admin Receipt Upload
-  receiptUrl                        String?
+  paymentAmount                     Decimal?         @db.Decimal(15, 2)
+  paymentStatus                     PaymentStatus    @default(PENDING)
   receiptUploadedAt                 DateTime?
   receiptUploadedBy                 String?
-  
-  // Phase 6: Entrepreneur Confirmation & Completion
-  fundsConfirmedByEntrepreneur      Boolean              @default(false)
-  fundsConfirmedAt                  DateTime?
-  
-  meetings                          Meeting[]
+  receiptUrl                        String?
+  stripeCheckoutSessionId           String?
+  stripePaymentIntentId             String?
   files                             File[]
+  meetings                          Meeting[]
   investor                          Investor?        @relation(fields: [investorId], references: [id])
   project                           Project          @relation(fields: [projectId], references: [id])
   VcGroup                           VcGroup?         @relation(fields: [vcGroupId], references: [id])
@@ -480,13 +467,13 @@ model File {
   type          String
   size          Int
   url           String
-  createdAt     DateTime     @default(now())
-  uploadedBy    String?
   projectId     String?
+  createdAt     DateTime     @default(now())
   negotiationId String?
+  uploadedBy    String?
   fileType      FileType     @default(GENERAL)
-  Project       Project?     @relation(fields: [projectId], references: [id])
   Negotiation   Negotiation? @relation(fields: [negotiationId], references: [id])
+  Project       Project?     @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
   @@index([negotiationId])
@@ -506,15 +493,15 @@ model Connection {
 }
 
 model Notification {
-  id             String           @id @default(uuid())
-  createdAt      DateTime         @default(now())
-  type           NotificationType
-  read           Boolean          @default(false)
-  userId         String
-  investorId     String?
-  message        String?
-  senderId       String?
-  user           User             @relation(fields: [userId], references: [id])
+  id         String           @id @default(uuid())
+  createdAt  DateTime         @default(now())
+  type       NotificationType
+  read       Boolean          @default(false)
+  userId     String
+  investorId String?
+  message    String?
+  senderId   String?
+  user       User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([type])
@@ -601,6 +588,51 @@ model NewsLike {
   @@unique([notionPageId, userId])
 }
 
+model PitchOfTheWeek {
+  id               String               @id @default(uuid())
+  userId           String
+  projectId        String?
+  image            String
+  video            String?
+  date1            DateTime
+  date2            DateTime
+  dailyRoomName1   String?
+  dailyRoomUrl1    String?
+  dailyRoomName2   String?
+  dailyRoomUrl2    String?
+  status           PitchOfTheWeekStatus @default(PENDING)
+  hyperTrainItemId String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  hyperTrainItem   HyperTrainItem?      @relation(fields: [hyperTrainItemId], references: [id])
+  project          Project?             @relation(fields: [projectId], references: [id])
+  user             User                 @relation(fields: [userId], references: [id])
+}
+
+model Conversation {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messages     Message[]
+  participants User[]    @relation("ConversationParticipants")
+
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+  senderId       String
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, senderId, readAt])
+  @@index([senderId])
+}
 
 enum MarqueeLinkType {
   WEBSITE
@@ -710,53 +742,6 @@ enum NotificationType {
   PITCH_TICKET_PURCHASED
   VIDEO_ACCESS_REQUESTED
   MESSAGE_RECEIVED
-}
-
-model PitchOfTheWeek {
-  id               String               @id @default(uuid())
-  userId           String
-  projectId        String?
-  image            String
-  video            String?
-  date1            DateTime
-  date2            DateTime
-  dailyRoomName1   String?
-  dailyRoomUrl1    String?
-  dailyRoomName2   String?
-  dailyRoomUrl2    String?
-  status           PitchOfTheWeekStatus @default(PENDING)
-  hyperTrainItemId String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-
-  user           User            @relation(fields: [userId], references: [id])
-  project        Project?        @relation(fields: [projectId], references: [id])
-  hyperTrainItem HyperTrainItem? @relation(fields: [hyperTrainItemId], references: [id])
-}
-
-model Conversation {
-  id           String    @id @default(uuid())
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  messages     Message[]
-  participants User[]    @relation("ConversationParticipants")
-
-  @@index([updatedAt])
-}
-
-model Message {
-  id             String       @id @default(uuid())
-  content        String
-  createdAt      DateTime     @default(now())
-  readAt         DateTime?
-  senderId       String
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
-
-  @@index([conversationId, createdAt])
-  @@index([conversationId, senderId, readAt])
-  @@index([senderId])
 }
 
 enum PitchOfTheWeekStatus {
