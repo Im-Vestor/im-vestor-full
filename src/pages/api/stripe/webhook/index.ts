@@ -202,5 +202,53 @@ async function processEvent(event: Stripe.Event) {
         });
       }
     }
+
+    // Handle escrow payment for negotiations
+    const paymentType = session.metadata?.paymentType;
+    const negotiationId = session.metadata?.negotiationId;
+
+    if (paymentType === 'escrow' && negotiationId) {
+      // Get the payment intent to extract amount
+      const paymentIntentId = session.payment_intent as string;
+
+      // Update negotiation with payment received status
+      await db.negotiation.update({
+        where: { id: negotiationId },
+        data: {
+          stripePaymentIntentId: paymentIntentId,
+          paymentStatus: 'PAYMENT_RECEIVED',
+          paidAt: new Date(),
+          paymentAmount: session.amount_total ? session.amount_total / 100 : null,
+        },
+      });
+
+      // Get negotiation details for email notifications
+      const negotiation = await db.negotiation.findUnique({
+        where: { id: negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      if (negotiation) {
+        // Send confirmation email to investor
+        const investor = negotiation.investor;
+        const vcGroup = negotiation.VcGroup;
+        const entrepreneur = negotiation.project.Entrepreneur;
+
+        // Email logic will be handled by the tRPC procedure or separate email service
+        // For now, just log the success
+        console.log(`[STRIPE WEBHOOK] Escrow payment received for negotiation ${negotiationId}`);
+        console.log(
+          `[STRIPE WEBHOOK] Amount: $${session.amount_total ? session.amount_total / 100 : 0}`
+        );
+      }
+    }
   }
 }

@@ -22,7 +22,7 @@ import { api } from '~/utils/api';
 const NEGOTIATION_STEPS = [
   { label: 'Pitch' },
   { label: 'Negotiation' },
-  { label: 'Details' },
+  { label: 'Closing' },
   { label: 'Closed' },
 ];
 

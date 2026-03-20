@@ -34,6 +34,7 @@ import { useCallback, useRef, useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { toast } from 'sonner';
 import { NextStepDialog } from '~/components/next-step/dialog';
+import { ClosingWorkflow } from '~/components/negotiation/closing-workflow';
 import { Header } from '~/components/header';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -398,6 +399,23 @@ export default function NegotiationDetailPage() {
             hasOtherPartyAgreed={negotiation.entrepreneurAgreedToGoToNextStage}
             onSuccess={handleMutationSuccess}
           />
+        )}
+
+        {/* Closing Workflow - Only visible in DETAILS stage */}
+        {negotiation.stage === NegotiationStage.DETAILS && (
+          <div className="rounded-xl border border-white/10 bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-[#EFD687]">Deal Closing Workflow</h2>
+              <p className="mt-1 text-sm text-white/50">
+                Complete these steps to finalize your investment deal
+              </p>
+            </div>
+            <ClosingWorkflow
+              negotiationId={negotiation.id}
+              userType={userType ?? 'ENTREPRENEUR'}
+              onUpdate={handleMutationSuccess}
+            />
+          </div>
         )}
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

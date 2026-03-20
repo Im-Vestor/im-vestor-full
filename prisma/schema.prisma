@@ -386,6 +386,41 @@ model Negotiation {
   investorId                        String?
   projectId                         String
   vcGroupId                         String?
+  
+  // Phase 1: Investment Amount Agreement
+  agreedInvestmentAmount            Decimal?         @db.Decimal(15, 2)
+  investmentAmountProposedAt        DateTime?
+  investmentAmountAcceptedAt        DateTime?
+  investmentAmountProposedBy        String?
+  
+  // Phase 2: Contract Upload & Counter-Signature
+  contractUploadedByInvestor        Boolean          @default(false)
+  contractUploadedByEntrepreneur    Boolean          @default(false)
+  investorContractUrl               String?
+  entrepreneurContractUrl           String?
+  investorContractUploadedAt        DateTime?
+  entrepreneurContractUploadedAt    DateTime?
+  
+  // Phase 3: Dual Completion Confirmation
+  investorCompletionConfirmedAt     DateTime?
+  entrepreneurCompletionConfirmedAt DateTime?
+  
+  // Phase 4: Stripe Payment Generation & Checkout
+  stripeCheckoutSessionId           String?
+  stripePaymentIntentId             String?
+  paymentStatus                     PaymentStatus        @default(PENDING)
+  paidAt                            DateTime?
+  paymentAmount                     Decimal?             @db.Decimal(15, 2)
+  
+  // Phase 5: Admin Receipt Upload
+  receiptUrl                        String?
+  receiptUploadedAt                 DateTime?
+  receiptUploadedBy                 String?
+  
+  // Phase 6: Entrepreneur Confirmation & Completion
+  fundsConfirmedByEntrepreneur      Boolean              @default(false)
+  fundsConfirmedAt                  DateTime?
+  
   meetings                          Meeting[]
   files                             File[]
   investor                          Investor?        @relation(fields: [investorId], references: [id])
@@ -449,6 +484,7 @@ model File {
   uploadedBy    String?
   projectId     String?
   negotiationId String?
+  fileType      FileType     @default(GENERAL)
   Project       Project?     @relation(fields: [projectId], references: [id])
   Negotiation   Negotiation? @relation(fields: [negotiationId], references: [id])
 
@@ -640,6 +676,22 @@ enum NegotiationStage {
   DETAILS
   CLOSED
   CANCELLED
+}
+
+enum FileType {
+  GENERAL
+  INVESTOR_CONTRACT
+  ENTREPRENEUR_CONTRACT
+  PAYMENT_RECEIPT
+}
+
+enum PaymentStatus {
+  PENDING
+  CHECKOUT_GENERATED
+  PAYMENT_RECEIVED
+  RECEIPT_UPLOADED
+  FUNDS_CONFIRMED
+  FAILED
 }
 
 enum NotificationType {

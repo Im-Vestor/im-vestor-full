@@ -1,14 +1,15 @@
 'use client';
 
-import { Building2, Calendar1, Newspaper, Play, UserSearch } from 'lucide-react';
+import { Building2, Calendar1, ExternalLink, Newspaper, Play, UserSearch, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { api } from '~/utils/api';
 import { extractFirstLineFromBlocks, extractPageTitle, getPageCoverImage } from '~/utils/notion';
 import { type PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { Marquee } from '../ui/marquee';
 import { Skeleton } from '../ui/skeleton';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 
 const VIDEO_REGEX = /\.(mp4|webm|ogg|mov)$/i;
 
@@ -85,7 +86,22 @@ type HypertrainItemLike = {
   externalId?: string | null;
 };
 
-const HypertrainCard = memo(function HypertrainCard({ item }: { item: HypertrainItemLike }) {
+type VideoModalData = {
+  src: string;
+  name: string;
+  description: string;
+  link: string;
+  accent: string;
+  label: string;
+};
+
+const HypertrainCard = memo(function HypertrainCard({
+  item,
+  onVideoClick,
+}: {
+  item: HypertrainItemLike;
+  onVideoClick?: (data: VideoModalData) => void;
+}) {
   const isNews = item.type === 'NEWS' && !!item.externalId;
 
   const { data: newsPageData } = api.news.getPageContent.useQuery(
@@ -118,68 +134,171 @@ const HypertrainCard = memo(function HypertrainCard({ item }: { item: Hypertrain
   const { Icon, accent, label, bgGradient } = config;
   const isVideo = !!displayImage && VIDEO_REGEX.test(displayImage);
 
-  return (
-    <div className="flex-shrink-0 w-72 min-w-72 h-40 group cursor-pointer">
-      <Link href={displayLink} target="_blank" rel="noopener noreferrer" className="h-full block">
-        <div className="relative rounded-xl h-full overflow-hidden border border-white/[0.07] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-black/50">
-          {displayImage ? (
-            isVideo ? (
-              <video
-                src={`${displayImage}#t=0.001`}
-                className="absolute inset-0 w-full h-full object-cover"
-                muted
-                preload="metadata"
-                playsInline
-              />
-            ) : (
-              <Image src={displayImage} alt={displayName} fill className="object-cover" />
-            )
-          ) : (
-            /* No-media: geometric gradient bg */
-            <div className="absolute inset-0">
-              <div className="absolute inset-0 opacity-20" style={DOT_GRID_STYLE} />
-              <div className={`absolute inset-0 ${bgGradient}`} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Icon className="size-10 opacity-15 text-white" />
-              </div>
-            </div>
-          )}
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isVideo && displayImage && onVideoClick) {
+        e.preventDefault();
+        onVideoClick({
+          src: displayImage,
+          name: displayName,
+          description: displayDescription,
+          link: displayLink,
+          accent,
+          label: label || item.type,
+        });
+      }
+    },
+    [isVideo, displayImage, onVideoClick, displayName, displayDescription, displayLink, accent, label, item.type]
+  );
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
-
-          {isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Play className="size-4 text-white fill-white ml-0.5" />
-              </div>
-            </div>
-          )}
-
-          <div className="absolute top-3 right-3">
-            <span
-              className={`px-2 py-0.5 text-[10px] font-bold tracking-widest rounded-full border backdrop-blur-md ${accent}`}
-            >
-              {label || item.type}
-            </span>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <h3 className="font-semibold text-white text-sm leading-snug truncate drop-shadow-sm">
-              {displayName}
-            </h3>
-            {displayDescription && (
-              <p className="text-[11px] text-white/60 mt-0.5 line-clamp-1 leading-relaxed">
-                {displayDescription}
-              </p>
-            )}
+  const cardContent = (
+    <div className="relative rounded-xl h-full overflow-hidden border border-white/[0.07] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-black/50">
+      {displayImage ? (
+        isVideo ? (
+          <video
+            src={`${displayImage}#t=0.001`}
+            className="absolute inset-0 w-full h-full object-cover"
+            muted
+            preload="metadata"
+            playsInline
+          />
+        ) : (
+          <Image src={displayImage} alt={displayName} fill className="object-cover" />
+        )
+      ) : (
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 opacity-20" style={DOT_GRID_STYLE} />
+          <div className={`absolute inset-0 ${bgGradient}`} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Icon className="size-10 opacity-15 text-white" />
           </div>
         </div>
-      </Link>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+
+      {isVideo && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Play className="size-4 text-white fill-white ml-0.5" />
+          </div>
+        </div>
+      )}
+
+      <div className="absolute top-3 right-3">
+        <span
+          className={`px-2 py-0.5 text-[10px] font-bold tracking-widest rounded-full border backdrop-blur-md ${accent}`}
+        >
+          {label || item.type}
+        </span>
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <h3 className="font-semibold text-white text-sm leading-snug truncate drop-shadow-sm">
+          {displayName}
+        </h3>
+        {displayDescription && (
+          <p className="text-[11px] text-white/60 mt-0.5 line-clamp-1 leading-relaxed">
+            {displayDescription}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex-shrink-0 w-72 min-w-72 h-40 group cursor-pointer">
+      {isVideo ? (
+        <button type="button" onClick={handleClick} className="h-full w-full text-left">
+          {cardContent}
+        </button>
+      ) : (
+        <Link href={displayLink} target="_blank" rel="noopener noreferrer" className="h-full block">
+          {cardContent}
+        </Link>
+      )}
     </div>
   );
 });
 
+function VideoPlayerModal({
+  data,
+  open,
+  onOpenChange,
+}: {
+  data: VideoModalData | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen && videoRef.current) {
+        videoRef.current.pause();
+      }
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange]
+  );
+
+  if (!data) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden border-white/10 bg-black/95 backdrop-blur-xl gap-0">
+        <DialogTitle className="sr-only">{data.name}</DialogTitle>
+
+        {/* Video */}
+        <div className="relative w-full bg-black">
+          <video
+            ref={videoRef}
+            src={data.src}
+            className="w-full max-h-[70vh] object-contain"
+            controls
+            autoPlay
+            playsInline
+            preload="auto"
+          >
+            <track kind="captions" src="" label="No captions available" />
+          </video>
+        </div>
+
+        {/* Info bar */}
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-white/[0.06]">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2.5">
+              <span
+                className={`shrink-0 px-2 py-0.5 text-[10px] font-bold tracking-widest rounded-full border ${data.accent}`}
+              >
+                {data.label}
+              </span>
+              <h3 className="font-semibold text-white text-sm truncate">{data.name}</h3>
+            </div>
+            {data.description && (
+              <p className="text-xs text-white/50 mt-1 line-clamp-1">{data.description}</p>
+            )}
+          </div>
+
+          <Link
+            href={data.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+          >
+            <ExternalLink className="size-3.5" />
+            View
+          </Link>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function Hypertrain() {
+  const [videoModal, setVideoModal] = useState<VideoModalData | null>(null);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+
   const { data: hypertrainItems, isPending: isHypertrainItemsPending } =
     api.hypertrain.getHyperTrainItems.useQuery(undefined, {
       staleTime: 10 * 60 * 1000,
@@ -193,6 +312,18 @@ export function Hypertrain() {
         : [publicPitchLinkHypertrainItem],
     [hypertrainItems]
   );
+
+  const handleVideoClick = useCallback((data: VideoModalData) => {
+    setVideoModal(data);
+    setVideoModalOpen(true);
+  }, []);
+
+  const handleVideoModalOpenChange = useCallback((open: boolean) => {
+    setVideoModalOpen(open);
+    if (!open) {
+      setVideoModal(null);
+    }
+  }, []);
 
   if (isHypertrainItemsPending) {
     return (
@@ -225,11 +356,17 @@ export function Hypertrain() {
         ) : (
           <Marquee pauseOnHover className="[--duration:15s]">
             {baseItems.map(item => (
-              <HypertrainCard key={item.id} item={item} />
+              <HypertrainCard key={item.id} item={item} onVideoClick={handleVideoClick} />
             ))}
           </Marquee>
         )}
       </div>
+
+      <VideoPlayerModal
+        data={videoModal}
+        open={videoModalOpen}
+        onOpenChange={handleVideoModalOpenChange}
+      />
     </div>
   );
 }

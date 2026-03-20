@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs';
 import { format, formatDistanceToNowStrict } from 'date-fns';
-import { Loader2, MessageSquare, Send, UserRound } from 'lucide-react';
+import { Loader2, MessageSquare, Send } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -498,7 +498,7 @@ function ChatPanel({
                 ],
               }
               : c
-          ) as ConversationsOutput;
+          );
         });
       }
 

@@ -504,6 +504,1217 @@ export const negotiationRouter = createTRPCRouter({
         where: { id: input.fileId, negotiationId: input.negotiationId },
       });
     }),
+
+  // Phase 1: Investment Amount Proposal & Acceptance
+  proposeInvestmentAmount: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        amount: z.number().positive(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation with user info
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify user is investor or VC group owner
+      const isInvestor = negotiation.investor?.userId === ctx.auth.userId;
+      const isVcGroup = negotiation.VcGroup?.userId === ctx.auth.userId;
+
+      if (!isInvestor && !isVcGroup) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only investors can propose investment amounts',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          agreedInvestmentAmount: input.amount,
+          investmentAmountProposedAt: new Date(),
+          investmentAmountProposedBy: ctx.auth.userId,
+          investmentAmountAcceptedAt: null, // Reset acceptance if re-proposing
+        },
+      });
+
+      // Send email to entrepreneur
+      const entrepreneur = negotiation.project.Entrepreneur;
+      if (entrepreneur) {
+        const entrepreneurUser = await ctx.db.user.findUnique({
+          where: { id: entrepreneur.userId },
+          select: { email: true },
+        });
+
+        const investorName =
+          negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor';
+
+        if (entrepreneurUser?.email) {
+          void sendEmail(
+            entrepreneur.firstName,
+            `${investorName} has proposed an investment amount of $${input.amount.toLocaleString()} for your project ${negotiation.project.name}.`,
+            'Please review and accept or reject this proposal in the negotiation page.',
+            [entrepreneurUser.email],
+            'Investment Amount Proposed',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  acceptInvestmentAmount: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation with user info
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify user is entrepreneur
+      const isEntrepreneur = negotiation.project.Entrepreneur?.userId === ctx.auth.userId;
+
+      if (!isEntrepreneur) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only entrepreneurs can accept investment amounts',
+        });
+      }
+
+      // Verify amount has been proposed
+      if (!negotiation.agreedInvestmentAmount || !negotiation.investmentAmountProposedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No investment amount has been proposed yet',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          investmentAmountAcceptedAt: new Date(),
+        },
+      });
+
+      // Send email to investor
+      const investor = negotiation.investor;
+      const vcGroup = negotiation.VcGroup;
+      const entrepreneur = negotiation.project.Entrepreneur;
+
+      if (investor && entrepreneur) {
+        const investorUser = await ctx.db.user.findUnique({
+          where: { id: investor.userId },
+          select: { email: true },
+        });
+
+        if (investorUser?.email) {
+          void sendEmail(
+            investor.firstName,
+            `${entrepreneur.firstName} has accepted your proposed investment amount of $${negotiation.agreedInvestmentAmount.toNumber().toLocaleString()}.`,
+            'You can now proceed with uploading the investment contract.',
+            [investorUser.email],
+            'Investment Amount Accepted',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      } else if (vcGroup && entrepreneur) {
+        const vcUser = await ctx.db.user.findUnique({
+          where: { id: vcGroup.userId },
+          select: { email: true },
+        });
+
+        if (vcUser?.email) {
+          void sendEmail(
+            vcGroup.name,
+            `${entrepreneur.firstName} has accepted your proposed investment amount of $${negotiation.agreedInvestmentAmount.toNumber().toLocaleString()}.`,
+            'You can now proceed with uploading the investment contract.',
+            [vcUser.email],
+            'Investment Amount Accepted',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  rejectInvestmentAmount: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation with user info
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: { include: { user: true } },
+          VcGroup: { include: { user: true } },
+          project: {
+            include: {
+              Entrepreneur: { include: { user: true } },
+            },
+          },
+        },
+      });
+
+      // Verify user is entrepreneur
+      const isEntrepreneur = negotiation.project.Entrepreneur?.userId === ctx.auth.userId;
+
+      if (!isEntrepreneur) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only entrepreneurs can reject investment amounts',
+        });
+      }
+
+      // Verify amount has been proposed
+      if (!negotiation.agreedInvestmentAmount || !negotiation.investmentAmountProposedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No investment amount has been proposed yet',
+        });
+      }
+
+      // Reset investment amount fields
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          agreedInvestmentAmount: null,
+          investmentAmountProposedAt: null,
+          investmentAmountProposedBy: null,
+          investmentAmountAcceptedAt: null,
+        },
+      });
+
+      // Send email to investor
+      const investorEmail = negotiation.investor?.user.email ?? negotiation.VcGroup?.email;
+      const investorName =
+        negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor';
+      const entrepreneurName = negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur';
+
+      if (investorEmail) {
+        void sendEmail(
+          investorName,
+          `${entrepreneurName} has rejected your proposed investment amount of $${negotiation.agreedInvestmentAmount.toNumber().toLocaleString()}.`,
+          input.reason
+            ? `Reason: ${input.reason}. You can propose a new amount in the negotiation page.`
+            : 'You can propose a new amount in the negotiation page.',
+          [investorEmail],
+          'Investment Amount Rejected',
+          `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+          'View Negotiation'
+        );
+      }
+
+      return updated;
+    }),
+
+  updateInvestmentAmount: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        newAmount: z.number().positive(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation with user info
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: { include: { user: true } },
+          VcGroup: { include: { user: true } },
+          project: {
+            include: {
+              Entrepreneur: { include: { user: true } },
+            },
+          },
+        },
+      });
+
+      // Verify user is investor or VC group owner
+      const isInvestor = negotiation.investor?.userId === ctx.auth.userId;
+      const isVcGroup = negotiation.VcGroup?.userId === ctx.auth.userId;
+
+      if (!isInvestor && !isVcGroup) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only investors can update investment amounts',
+        });
+      }
+
+      // Verify amount hasn't been accepted yet
+      if (negotiation.investmentAmountAcceptedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot update investment amount after it has been accepted',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          agreedInvestmentAmount: input.newAmount,
+          investmentAmountProposedAt: new Date(),
+          investmentAmountProposedBy: ctx.auth.userId,
+        },
+      });
+
+      // Send email to entrepreneur
+      const entrepreneurEmail = negotiation.project.Entrepreneur?.user.email;
+      const entrepreneurName = negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur';
+      const investorName =
+        negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor';
+
+      if (entrepreneurEmail) {
+        void sendEmail(
+          entrepreneurName,
+          `${investorName} has updated their investment amount proposal to $${input.newAmount.toLocaleString()} for your project ${negotiation.project.name}.`,
+          'Please review and accept or reject this updated proposal in the negotiation page.',
+          [entrepreneurEmail],
+          `Investment Amount Updated: $${input.newAmount.toLocaleString()}`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+          'View Negotiation'
+        );
+      }
+
+      return updated;
+    }),
+
+  // Phase 2: Contract Upload & Counter-Signature
+  uploadInvestorContract: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        fileName: z.string(),
+        fileUrl: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify user is investor or VC group owner
+      const isInvestor = negotiation.investor?.userId === ctx.auth.userId;
+      const isVcGroup = negotiation.VcGroup?.userId === ctx.auth.userId;
+
+      if (!isInvestor && !isVcGroup) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only investors can upload contracts',
+        });
+      }
+
+      // Verify investment amount has been accepted
+      if (!negotiation.investmentAmountAcceptedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot upload contract until investment amount is accepted',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          investorContractUrl: input.fileUrl,
+          contractUploadedByInvestor: true,
+          investorContractUploadedAt: new Date(),
+        },
+      });
+
+      // Create file record
+      await ctx.db.file.create({
+        data: {
+          name: input.fileName,
+          type: 'application/pdf',
+          size: 0, // Size not tracked in this flow
+          url: input.fileUrl,
+          negotiationId: input.negotiationId,
+          uploadedBy: ctx.auth.userId,
+          fileType: 'INVESTOR_CONTRACT',
+        },
+      });
+
+      // Send email to entrepreneur
+      const entrepreneur = negotiation.project.Entrepreneur;
+      if (entrepreneur) {
+        const entrepreneurUser = await ctx.db.user.findUnique({
+          where: { id: entrepreneur.userId },
+          select: { email: true },
+        });
+
+        const investorName =
+          negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor';
+
+        if (entrepreneurUser?.email) {
+          void sendEmail(
+            entrepreneur.firstName,
+            `${investorName} has uploaded the investment contract for your project ${negotiation.project.name}.`,
+            'Please review the contract, sign it, and upload your signed version.',
+            [entrepreneurUser.email],
+            'Investment Contract Uploaded',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Contract'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  uploadEntrepreneurContract: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        fileName: z.string(),
+        fileUrl: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify user is entrepreneur
+      const isEntrepreneur = negotiation.project.Entrepreneur?.userId === ctx.auth.userId;
+
+      if (!isEntrepreneur) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only entrepreneurs can upload entrepreneur contracts',
+        });
+      }
+
+      // Verify investor has uploaded first
+      if (!negotiation.contractUploadedByInvestor) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot upload entrepreneur contract until investor uploads their contract',
+        });
+      }
+
+      // Block if both already uploaded (no re-uploads)
+      if (negotiation.contractUploadedByEntrepreneur) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Contract already uploaded. Re-uploads are not allowed.',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          entrepreneurContractUrl: input.fileUrl,
+          contractUploadedByEntrepreneur: true,
+          entrepreneurContractUploadedAt: new Date(),
+        },
+      });
+
+      // Create file record
+      await ctx.db.file.create({
+        data: {
+          name: input.fileName,
+          type: 'application/pdf',
+          size: 0,
+          url: input.fileUrl,
+          negotiationId: input.negotiationId,
+          uploadedBy: ctx.auth.userId,
+          fileType: 'ENTREPRENEUR_CONTRACT',
+        },
+      });
+
+      // Send emails - both to investor and entrepreneur (fully executed notification)
+      const entrepreneur = negotiation.project.Entrepreneur;
+      const investor = negotiation.investor;
+      const vcGroup = negotiation.VcGroup;
+
+      const entrepreneurName = entrepreneur?.firstName ?? 'Entrepreneur';
+      const investorName = investor?.firstName ?? vcGroup?.name ?? 'Investor';
+
+      // Email to investor
+      if (investor && entrepreneur) {
+        const investorUser = await ctx.db.user.findUnique({
+          where: { id: investor.userId },
+          select: { email: true },
+        });
+
+        if (investorUser?.email) {
+          void sendEmail(
+            investor.firstName,
+            `${entrepreneurName} has uploaded the signed contract for ${negotiation.project.name}.`,
+            'The contract is now fully executed. You can proceed with the completion confirmation.',
+            [investorUser.email],
+            'Contract Fully Executed',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      } else if (vcGroup && entrepreneur) {
+        const vcUser = await ctx.db.user.findUnique({
+          where: { id: vcGroup.userId },
+          select: { email: true },
+        });
+
+        if (vcUser?.email) {
+          void sendEmail(
+            vcGroup.name,
+            `${entrepreneurName} has uploaded the signed contract for ${negotiation.project.name}.`,
+            'The contract is now fully executed. You can proceed with the completion confirmation.',
+            [vcUser.email],
+            'Contract Fully Executed',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  getContractDownloadUrl: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        contractType: z.enum(['INVESTOR', 'ENTREPRENEUR']),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        select: {
+          investorContractUrl: true,
+          entrepreneurContractUrl: true,
+        },
+      });
+
+      const url =
+        input.contractType === 'INVESTOR'
+          ? negotiation.investorContractUrl
+          : negotiation.entrepreneurContractUrl;
+
+      if (!url) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Contract not found',
+        });
+      }
+
+      // Return the URL directly (it's already a public R2 URL)
+      // In production, you might want to generate a pre-signed URL with expiration
+      return { url };
+    }),
+
+  getContractStatus: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        select: {
+          contractUploadedByInvestor: true,
+          contractUploadedByEntrepreneur: true,
+        },
+      });
+
+      if (!negotiation.contractUploadedByInvestor) {
+        return { status: 'NONE' as const };
+      }
+
+      if (!negotiation.contractUploadedByEntrepreneur) {
+        return { status: 'INVESTOR_UPLOADED' as const };
+      }
+
+      return { status: 'FULLY_EXECUTED' as const };
+    }),
+
+  // Phase 3: Dual Completion Confirmation
+  confirmCompletion: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Determine user type
+      const isInvestor = negotiation.investor?.userId === ctx.auth.userId;
+      const isVcGroup = negotiation.VcGroup?.userId === ctx.auth.userId;
+      const isEntrepreneur = negotiation.project.Entrepreneur?.userId === ctx.auth.userId;
+
+      // Verify prerequisites
+      if (!negotiation.investmentAmountAcceptedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot confirm completion until investment amount is accepted',
+        });
+      }
+
+      if (!negotiation.contractUploadedByInvestor || !negotiation.contractUploadedByEntrepreneur) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot confirm completion until both contracts are uploaded',
+        });
+      }
+
+      // Update appropriate confirmation timestamp
+      const updateData: {
+        investorCompletionConfirmedAt?: Date;
+        entrepreneurCompletionConfirmedAt?: Date;
+      } = {};
+
+      if (isInvestor || isVcGroup) {
+        updateData.investorCompletionConfirmedAt = new Date();
+      } else if (isEntrepreneur) {
+        updateData.entrepreneurCompletionConfirmedAt = new Date();
+      }
+
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: updateData,
+      });
+
+      // Check if both have now confirmed
+      const bothConfirmed =
+        (updated.investorCompletionConfirmedAt !== null ||
+          updateData.investorCompletionConfirmedAt !== undefined) &&
+        (updated.entrepreneurCompletionConfirmedAt !== null ||
+          updateData.entrepreneurCompletionConfirmedAt !== undefined);
+
+      // Send emails
+      const entrepreneur = negotiation.project.Entrepreneur;
+      const investor = negotiation.investor;
+      const vcGroup = negotiation.VcGroup;
+
+      if (isInvestor || isVcGroup) {
+        // Investor confirmed - notify entrepreneur
+        if (entrepreneur) {
+          const entrepreneurUser = await ctx.db.user.findUnique({
+            where: { id: entrepreneur.userId },
+            select: { email: true },
+          });
+
+          const investorName = investor?.firstName ?? vcGroup?.name ?? 'Investor';
+
+          if (entrepreneurUser?.email) {
+            void sendEmail(
+              entrepreneur.firstName,
+              bothConfirmed
+                ? 'Both parties have confirmed completion. The payment link will be generated shortly.'
+                : `${investorName} has confirmed completion and is ready to proceed to payment.`,
+              bothConfirmed
+                ? 'The payment process will begin automatically.'
+                : 'Please confirm your completion to generate the payment link.',
+              [entrepreneurUser.email],
+              bothConfirmed ? 'Both Parties Confirmed' : 'Investor Confirmed Completion',
+              `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+              'View Negotiation'
+            );
+          }
+        }
+      } else if (isEntrepreneur) {
+        // Entrepreneur confirmed - notify investor
+        if (investor) {
+          const investorUser = await ctx.db.user.findUnique({
+            where: { id: investor.userId },
+            select: { email: true },
+          });
+
+          if (investorUser?.email) {
+            void sendEmail(
+              investor.firstName,
+              bothConfirmed
+                ? 'Both parties have confirmed completion. The payment link will be generated shortly.'
+                : `${entrepreneur?.firstName ?? 'Entrepreneur'} has confirmed completion and is ready to proceed to payment.`,
+              bothConfirmed
+                ? 'You will receive the payment link in a separate email.'
+                : 'Please confirm your completion to generate the payment link.',
+              [investorUser.email],
+              bothConfirmed ? 'Both Parties Confirmed' : 'Entrepreneur Confirmed Completion',
+              `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+              'View Negotiation'
+            );
+          }
+        } else if (vcGroup) {
+          const vcUser = await ctx.db.user.findUnique({
+            where: { id: vcGroup.userId },
+            select: { email: true },
+          });
+
+          if (vcUser?.email) {
+            void sendEmail(
+              vcGroup.name,
+              bothConfirmed
+                ? 'Both parties have confirmed completion. The payment link will be generated shortly.'
+                : `${entrepreneur?.firstName ?? 'Entrepreneur'} has confirmed completion and is ready to proceed to payment.`,
+              bothConfirmed
+                ? 'You will receive the payment link in a separate email.'
+                : 'Please confirm your completion to generate the payment link.',
+              [vcUser.email],
+              bothConfirmed ? 'Both Parties Confirmed' : 'Entrepreneur Confirmed Completion',
+              `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+              'View Negotiation'
+            );
+          }
+        }
+      }
+
+      return { ...updated, bothConfirmed };
+    }),
+
+  revertCompletion: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Reset BOTH timestamps (per requirements)
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          investorCompletionConfirmedAt: null,
+          entrepreneurCompletionConfirmedAt: null,
+        },
+      });
+
+      // Send emails to both parties
+      const entrepreneur = negotiation.project.Entrepreneur;
+      const investor = negotiation.investor;
+      const vcGroup = negotiation.VcGroup;
+
+      const isInvestor = negotiation.investor?.userId === ctx.auth.userId;
+      const isVcGroup = negotiation.VcGroup?.userId === ctx.auth.userId;
+      const reverterName = isInvestor
+        ? investor?.firstName
+        : isVcGroup
+          ? vcGroup?.name
+          : (entrepreneur?.firstName ?? 'A party');
+
+      // Email to entrepreneur
+      if (entrepreneur) {
+        const entrepreneurUser = await ctx.db.user.findUnique({
+          where: { id: entrepreneur.userId },
+          select: { email: true },
+        });
+
+        if (entrepreneurUser?.email) {
+          void sendEmail(
+            entrepreneur.firstName,
+            `${reverterName} has reverted their completion confirmation for ${negotiation.project.name}.`,
+            'Both completion confirmations have been reset. You will need to re-confirm when ready.',
+            [entrepreneurUser.email],
+            'Completion Confirmation Reverted',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      }
+
+      // Email to investor/VC
+      if (investor) {
+        const investorUser = await ctx.db.user.findUnique({
+          where: { id: investor.userId },
+          select: { email: true },
+        });
+
+        if (investorUser?.email) {
+          void sendEmail(
+            investor.firstName,
+            `${reverterName} has reverted their completion confirmation for ${negotiation.project.name}.`,
+            'Both completion confirmations have been reset. You will need to re-confirm when ready.',
+            [investorUser.email],
+            'Completion Confirmation Reverted',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      } else if (vcGroup) {
+        const vcUser = await ctx.db.user.findUnique({
+          where: { id: vcGroup.userId },
+          select: { email: true },
+        });
+
+        if (vcUser?.email) {
+          void sendEmail(
+            vcGroup.name,
+            `${reverterName} has reverted their completion confirmation for ${negotiation.project.name}.`,
+            'Both completion confirmations have been reset. You will need to re-confirm when ready.',
+            [vcUser.email],
+            'Completion Confirmation Reverted',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Negotiation'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  getCompletionStatus: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        select: {
+          investorCompletionConfirmedAt: true,
+          entrepreneurCompletionConfirmedAt: true,
+        },
+      });
+
+      const investorConfirmed = negotiation.investorCompletionConfirmedAt !== null;
+      const entrepreneurConfirmed = negotiation.entrepreneurCompletionConfirmedAt !== null;
+
+      if (!investorConfirmed && !entrepreneurConfirmed) {
+        return { status: 'NONE' as const };
+      }
+
+      if (investorConfirmed && !entrepreneurConfirmed) {
+        return { status: 'INVESTOR_CONFIRMED' as const };
+      }
+
+      if (!investorConfirmed && entrepreneurConfirmed) {
+        return { status: 'ENTREPRENEUR_CONFIRMED' as const };
+      }
+
+      return { status: 'BOTH_CONFIRMED' as const };
+    }),
+
+  // Phase 4: Stripe Payment Generation & Checkout
+  getPaymentCheckoutUrl: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        select: {
+          stripeCheckoutSessionId: true,
+          paymentStatus: true,
+        },
+      });
+
+      // If no checkout session exists yet, return null
+      // Frontend will trigger creation via API route
+      if (!negotiation.stripeCheckoutSessionId) {
+        return { url: null, status: negotiation.paymentStatus };
+      }
+
+      // In production, you'd retrieve the session from Stripe to get the URL
+      // For now, return a placeholder
+      return {
+        url: `/api/stripe/checkout/escrow`,
+        status: negotiation.paymentStatus,
+      };
+    }),
+
+  // Phase 5: Admin Receipt Upload
+  uploadPaymentReceipt: protectedProcedure
+    .input(
+      z.object({
+        negotiationId: z.string(),
+        fileName: z.string(),
+        fileUrl: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify user is admin (will add adminProcedure later)
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.auth.userId },
+      });
+
+      // For now, allow any authenticated user (will restrict to admin in production)
+      // TODO: Add adminProcedure check
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify payment has been received
+      if (negotiation.paymentStatus !== 'PAYMENT_RECEIVED') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot upload receipt until payment is received',
+        });
+      }
+
+      // Update negotiation
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          receiptUrl: input.fileUrl,
+          receiptUploadedAt: new Date(),
+          receiptUploadedBy: ctx.auth.userId,
+          paymentStatus: 'RECEIPT_UPLOADED',
+        },
+      });
+
+      // Create file record
+      await ctx.db.file.create({
+        data: {
+          name: input.fileName,
+          type: 'application/pdf',
+          size: 0,
+          url: input.fileUrl,
+          negotiationId: input.negotiationId,
+          uploadedBy: ctx.auth.userId,
+          fileType: 'PAYMENT_RECEIPT',
+        },
+      });
+
+      // Send email to entrepreneur
+      const entrepreneur = negotiation.project.Entrepreneur;
+      if (entrepreneur) {
+        const entrepreneurUser = await ctx.db.user.findUnique({
+          where: { id: entrepreneur.userId },
+          select: { email: true },
+        });
+
+        if (entrepreneurUser?.email) {
+          void sendEmail(
+            entrepreneur.firstName,
+            'ImVestor has transferred the investment funds to your account.',
+            'Please review the payment receipt and confirm that you have received the funds.',
+            [entrepreneurUser.email],
+            'Payment Receipt Available',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Receipt'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  // Phase 6: Entrepreneur Confirmation & Completion
+  confirmFundsReceived: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      // Get negotiation
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Verify user is entrepreneur
+      const isEntrepreneur = negotiation.project.Entrepreneur?.userId === ctx.auth.userId;
+
+      if (!isEntrepreneur) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only entrepreneurs can confirm funds received',
+        });
+      }
+
+      // Verify receipt has been uploaded
+      if (negotiation.paymentStatus !== 'RECEIPT_UPLOADED') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot confirm funds until receipt is uploaded',
+        });
+      }
+
+      // Update negotiation - mark as complete!
+      const updated = await ctx.db.negotiation.update({
+        where: { id: input.negotiationId },
+        data: {
+          fundsConfirmedByEntrepreneur: true,
+          fundsConfirmedAt: new Date(),
+          paymentStatus: 'FUNDS_CONFIRMED',
+          stage: NegotiationStage.CLOSED, // Final stage!
+        },
+      });
+
+      // Send final emails to all parties
+      const entrepreneur = negotiation.project.Entrepreneur;
+      const investor = negotiation.investor;
+      const vcGroup = negotiation.VcGroup;
+
+      // Email to entrepreneur (summary)
+      if (entrepreneur) {
+        const entrepreneurUser = await ctx.db.user.findUnique({
+          where: { id: entrepreneur.userId },
+          select: { email: true },
+        });
+
+        if (entrepreneurUser?.email) {
+          void sendEmail(
+            entrepreneur.firstName,
+            `Congratulations! Your deal for ${negotiation.project.name} is now complete.`,
+            `You have successfully received $${negotiation.paymentAmount?.toNumber().toLocaleString() ?? negotiation.agreedInvestmentAmount?.toNumber().toLocaleString()} from the investor. All documents are available in the negotiation page.`,
+            [entrepreneurUser.email],
+            'Deal Completed!',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Deal Summary'
+          );
+        }
+      }
+
+      // Email to investor
+      if (investor) {
+        const investorUser = await ctx.db.user.findUnique({
+          where: { id: investor.userId },
+          select: { email: true },
+        });
+
+        if (investorUser?.email) {
+          void sendEmail(
+            investor.firstName,
+            `Deal completed! ${entrepreneur?.firstName ?? 'Entrepreneur'} has confirmed receipt of funds for ${negotiation.project.name}.`,
+            'The investment deal is now fully closed. Thank you for using ImVestor.',
+            [investorUser.email],
+            'Deal Completed',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Deal Summary'
+          );
+        }
+      } else if (vcGroup) {
+        const vcUser = await ctx.db.user.findUnique({
+          where: { id: vcGroup.userId },
+          select: { email: true },
+        });
+
+        if (vcUser?.email) {
+          void sendEmail(
+            vcGroup.name,
+            `Deal completed! ${entrepreneur?.firstName ?? 'Entrepreneur'} has confirmed receipt of funds for ${negotiation.project.name}.`,
+            'The investment deal is now fully closed. Thank you for using ImVestor.',
+            [vcUser.email],
+            'Deal Completed',
+            `${process.env.NEXT_PUBLIC_BASE_URL}/negotiations/${negotiation.id}`,
+            'View Deal Summary'
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  getNegotiationTimeline: protectedProcedure
+    .input(z.object({ negotiationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      await assertNegotiationParticipant(ctx.db, input.negotiationId, ctx.auth.userId);
+
+      const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
+        where: { id: input.negotiationId },
+        include: {
+          investor: true,
+          VcGroup: true,
+          project: {
+            include: {
+              Entrepreneur: true,
+            },
+          },
+        },
+      });
+
+      // Compile timeline events
+      const events: Array<{
+        date: Date;
+        actor: string;
+        action: string;
+        metadata?: Record<string, any>;
+      }> = [];
+
+      // Phase 1: Investment Amount
+      if (negotiation.investmentAmountProposedAt) {
+        events.push({
+          date: negotiation.investmentAmountProposedAt,
+          actor: negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor',
+          action: `Proposed investment amount: $${negotiation.agreedInvestmentAmount?.toNumber().toLocaleString()}`,
+        });
+      }
+
+      if (negotiation.investmentAmountAcceptedAt) {
+        events.push({
+          date: negotiation.investmentAmountAcceptedAt,
+          actor: negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur',
+          action: 'Accepted investment amount',
+        });
+      }
+
+      // Phase 2: Contracts
+      if (negotiation.investorContractUploadedAt) {
+        events.push({
+          date: negotiation.investorContractUploadedAt,
+          actor: negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor',
+          action: 'Uploaded investment contract',
+          metadata: { url: negotiation.investorContractUrl },
+        });
+      }
+
+      if (negotiation.entrepreneurContractUploadedAt) {
+        events.push({
+          date: negotiation.entrepreneurContractUploadedAt,
+          actor: negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur',
+          action: 'Uploaded signed contract',
+          metadata: { url: negotiation.entrepreneurContractUrl },
+        });
+      }
+
+      // Phase 3: Completion Confirmation
+      if (negotiation.investorCompletionConfirmedAt) {
+        events.push({
+          date: negotiation.investorCompletionConfirmedAt,
+          actor: negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor',
+          action: 'Confirmed completion',
+        });
+      }
+
+      if (negotiation.entrepreneurCompletionConfirmedAt) {
+        events.push({
+          date: negotiation.entrepreneurCompletionConfirmedAt,
+          actor: negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur',
+          action: 'Confirmed completion',
+        });
+      }
+
+      // Phase 4: Payment
+      if (negotiation.paidAt) {
+        events.push({
+          date: negotiation.paidAt,
+          actor: negotiation.investor?.firstName ?? negotiation.VcGroup?.name ?? 'Investor',
+          action: `Paid $${negotiation.paymentAmount?.toNumber().toLocaleString()} via Stripe`,
+          metadata: {
+            paymentIntentId: negotiation.stripePaymentIntentId,
+            amount: negotiation.paymentAmount?.toNumber(),
+          },
+        });
+      }
+
+      // Phase 5: Receipt
+      if (negotiation.receiptUploadedAt) {
+        events.push({
+          date: negotiation.receiptUploadedAt,
+          actor: 'ImVestor Admin',
+          action: 'Uploaded payment receipt',
+          metadata: { url: negotiation.receiptUrl },
+        });
+      }
+
+      // Phase 6: Final Confirmation
+      if (negotiation.fundsConfirmedAt) {
+        events.push({
+          date: negotiation.fundsConfirmedAt,
+          actor: negotiation.project.Entrepreneur?.firstName ?? 'Entrepreneur',
+          action: 'Confirmed receipt of funds',
+        });
+      }
+
+      // Sort by date
+      events.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      return { events, negotiation };
+    }),
 });
 
 async function assertNegotiationParticipant(
