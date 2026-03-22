@@ -4,9 +4,10 @@ A comprehensive platform connecting entrepreneurs, investors, and incubators.
 
 ## 📚 Documentation
 
-- **[⚡ SETUP.md](./SETUP.md)** - Setup rápido em 5 minutos
-- **[🚀 ONBOARDING.md](./ONBOARDING.md)** - Onboarding completo
-- **[📖 DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - Guia técnico detalhado
+- **[⚡ SETUP.md](./docs/SETUP.md)** - Setup rápido em 5 minutos
+- **[📖 DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - Guia técnico detalhado
+- **[🔒 SECURITY_IMPROVEMENTS.md](./docs/SECURITY_IMPROVEMENTS.md)** - Security enhancements
+- **[⚙️ PERFORMANCE_IMPROVEMENTS.md](./docs/PERFORMANCE_IMPROVEMENTS.md)** - Performance optimizations
 
 ## 🎯 Quick Start
 

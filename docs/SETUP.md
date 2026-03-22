@@ -2,7 +2,7 @@
 
 **Objetivo**: Configurar o ambiente de desenvolvimento em 5 minutos.
 
-> 📖 Para entender a arquitetura e conceitos do projeto, consulte o [ONBOARDING.md](./ONBOARDING.md)
+> 📖 Para entender a arquitetura e conceitos do projeto, consulte o [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
 
 ## 🚀 Setup em 5 Minutos
 
@@ -45,7 +45,7 @@ CLERK_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
 STRIPE_SECRET_KEY="sk_test_..."
 
-# Para lista completa, veja ONBOARDING.md
+# Para lista completa, veja DEVELOPER_GUIDE.md
 ```
 
 ### 5. Execute
@@ -62,7 +62,7 @@ Para funcionalidades completas, configure:
 - **Stripe**: [Dashboard](https://dashboard.stripe.com) → Modo teste → Copiar chaves
 - **Daily.co**: [Dashboard](https://dashboard.daily.co) → Criar conta → Copiar credenciais
 
-> 📋 Lista completa de variáveis no [ONBOARDING.md](./ONBOARDING.md)
+> 📋 Para detalhes sobre variáveis de ambiente e arquitetura, veja [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
 
 ## 🐛 Problemas Comuns
 
@@ -80,7 +80,7 @@ rm -rf .next && npm run build
 
 ## 📚 Próximos Passos
 
-1. ✅ Projeto rodando? → Leia [ONBOARDING.md](./ONBOARDING.md)
+1. ✅ Projeto rodando? → Leia [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
 2. ✅ Entendeu a arquitetura? → Consulte [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
 3. ✅ Pronto para contribuir? → Faça sua primeira PR!
 
