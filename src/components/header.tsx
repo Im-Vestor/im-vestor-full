@@ -267,7 +267,7 @@ export const Header = () => {
           onClick={() => void handleNavigation('/home')}
         >
           <Image src="/logo/imvestor.png" alt="Imvestor" width={24} height={24} />
-          <h1 className="text-xl font-bold text-white">Im-Vestor</h1>
+          <h1 className="hidden md:block text-xl font-bold text-white">Im-Vestor</h1>
         </div>
 
         {/* Desktop Navigation */}
@@ -478,6 +478,19 @@ export const Header = () => {
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Shop
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 mr-2" />
+            ) : (
+              <Moon className="h-4 w-4 mr-2" />
+            )}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </Button>
           <Button
             variant="ghost"

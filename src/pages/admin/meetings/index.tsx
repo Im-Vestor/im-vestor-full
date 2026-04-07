@@ -122,7 +122,7 @@ function Meetings() {
               <Button
                 variant="outline"
                 onClick={() => window.open(instantRoomUrl, '_blank')}
-                className="border-white/20 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300 group"
+                className="border-border hover:border-primary/50 hover:bg-primary/10 transition-all duration-300 group"
               >
                 <ExternalLink className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
                 Open Room
@@ -131,16 +131,16 @@ function Meetings() {
           </div>
 
           {instantRoomUrl && (
-            <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="space-y-4 p-4 bg-muted/40 rounded-lg border border-border">
               <div className="flex items-center gap-2">
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300">
                   <Clock className="h-3 w-3 mr-1" />
                   Active for 1 hour
                 </Badge>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="instant-room-url" className="text-sm font-medium text-ui-text/80">
+                <Label htmlFor="instant-room-url" className="text-sm font-medium text-foreground">
                   Room URL:
                 </Label>
                 <div className="flex items-center gap-2">
@@ -149,21 +149,21 @@ function Meetings() {
                     type="text"
                     readOnly
                     value={instantRoomUrl}
-                    className="flex-grow bg-white/5 border-white/10 text-ui-text/90"
+                    className="flex-grow bg-background border-border text-foreground"
                   />
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={handleCopyUrl}
                     aria-label="Copy URL"
-                    className="border-white/20 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300"
+                    className="border-border hover:border-primary/50 hover:bg-primary/10 transition-all duration-300"
                   >
                     <CopyIcon className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              <p className="text-xs text-ui-text/50">
+              <p className="text-xs text-muted-foreground">
                 Share this URL with participants to join the meeting. The room will automatically close after 1 hour.
               </p>
             </div>

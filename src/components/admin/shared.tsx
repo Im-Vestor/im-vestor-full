@@ -17,11 +17,11 @@ export function AdminPageHeader({ title, description, icon: Icon, iconLabel }: A
         <h1 className="text-3xl md:text-4xl font-bold text-primary">
           {title}
         </h1>
-        <p className="text-ui-text/70 text-lg max-w-2xl">
+        <p className="text-muted-foreground text-lg max-w-2xl">
           {description}
         </p>
       </div>
-      <div className="flex items-center gap-2 text-ui-text/60">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-5 w-5" />
         <span className="text-sm">{iconLabel}</span>
       </div>
@@ -41,9 +41,9 @@ interface AdminStatsCardProps {
 
 export function AdminStatsCard({ title, value, subtitle, icon: Icon, gradient, iconColor }: AdminStatsCardProps) {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-300 group">
+    <Card className="bg-card backdrop-blur-sm border-border hover:border-border/80 hover:shadow-md transition-all duration-300 group">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-ui-text/80 group-hover:text-ui-text transition-colors">
+        <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
           {title}
         </CardTitle>
         <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient}`}>
@@ -54,7 +54,7 @@ export function AdminStatsCard({ title, value, subtitle, icon: Icon, gradient, i
         <div className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
           {typeof value === 'number' ? value.toString() : value}
         </div>
-        <p className="text-xs text-ui-text/60 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           {subtitle}
         </p>
       </CardContent>
@@ -73,7 +73,7 @@ interface AdminContentCardProps {
 
 export function AdminContentCard({ title, description, icon: Icon, children, className = "" }: AdminContentCardProps) {
   return (
-    <Card className={`bg-card/50 backdrop-blur-sm border-white/10 overflow-hidden ${className}`}>
+    <Card className={`bg-card border-border overflow-hidden ${className}`}>
       {(title ?? description) && (
         <CardHeader>
           <CardTitle className={Icon ? "flex items-center gap-2 text-primary" : "text-primary"}>
@@ -81,7 +81,7 @@ export function AdminContentCard({ title, description, icon: Icon, children, cla
             {title}
           </CardTitle>
           {description && (
-            <CardDescription className="text-ui-text/70">
+            <CardDescription className="text-muted-foreground">
               {description}
             </CardDescription>
           )}
@@ -142,12 +142,12 @@ export const adminGradients = {
 } as const;
 
 export const adminIconColors = {
-  blue: "text-blue-400",
-  green: "text-emerald-400",
-  purple: "text-purple-400",
-  orange: "text-orange-400",
-  amber: "text-amber-400",
-  indigo: "text-indigo-400",
-  pink: "text-pink-400",
-  cyan: "text-cyan-400",
+  blue: "text-blue-600",
+  green: "text-emerald-600",
+  purple: "text-purple-600",
+  orange: "text-orange-600",
+  amber: "text-amber-600",
+  indigo: "text-indigo-600",
+  pink: "text-pink-600",
+  cyan: "text-cyan-600",
 } as const;

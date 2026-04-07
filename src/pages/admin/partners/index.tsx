@@ -125,7 +125,7 @@ export default function AdminPartnersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Partners Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Partners Management</h1>
           <p className="text-muted-foreground">
             Manage partners and select which ones appear in the "Trusted by Leading Partners" carousel.
           </p>
@@ -138,23 +138,23 @@ export default function AdminPartnersPage() {
               placeholder="Search partners..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 bg-background-secondary border-white/10 text-white"
+              className="pl-8 bg-background border-border text-foreground"
             />
           </div>
         </div>
 
-        <div className="rounded-md border border-white/10 bg-background-secondary overflow-hidden shadow-2xl">
+        <div className="rounded-md border border-border bg-card overflow-hidden shadow-sm">
           <Table>
-            <TableHeader className="bg-white/5">
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white">Partner</TableHead>
-                <TableHead className="text-white">Company</TableHead>
-                <TableHead className="text-white">Email</TableHead>
-                <TableHead className="text-white text-center">Status</TableHead>
-                <TableHead className="text-white text-center">Ad Proof</TableHead>
-                <TableHead className="text-white text-center">Referrals</TableHead>
-                <TableHead className="text-white text-center">Marquee Link</TableHead>
-                <TableHead className="text-white text-center">In Carousel</TableHead>
+            <TableHeader className="bg-muted/40">
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-foreground">Partner</TableHead>
+                <TableHead className="text-foreground">Company</TableHead>
+                <TableHead className="text-foreground">Email</TableHead>
+                <TableHead className="text-foreground text-center">Status</TableHead>
+                <TableHead className="text-foreground text-center">Ad Proof</TableHead>
+                <TableHead className="text-foreground text-center">Referrals</TableHead>
+                <TableHead className="text-foreground text-center">Marquee Link</TableHead>
+                <TableHead className="text-foreground text-center">In Carousel</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,25 +172,25 @@ export default function AdminPartnersPage() {
                 </TableRow>
               ) : (
                 filteredPartners?.map((partner) => (
-                  <TableRow key={partner.id} className="border-white/10 hover:bg-white/5">
+                  <TableRow key={partner.id} className="border-border hover:bg-muted/40">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
+                        <div className="h-8 w-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
                           {partner.photo ? (
                             <Image src={partner.photo} alt={partner.firstName} width={32} height={32} className="object-cover" />
                           ) : (
-                            <div className="h-full w-full flex items-center justify-center text-xs font-bold text-white/50">
+                            <div className="h-full w-full flex items-center justify-center text-xs font-bold text-muted-foreground">
                               {partner.firstName[0]}{partner.lastName[0]}
                             </div>
                           )}
                         </div>
-                        <span className="font-medium text-white">{partner.firstName} {partner.lastName}</span>
+                        <span className="font-medium text-foreground">{partner.firstName} {partner.lastName}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="relative group/logo">
-                          <div className="h-10 w-10 rounded-lg overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted/40 border border-border flex items-center justify-center">
                             {partner.companyLogoUrl ? (
                               <Image src={partner.companyLogoUrl} alt="Logo" width={40} height={40} className="object-contain" />
                             ) : (
@@ -199,7 +199,7 @@ export default function AdminPartnersPage() {
 
                             {uploadingPartnerId === partner.id && (
                               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                <Loader2 className="h-4 w-4 animate-spin text-foreground" />
                               </div>
                             )}
                           </div>
@@ -219,10 +219,10 @@ export default function AdminPartnersPage() {
                             />
                           </label>
                         </div>
-                        <span className="text-gray-300 font-medium">{partner.companyName || "N/A"}</span>
+                        <span className="text-foreground font-medium">{partner.companyName || "N/A"}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-400 font-mono text-xs">
+                    <TableCell className="text-muted-foreground font-mono text-xs">
                       {partner.user.email}
                     </TableCell>
                     <TableCell className="text-center">
@@ -237,8 +237,8 @@ export default function AdminPartnersPage() {
                         className={cn(
                           "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:opacity-80",
                           partner.status === 'ACTIVE'
-                            ? "bg-green-500/15 text-green-400"
-                            : "bg-amber-500/15 text-amber-400"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
                         )}
                       >
                         {partner.status === 'ACTIVE' ? (
@@ -266,7 +266,7 @@ export default function AdminPartnersPage() {
                           Ver
                         </button>
                       ) : (
-                        <span className="text-xs text-gray-600">—</span>
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -275,10 +275,10 @@ export default function AdminPartnersPage() {
                           setSelectedPartnerId(partner.userId);
                           setIsSheetOpen(true);
                         }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary transition-all group"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 border border-border hover:bg-muted hover:border-primary transition-all group"
                       >
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm font-bold text-white">
+                        <span className="text-sm font-bold text-foreground">
                           {partner.user._count.referralsAsReferrer}
                         </span>
                       </button>
@@ -291,11 +291,11 @@ export default function AdminPartnersPage() {
                           setMarqueeLinkUrl(partner.marqueeLinkUrl ?? "");
                           setIsMarqueeLinkSheetOpen(true);
                         }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary transition-all group"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 border border-border hover:bg-muted hover:border-primary transition-all group"
                         title="Edit marquee link"
                       >
                         <Link2 className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs text-white">
+                        <span className="text-xs text-foreground">
                           {partner.marqueeLinkType ? partner.marqueeLinkType : "Not set"}
                         </span>
                       </button>
@@ -309,7 +309,7 @@ export default function AdminPartnersPage() {
                         />
                         <span className={cn(
                           "text-[10px] uppercase font-bold tracking-wider",
-                          partner.isFeatured ? "text-[#EDD689]" : "text-gray-500"
+                          partner.isFeatured ? "text-amber-600" : "text-muted-foreground"
                         )}>
                           {partner.isFeatured ? "Active" : "Inactive"}
                         </span>
@@ -324,9 +324,9 @@ export default function AdminPartnersPage() {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="sm:max-w-md bg-background-secondary border-white/10 overflow-y-auto">
+        <SheetContent className="sm:max-w-md bg-background border-border overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-white flex items-center gap-2">
+            <SheetTitle className="text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
               Referred Users
             </SheetTitle>
@@ -342,23 +342,23 @@ export default function AdminPartnersPage() {
               {partnerReferrals.map((ref) => (
                 <div
                   key={ref.id}
-                  className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2 group hover:border-primary/30 transition-all"
+                  className="p-4 rounded-xl bg-muted/40 border border-border space-y-2 group hover:border-primary/30 transition-all"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-white">{ref.name}</h4>
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/10 text-gray-400">
+                    <h4 className="font-semibold text-foreground">{ref.name}</h4>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                       {ref.userType}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground font-mono">{ref.email}</p>
 
                   <div className="pt-2 flex items-center justify-between border-t border-white/5">
-                    <span className="text-[10px] text-gray-500 italic">
+                    <span className="text-[10px] text-muted-foreground italic">
                       Joined {new Date(ref.joinedAt).toLocaleDateString()}
                     </span>
 
                     {ref.hasClosedDeal && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full animate-pulse">
                         <Check className="h-2 w-2" />
                         DEAL CLOSED
                       </span>
@@ -376,9 +376,9 @@ export default function AdminPartnersPage() {
       </Sheet>
 
       <Sheet open={isMarqueeLinkSheetOpen} onOpenChange={setIsMarqueeLinkSheetOpen}>
-        <SheetContent className="sm:max-w-md bg-background border-white/10 overflow-y-auto">
+        <SheetContent className="sm:max-w-md bg-background border-border overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-white flex items-center gap-2">
+            <SheetTitle className="text-foreground flex items-center gap-2">
               <Link2 className="h-5 w-5 text-white" />
               Edit Marquee Link
             </SheetTitle>
@@ -386,7 +386,7 @@ export default function AdminPartnersPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-white">Link Type</Label>
+              <Label className="text-foreground">Link Type</Label>
               <Select
                 value={marqueeLinkType}
                 onValueChange={setMarqueeLinkType}
@@ -409,13 +409,13 @@ export default function AdminPartnersPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white">Custom URL (Optional)</Label>
+              <Label className="text-foreground">Custom URL (Optional)</Label>
               <Input
                 value={marqueeLinkUrl}
                 onChange={(e) => setMarqueeLinkUrl(e.target.value)}
                 placeholder="Leave empty to use the partner's profile URL"
                 disabled={isUpdatingMarqueeLink}
-                className="bg-white/5 border-white/10"
+                className="bg-background border-border"
               />
               <p className="text-xs text-muted-foreground">
                 Override the default URL. If empty, the system will use the partner's profile URL for the selected type.
@@ -464,15 +464,15 @@ export default function AdminPartnersPage() {
         </SheetContent>
       </Sheet>
       <Sheet open={isAdProofOpen} onOpenChange={setIsAdProofOpen}>
-        <SheetContent className="sm:max-w-lg bg-background-secondary border-white/10 overflow-y-auto">
+        <SheetContent className="sm:max-w-lg bg-background border-border overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-white flex items-center gap-2">
+            <SheetTitle className="text-foreground flex items-center gap-2">
               <Eye className="h-5 w-5 text-primary" />
               Prova de Publicidade
             </SheetTitle>
           </SheetHeader>
           {adProofUrl && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/20">
+            <div className="rounded-xl overflow-hidden border border-border bg-muted/20">
               {/\.(mp4|webm|mov|avi)$/i.exec(adProofUrl) ? (
                 <video src={adProofUrl} controls className="w-full" />
               ) : (

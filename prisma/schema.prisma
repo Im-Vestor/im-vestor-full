@@ -634,6 +634,15 @@ model Message {
   @@index([senderId])
 }
 
+model BannedWord {
+  id        String   @id @default(uuid())
+  word      String   @unique
+  createdAt DateTime @default(now())
+  createdBy String
+
+  @@index([word])
+}
+
 enum MarqueeLinkType {
   WEBSITE
   FACEBOOK

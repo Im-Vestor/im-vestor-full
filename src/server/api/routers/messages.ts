@@ -179,12 +179,31 @@ export const messagesRouter = createTRPCRouter({
       const userId = ctx.auth.userId;
       const { conversationId, content } = input;
 
-      const conversation = await ctx.db.conversation.findFirst({
-        where: { id: conversationId, participants: { some: { id: userId } } },
-        include: { participants: { select: { id: true } } },
-      });
+      const [conversation, bannedWords] = await Promise.all([
+        ctx.db.conversation.findFirst({
+          where: { id: conversationId, participants: { some: { id: userId } } },
+          include: { participants: { select: { id: true } } },
+        }),
+        // @ts-expect-error – BannedWord model will exist after db:generate
+        ctx.db.bannedWord.findMany({ select: { word: true } }) as Promise<{ word: string }[]>,
+      ]);
+
       if (!conversation) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Conversation not found' });
+      }
+
+      if (bannedWords.length > 0) {
+        const lowerContent = content.toLowerCase();
+        const found = bannedWords.find(({ word }) => {
+          const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return new RegExp(`\\b${escaped}\\b`).test(lowerContent);
+        });
+        if (found) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Your message contains a word that is not allowed on this platform.',
+          });
+        }
       }
 
       const [message] = await Promise.all([

@@ -13,7 +13,9 @@ import {
   Eye,
   Gift,
   FileText,
-  Users
+  Users,
+  Shield,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -28,57 +30,71 @@ import { useUser, useClerk } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '~/contexts/SidebarContext';
 import Image from 'next/image';
+
 const routes = [
   {
     label: 'Overview',
     icon: Home,
     href: '/admin/dashboard',
-    color: 'text-sky-500',
+    color: 'text-sky-600',
     disabled: false,
   },
   {
     label: 'Partners',
     icon: Users,
     href: '/admin/partners',
-    color: 'text-orange-500',
+    color: 'text-orange-600',
     disabled: false,
   },
   {
     label: 'Suport',
     icon: HelpCircle,
     href: '/admin/support',
-    color: 'text-violet-500',
+    color: 'text-violet-600',
     disabled: false,
   },
   {
     label: 'Meetings',
     icon: Calendar,
     href: '/admin/meetings',
-    color: 'text-amber-500',
+    color: 'text-amber-600',
     disabled: false,
   },
   {
     label: 'Project Views',
     icon: Eye,
     href: '/admin/project-views',
-    color: 'text-emerald-500',
+    color: 'text-emerald-600',
     disabled: false,
   },
   {
     label: 'Gift Products',
     icon: Gift,
     href: '/admin/gift-products',
-    color: 'text-pink-500',
+    color: 'text-pink-600',
     disabled: false,
   },
   {
     label: 'Terms',
     icon: FileText,
     href: '/admin/terms',
-    color: 'text-yellow-500',
+    color: 'text-yellow-600',
     disabled: false,
   },
-
+  {
+    label: 'Conversations',
+    icon: MessageSquare,
+    href: '/admin/conversations',
+    color: 'text-cyan-600',
+    disabled: false,
+  },
+  {
+    label: 'Moderation',
+    icon: Shield,
+    href: '/admin/moderation',
+    color: 'text-red-600',
+    disabled: false,
+  },
 ];
 
 // Mobile Dock Component
@@ -90,7 +106,7 @@ function MobileDock() {
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, type: "spring", bounce: 0.2 }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden border-border"
     >
       <nav className="flex justify-around items-center h-16 px-6 pb-[env(safe-area-inset-bottom)]">
         {routes.slice(0, 5).map((route) => {
@@ -142,7 +158,7 @@ function DesktopSidebar() {
   return (
     <div className="h-screen hidden md:block relative">
       <motion.div
-        className="flex flex-col h-full py-4 bg-background border-r fixed z-50 border-white/10"
+        className="flex flex-col h-full py-4 bg-background border-r fixed z-50 border-border shadow-sm"
         animate={{
           width: isOpen ? 240 : 70
         }}
@@ -168,7 +184,7 @@ function DesktopSidebar() {
                 transition={{ duration: 0 }}
               >
                 <Image src="/logo/imvestor.png" alt="Im-Vestor" width={32} height={32} />
-                <span className="text-xl font-bold ">
+                <span className="text-xl font-bold text-foreground">
                   Im-Vestor
                 </span>
               </motion.div>
@@ -182,16 +198,13 @@ function DesktopSidebar() {
               variant="ghost"
               size="icon"
               onClick={toggle}
-              className={cn(
-                "transition-all bg-background-secondary  rounded-full",
-                !isOpen && ""
-              )}
+              className="transition-all bg-muted hover:bg-muted/80 rounded-full"
             >
               <motion.div
                 animate={{ rotate: isOpen ? 0 : 180 }}
                 transition={{ duration: 0.3 }}
               >
-                <ChevronRight />
+                <ChevronRight className="text-foreground" />
               </motion.div>
             </Button>
           </motion.div>
@@ -211,8 +224,8 @@ function DesktopSidebar() {
                     href={route.href}
                     className={cn(
                       'group flex items-center p-3 w-full rounded-lg transition-all',
-                      'hover:bg-background-secondary duration-300',
-                      isActive ? 'bg-background-secondary' : '',
+                      'hover:bg-muted duration-300',
+                      isActive ? 'bg-muted' : '',
                       route.disabled && 'opacity-50 pointer-events-none'
                     )}
                   >
@@ -236,7 +249,7 @@ function DesktopSidebar() {
                         >
                           {route.label}
                           {route.disabled && (
-                            <Badge className="ml-1 scale-75 bg-background-secondary text-muted-foreground">Soon</Badge>
+                            <Badge className="ml-1 scale-75 bg-muted text-muted-foreground border-border">Soon</Badge>
                           )}
                         </motion.span>
                       )}
@@ -248,7 +261,7 @@ function DesktopSidebar() {
           </div>
         </div>
 
-        <div className="mt-auto border-t pt-3 px-1 border-white/10">
+        <div className="mt-auto border-t pt-3 px-1 border-border">
           <SidebarFooter isOpen={isOpen} />
         </div>
       </motion.div>
@@ -272,12 +285,12 @@ function SidebarFooter({ isOpen }: { isOpen: boolean }) {
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild>
           <motion.div>
-            <Button variant="ghost" className="py-6 hover:!bg-background-secondary mx-auto flex items-center">
+            <Button variant="ghost" className="py-6 hover:!bg-muted mx-auto flex items-center">
               <div className="flex items-center">
                 <motion.div whileHover={{ rotate: 10 }} transition={{ duration: 0.2 }}>
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.imageUrl} alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback className="bg-muted text-foreground">U</AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <AnimatePresence>
@@ -289,7 +302,7 @@ function SidebarFooter({ isOpen }: { isOpen: boolean }) {
                       exit={{ opacity: 0, x: -10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <p className="text-sm font-medium truncate">{user?.fullName}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{user?.fullName}</p>
                       <p className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</p>
                     </motion.div>
                   )}
@@ -298,7 +311,7 @@ function SidebarFooter({ isOpen }: { isOpen: boolean }) {
             </Button>
           </motion.div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-background-secondary mb-4 ml-2">
+        <DropdownMenuContent align="end" className="w-56 bg-background border-border mb-4 ml-2">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -322,7 +335,6 @@ function SidebarFooter({ isOpen }: { isOpen: boolean }) {
 
 // Main Sidebar Component
 export function Sidebar() {
-  // For client-side rendering, check which component to render
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -339,13 +351,10 @@ export function Sidebar() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Always render desktop version during SSR and initial hydration
-  // This prevents hydration mismatch
   if (!mounted) {
     return <DesktopSidebar />;
   }
 
-  // Display the appropriate component based on screen size
   if (isMobile) {
     return <MobileDock />;
   }

@@ -27,9 +27,9 @@ function EditorTerms() {
         iconLabel="Settings"
       />
 
-      <Card className="bg-card/30 backdrop-blur-sm border-white/10">
+      <Card className="bg-card border-border">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-white/10">
+          <div className="border-b border-border">
             <TabsList className="grid w-full grid-cols-2 bg-transparent border-0 p-0 h-auto">
               <TabsTrigger
                 value="english"

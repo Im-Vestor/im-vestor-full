@@ -43,10 +43,10 @@ function TableSkeleton({ columns }: { columns: number }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i} className="border-white/5">
+        <TableRow key={i} className="border-border/50">
           {Array.from({ length: columns }).map((_, j) => (
             <TableCell key={j}>
-              <Skeleton className="h-4 w-[100px] bg-white/10" />
+              <Skeleton className="h-4 w-[100px] bg-muted" />
             </TableCell>
           ))}
         </TableRow>
@@ -86,9 +86,6 @@ export function Dashboard() {
     sortDirection,
   });
 
-  // Removed legacy delete mutation; using only forceDeleteUser
-
-  // Force delete mutation (more aggressive)
   const forceDeleteUserMutation = api.admin.forceDeleteUser.useMutation({
     onSuccess: async (data) => {
       toast.success(data.message);
@@ -99,7 +96,6 @@ export function Dashboard() {
     },
   });
 
-  // Generate confirmation token for destructive operations
   const generateConfirmationToken = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
@@ -163,33 +159,33 @@ export function Dashboard() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="text-ui-text/80 font-medium">Name</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Email</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Phone</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Event</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Date</TableHead>
+                <TableRow className="border-border hover:bg-muted/50">
+                  <TableHead className="text-foreground font-medium">Name</TableHead>
+                  <TableHead className="text-foreground font-medium">Email</TableHead>
+                  <TableHead className="text-foreground font-medium">Phone</TableHead>
+                  <TableHead className="text-foreground font-medium">Event</TableHead>
+                  <TableHead className="text-foreground font-medium">Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingPotential ? (
                   <TableSkeleton columns={5} />
                 ) : potentialUsers?.items.map((user) => (
-                  <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors">
+                  <TableRow key={user.id} className="border-border/50 hover:bg-muted/40 transition-colors">
                     <TableCell className="font-medium text-primary">{user.name}</TableCell>
-                    <TableCell className="text-ui-text/90">
+                    <TableCell className="text-foreground">
                       <a href={`mailto:${user.email}`} className="hover:underline flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
+                        <Mail className="h-3 w-3 text-muted-foreground" />
                         {user.email}
                       </a>
                     </TableCell>
-                    <TableCell className="text-ui-text/70">{user.phone ?? '-'}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.phone ?? '-'}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="bg-white/10 text-ui-text/80 border-white/20">
+                      <Badge variant="secondary" className="bg-muted text-foreground border-border">
                         {user.event ?? '-'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-ui-text/70 text-sm">
+                    <TableCell className="text-muted-foreground text-sm">
                       {new Date(user.createdAt).toISOString().split('T')[0]}
                     </TableCell>
                   </TableRow>
@@ -198,7 +194,7 @@ export function Dashboard() {
             </Table>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-            <div className="text-sm text-ui-text/60">
+            <div className="text-sm text-muted-foreground">
               Total: {potentialUsers?.total ?? 0} potential users
             </div>
             <div className="flex items-center gap-2">
@@ -207,11 +203,11 @@ export function Dashboard() {
                 size="sm"
                 disabled={potentialUserPage === 1}
                 onClick={() => setPotentialUserPage(p => p - 1)}
-                className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+                className="border-border hover:border-primary/50 hover:bg-primary/10"
               >
                 Previous
               </Button>
-              <div className="text-sm text-ui-text/80 px-3 py-1 bg-white/5 rounded-md">
+              <div className="text-sm text-foreground px-3 py-1 bg-muted rounded-md">
                 Page {potentialUserPage}
               </div>
               <Button
@@ -219,7 +215,7 @@ export function Dashboard() {
                 size="sm"
                 disabled={!potentialUsers?.hasMore}
                 onClick={() => setPotentialUserPage(p => p + 1)}
-                className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+                className="border-border hover:border-primary/50 hover:bg-primary/10"
               >
                 Next
               </Button>
@@ -235,12 +231,12 @@ export function Dashboard() {
         >
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
             <div className="relative w-full lg:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-ui-text/40" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 focus:border-primary/50 transition-colors"
+                className="pl-10 bg-background border-border focus:border-primary/50 transition-colors"
               />
             </div>
           </div>
@@ -248,9 +244,9 @@ export function Dashboard() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="text-ui-text/80 font-medium">Name</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">
+                <TableRow className="border-border hover:bg-muted/50">
+                  <TableHead className="text-foreground font-medium">Name</TableHead>
+                  <TableHead className="text-foreground font-medium">
                     <button
                       type="button"
                       onClick={() => toggleSort('email')}
@@ -262,8 +258,8 @@ export function Dashboard() {
                       )}
                     </button>
                   </TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Phone</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">
+                  <TableHead className="text-foreground font-medium">Phone</TableHead>
+                  <TableHead className="text-foreground font-medium">
                     <button
                       type="button"
                       onClick={() => toggleSort('userType')}
@@ -275,7 +271,7 @@ export function Dashboard() {
                       )}
                     </button>
                   </TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">
+                  <TableHead className="text-foreground font-medium">
                     <button
                       type="button"
                       onClick={() => toggleSort('createdAt')}
@@ -287,18 +283,18 @@ export function Dashboard() {
                       )}
                     </button>
                   </TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Projects</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Referrals</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Referred By</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Business Card</TableHead>
-                  <TableHead className="text-ui-text/80 font-medium">Actions</TableHead>
+                  <TableHead className="text-foreground font-medium">Projects</TableHead>
+                  <TableHead className="text-foreground font-medium">Referrals</TableHead>
+                  <TableHead className="text-foreground font-medium">Referred By</TableHead>
+                  <TableHead className="text-foreground font-medium">Business Card</TableHead>
+                  <TableHead className="text-foreground font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingRegistered ? (
                   <TableSkeleton columns={10} />
                 ) : registeredUsers?.items.map((user) => (
-                  <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors">
+                  <TableRow key={user.id} className="border-border/50 hover:bg-muted/40 transition-colors">
                     <TableCell>
                       <Link
                         href={`/profile/${user.id}`}
@@ -310,19 +306,19 @@ export function Dashboard() {
                         {user.name || `${user.firstName} ${user.lastName}`.trim()}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-ui-text/90">
+                    <TableCell className="text-foreground">
                       <a href={`mailto:${user.email}`} className="hover:underline flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
+                        <Mail className="h-3 w-3 text-muted-foreground" />
                         {user.email}
                       </a>
                     </TableCell>
-                    <TableCell className="text-ui-text/70">{user.phone}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.phone}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="bg-white/10 text-ui-text/80 border-white/20">
+                      <Badge variant="secondary" className="bg-muted text-foreground border-border">
                         {user.userType}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-ui-text/70 text-sm">
+                    <TableCell className="text-muted-foreground text-sm">
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString('pt-BR') : '-'}
                     </TableCell>
                     <TableCell>
@@ -331,17 +327,17 @@ export function Dashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-white/10 text-ui-text/90 border-white/20">
+                      <Badge variant="secondary" className="bg-muted text-foreground border-border">
                         {user.referralsCount ?? 0}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-ui-text/70 text-sm">
+                    <TableCell className="text-muted-foreground text-sm">
                       {user.referredBy || '-'}
                     </TableCell>
                     <TableCell>
                       <BusinessCardDialog
                         trigger={
-                          <Button variant="outline" size="sm" className="border-white/20 hover:border-primary/50 hover:bg-primary/10">
+                          <Button variant="outline" size="sm" className="border-border hover:border-primary/50 hover:bg-primary/10">
                             View Card
                           </Button>
                         }
@@ -361,16 +357,16 @@ export function Dashboard() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10"
+                              className="border-destructive/20 hover:border-destructive/50"
                             >
                               <UserX className="h-3 w-3 mr-1" />
                               Delete
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="sm:max-w-lg">
+                          <AlertDialogContent className="sm:max-w-lg bg-background border-border">
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="text-lg">Force Delete User Account</AlertDialogTitle>
-                            <AlertDialogDescription className="text-sm">
+                            <AlertDialogTitle className="text-lg text-foreground">Force Delete User Account</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm text-muted-foreground">
                               This will <strong>force delete</strong> the account for <strong>{user.name || `${user.firstName} ${user.lastName}`.trim()}</strong> ({user.email}).
                               This uses a database transaction to ensure complete removal and will:
                               <ul className="list-disc list-inside mt-2 space-y-1">
@@ -381,7 +377,7 @@ export function Dashboard() {
                                 <li>Delete all support tickets and referrals</li>
                                 <li><strong>Allow user to create new account with same email</strong></li>
                               </ul>
-                              <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-red-800 text-xs">
+                              <div className="mt-3 p-2 bg-destructive/10 border border-destructive/30 rounded text-destructive text-xs">
                                 ⚠️ This is a FORCE deletion using database transactions - guaranteed to remove all traces of the user.
                               </div>
                             </AlertDialogDescription>
@@ -389,23 +385,23 @@ export function Dashboard() {
 
                           <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                              <label htmlFor="deletion-reason" className="text-sm font-medium">
+                              <label htmlFor="deletion-reason" className="text-sm font-medium text-foreground">
                                 Reason for deletion (required)
                               </label>
                               <Input
                                 id="deletion-reason"
                                 placeholder="Enter reason for account deletion..."
-                                className="w-full"
+                                className="w-full bg-background border-border"
                               />
                             </div>
                             <div className="space-y-2">
-                              <label htmlFor="confirmation-token" className="text-sm font-medium">
+                              <label htmlFor="confirmation-token" className="text-sm font-medium text-foreground">
                                 Confirmation Token
                               </label>
                               <Input
                                 id="confirmation-token"
                                 placeholder="Enter confirmation token..."
-                                className="w-full"
+                                className="w-full bg-background border-border"
                               />
                               <p className="text-xs text-muted-foreground">
                                 Generate token: <button
@@ -415,7 +411,7 @@ export function Dashboard() {
                                     const input = document.getElementById('confirmation-token') as HTMLInputElement;
                                     if (input) input.value = token;
                                   }}
-                                  className="text-blue-500 hover:text-blue-700 underline"
+                                  className="text-blue-600 hover:text-blue-700 underline"
                                 >
                                   Click here
                                 </button>
@@ -424,7 +420,7 @@ export function Dashboard() {
                           </div>
 
                           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                            <AlertDialogCancel className="w-full sm:w-auto">
+                            <AlertDialogCancel className="w-full sm:w-auto border-border">
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
@@ -464,7 +460,7 @@ export function Dashboard() {
             </Table>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-            <div className="text-sm text-ui-text/60">
+            <div className="text-sm text-muted-foreground">
               Total: {registeredUsers?.total ?? 0} registered users
             </div>
             <div className="flex items-center gap-2">
@@ -473,11 +469,11 @@ export function Dashboard() {
                 size="sm"
                 disabled={registeredUserPage === 1}
                 onClick={() => setRegisteredUserPage(p => p - 1)}
-                className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+                className="border-border hover:border-primary/50 hover:bg-primary/10"
               >
                 Previous
               </Button>
-              <div className="text-sm text-ui-text/80 px-3 py-1 bg-white/5 rounded-md">
+              <div className="text-sm text-foreground px-3 py-1 bg-muted rounded-md">
                 Page {registeredUserPage}
               </div>
               <Button
@@ -485,7 +481,7 @@ export function Dashboard() {
                 size="sm"
                 disabled={!registeredUsers?.hasMore}
                 onClick={() => setRegisteredUserPage(p => p + 1)}
-                className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+                className="border-border hover:border-primary/50 hover:bg-primary/10"
               >
                 Next
               </Button>

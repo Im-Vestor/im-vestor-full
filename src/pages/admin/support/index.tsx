@@ -83,11 +83,11 @@ function SupportTicketsList() {
   const getStatusColor = (status: SupportTicketStatus) => {
     switch (status) {
       case 'OPEN':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return 'bg-amber-100 text-amber-700 border-amber-300';
       case 'CLOSED':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-300';
       default:
-        return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -139,14 +139,14 @@ function SupportTicketsList() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
-        <Loader2 className="h-8 w-8 animate-spin text-ui-text/40" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="bg-red-500/10 border-red-500/20">
+      <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>Failed to load support tickets: {error.message}</AlertDescription>
@@ -158,8 +158,8 @@ function SupportTicketsList() {
     return (
       <AdminContentCard>
         <div className="flex flex-col items-center justify-center py-12">
-          <Headphones className="h-12 w-12 text-ui-text/40 mb-4" />
-          <p className="text-center text-ui-text/60">No support tickets found.</p>
+          <Headphones className="h-12 w-12 text-muted-foreground mb-4" />
+          <p className="text-center text-muted-foreground">No support tickets found.</p>
         </div>
       </AdminContentCard>
     );
@@ -211,15 +211,14 @@ function SupportTicketsList() {
           <Select
             defaultValue="all"
             onValueChange={(value) => {
-              // TODO: Add filter functionality
               console.log('Filter by:', value);
             }}
           >
-            <SelectTrigger className="w-[180px] bg-white/5 border-white/10 focus:border-primary/50">
-              <Filter className="h-4 w-4 mr-2 text-ui-text/40" />
+            <SelectTrigger className="w-[180px] bg-background border-border focus:border-primary/50">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent className="bg-card/90 backdrop-blur-sm border-white/10">
+            <SelectContent className="bg-background border-border">
               <SelectItem value="all">All Tickets</SelectItem>
               <SelectItem value="OPEN">Open Tickets</SelectItem>
               <SelectItem value="CLOSED">Closed Tickets</SelectItem>
@@ -233,22 +232,22 @@ function SupportTicketsList() {
               key={ticket.id}
               value={ticket.id}
               className={cn(
-                "border rounded-lg overflow-hidden",
-                "hover:border-white/20 hover:shadow-lg transition-all duration-300",
-                "bg-gradient-to-br from-background/50 to-background/30"
+                "border border-border rounded-lg overflow-hidden",
+                "hover:border-border/80 hover:shadow-md transition-all duration-300",
+                "bg-card"
               )}
             >
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30">
                 <div className="flex flex-1 items-center justify-between gap-4">
                   <div className="flex-1 text-left">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-ui-text/40" />
-                        <span className="text-sm text-ui-text/60">{ticket.user.email}</span>
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{ticket.user.email}</span>
                       </div>
                     </div>
-                    <h3 className="font-medium text-lg text-ui-text/90">{ticket.subject}</h3>
-                    <div className="flex items-center gap-3 mt-4 text-xs text-ui-text/50">
+                    <h3 className="font-medium text-lg text-foreground">{ticket.subject}</h3>
+                    <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
                       <Badge className={cn("px-3 py-1", getStatusColor(ticket.status))}>
                         {getStatusLabel(ticket.status)}
                       </Badge>
@@ -266,10 +265,10 @@ function SupportTicketsList() {
                     value={ticket.status}
                     onValueChange={(value) => handleStatusChange(ticket.id, value as SupportTicketStatus)}
                   >
-                    <SelectTrigger className="w-[120px] bg-white/5 border-white/10 focus:border-primary/50">
+                    <SelectTrigger className="w-[120px] bg-background border-border focus:border-primary/50">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-card/90 backdrop-blur-sm border-white/10">
+                    <SelectContent className="bg-background border-border">
                       <SelectItem value="OPEN">Open</SelectItem>
                       <SelectItem value="CLOSED">Closed</SelectItem>
                     </SelectContent>
@@ -277,20 +276,20 @@ function SupportTicketsList() {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="px-4 py-3 border-t border-white/10">
+                <div className="px-4 py-3 border-t border-border">
                   {/* Original Message */}
                   <div className="flex items-start gap-3 mb-6">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-[10px] font-medium text-primary">User</span>
                     </div>
                     <div className="flex-1">
-                      <div className="bg-white/5 rounded-lg rounded-tl-none p-4 border border-white/10">
+                      <div className="bg-muted/40 rounded-lg rounded-tl-none p-4 border border-border">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-ui-text/50">
+                          <span className="text-xs text-muted-foreground">
                             {new Date(ticket.createdAt).toISOString().split('T')[0]}
                           </span>
                         </div>
-                        <p className="text-sm whitespace-pre-wrap text-ui-text/90">{ticket.message}</p>
+                        <p className="text-sm whitespace-pre-wrap text-foreground">{ticket.message}</p>
                       </div>
                     </div>
                   </div>
@@ -310,11 +309,11 @@ function SupportTicketsList() {
                           >
                             <div className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                              isUserReply ? "bg-primary/10" : "bg-blue-500/20"
+                              isUserReply ? "bg-primary/10" : "bg-blue-100"
                             )}>
                               <span className={cn(
                                 "text-[10px] font-medium",
-                                isUserReply ? "text-primary" : "text-blue-400"
+                                isUserReply ? "text-primary" : "text-blue-600"
                               )}>
                                 {isUserReply ? 'User' : 'Support'}
                               </span>
@@ -327,18 +326,18 @@ function SupportTicketsList() {
                                 "max-w-[85%]",
                                 "rounded-lg p-4 border",
                                 isUserReply
-                                  ? "bg-white/5 rounded-tl-none border-white/10"
-                                  : "bg-blue-500/10 rounded-tr-none border-blue-500/20"
+                                  ? "bg-muted/40 rounded-tl-none border-border"
+                                  : "bg-blue-50 rounded-tr-none border-blue-200"
                               )}>
                                 <div className={cn(
                                   "flex items-center gap-2 mb-2",
                                   isUserReply ? "" : "flex-row-reverse"
                                 )}>
-                                  <span className="text-xs text-ui-text/50">
+                                  <span className="text-xs text-muted-foreground">
                                     {new Date(reply.createdAt).toISOString().split('T')[0]}
                                   </span>
                                 </div>
-                                <p className="text-sm whitespace-pre-wrap text-ui-text/90">{reply.message}</p>
+                                <p className="text-sm whitespace-pre-wrap text-foreground">{reply.message}</p>
                               </div>
                             </div>
                           </div>
@@ -348,7 +347,7 @@ function SupportTicketsList() {
                   )}
 
                   {/* Reply Input */}
-                  <div className="mt-6 pt-6 border-t border-white/10">
+                  <div className="mt-6 pt-6 border-t border-border">
                     <Collapsible
                       open={isReplyBoxOpen === ticket.id}
                       onOpenChange={(open) => {
@@ -364,7 +363,7 @@ function SupportTicketsList() {
                           className={cn(
                             "w-full justify-center gap-2",
                             isReplyBoxOpen === ticket.id && "mb-4",
-                            "border-white/20 hover:border-primary/50 hover:bg-primary/10"
+                            "border-border hover:border-primary/50 hover:bg-primary/10"
                           )}
                         >
                           {isReplyBoxOpen === ticket.id ? (
@@ -382,15 +381,15 @@ function SupportTicketsList() {
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-4">
                         <div className="flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-medium text-blue-400">Support</span>
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-medium text-blue-600">Support</span>
                           </div>
                           <div className="flex-1 space-y-2">
                             <Textarea
                               placeholder="Type your reply..."
                               value={replyMessage}
                               onChange={(e) => setReplyMessage(e.target.value)}
-                              className="min-h-[100px] bg-white/5 border-white/10 focus:border-primary/50"
+                              className="min-h-[100px] bg-background border-border focus:border-primary/50"
                             />
                             <div className="flex justify-end">
                               <Button

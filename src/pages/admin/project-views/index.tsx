@@ -28,7 +28,7 @@ function ActivitySummary({ days = 30 }: { days?: number }) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="bg-card/50 backdrop-blur-sm border-white/10">
+          <Card key={i} className="bg-card border-border">
             <CardHeader className="pb-3">
               <Skeleton className="h-4 w-24" />
             </CardHeader>
@@ -49,29 +49,29 @@ function ActivitySummary({ days = 30 }: { days?: number }) {
       title: "Visualizações",
       value: summary.projectViewsCount,
       icon: Eye,
-      gradient: "from-blue-500/20 to-cyan-500/20",
-      iconColor: "text-blue-400",
+      gradient: "from-blue-100 to-cyan-100",
+      iconColor: "text-blue-600",
     },
     {
       title: "Novos Projetos",
       value: summary.newProjectsCount,
       icon: FileText,
-      gradient: "from-emerald-500/20 to-teal-500/20",
-      iconColor: "text-emerald-400",
+      gradient: "from-emerald-100 to-teal-100",
+      iconColor: "text-emerald-600",
     },
     {
       title: "Reuniões",
       value: summary.meetingsCount,
       icon: Calendar,
-      gradient: "from-purple-500/20 to-pink-500/20",
-      iconColor: "text-purple-400",
+      gradient: "from-purple-100 to-pink-100",
+      iconColor: "text-purple-600",
     },
     {
       title: "Tickets Suporte",
       value: summary.supportTicketsCount,
       icon: MessageSquare,
-      gradient: "from-orange-500/20 to-red-500/20",
-      iconColor: "text-orange-400",
+      gradient: "from-orange-100 to-red-100",
+      iconColor: "text-orange-600",
     },
   ];
 
@@ -82,9 +82,9 @@ function ActivitySummary({ days = 30 }: { days?: number }) {
         {statCards.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
-            <Card key={index} className="bg-card/50 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-300 group">
+            <Card key={index} className="bg-card border-border hover:border-border/80 transition-all duration-300 group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium text-ui-text/80 group-hover:text-ui-text transition-colors">
+                <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.gradient}`}>
@@ -95,7 +95,7 @@ function ActivitySummary({ days = 30 }: { days?: number }) {
                 <div className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
                   {stat.value.toString()}
                 </div>
-                <p className="text-xs text-ui-text/60 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Últimos {days} dias
                 </p>
               </CardContent>
@@ -132,15 +132,15 @@ function ProjectViewsList() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-primary">Visualizações de Projetos</h2>
-          <p className="text-sm text-ui-text/60 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Acompanhe quais investidores visualizaram quais projetos
           </p>
         </div>
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-ui-text/40" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar projetos ou investidores..."
-            className="pl-10 bg-white/5 border-white/10 focus:border-primary/50 transition-colors"
+            className="pl-10 bg-background border-border focus:border-primary/50 transition-colors"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -148,38 +148,38 @@ function ProjectViewsList() {
       </div>
 
       {/* Table */}
-      <Card className="bg-card/50 backdrop-blur-sm border-white/10 overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="text-ui-text/80 font-medium">Data</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Projeto</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Empreendedor</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Investidor</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Email do Investidor</TableHead>
+              <TableRow className="border-border hover:bg-muted/40">
+                <TableHead className="text-foreground font-medium">Data</TableHead>
+                <TableHead className="text-foreground font-medium">Projeto</TableHead>
+                <TableHead className="text-foreground font-medium">Empreendedor</TableHead>
+                <TableHead className="text-foreground font-medium">Investidor</TableHead>
+                <TableHead className="text-foreground font-medium">Email do Investidor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data?.items.map((view) => (
-                <TableRow key={view.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                  <TableCell className="text-ui-text/90">
+                <TableRow key={view.id} className="border-border/50 hover:bg-muted/40 transition-colors">
+                  <TableCell className="text-foreground">
                     {format(new Date(view.createdAt), 'dd/MM/yyyy HH:mm')}
                   </TableCell>
                   <TableCell className="font-medium text-primary">
                     {view.project.name}
                   </TableCell>
-                  <TableCell className="text-ui-text/90">
+                  <TableCell className="text-foreground">
                     {view.project.Entrepreneur
                       ? `${view.project.Entrepreneur.firstName} ${view.project.Entrepreneur.lastName}`
                       : '-'}
                   </TableCell>
-                  <TableCell className="text-ui-text/90">
+                  <TableCell className="text-foreground">
                     {view.investor
                       ? `${view.investor.firstName} ${view.investor.lastName}`
                       : '-'}
                   </TableCell>
-                  <TableCell className="text-ui-text/70 text-sm">
+                  <TableCell className="text-muted-foreground text-sm">
                     {view.investor?.user.email ?? '-'}
                   </TableCell>
                 </TableRow>
@@ -191,7 +191,7 @@ function ProjectViewsList() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-sm text-ui-text/60">
+        <div className="text-sm text-muted-foreground">
           Mostrando {((page - 1) * 10) + 1} a {Math.min(page * 10, data?.total ?? 0)} de {data?.total ?? 0} resultados
         </div>
         <div className="flex items-center gap-2">
@@ -200,11 +200,11 @@ function ProjectViewsList() {
             size="sm"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+            className="border-border hover:border-primary/50 hover:bg-primary/10"
           >
             Anterior
           </Button>
-          <div className="text-sm text-ui-text/80 px-3 py-1 bg-white/5 rounded-md">
+          <div className="text-sm text-foreground px-3 py-1 bg-muted rounded-md">
             Página {page} de {data?.pages ?? 1}
           </div>
           <Button
@@ -212,7 +212,7 @@ function ProjectViewsList() {
             size="sm"
             onClick={() => setPage((p) => (p < (data?.pages ?? 0) ? p + 1 : p))}
             disabled={page >= (data?.pages ?? 0)}
-            className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+            className="border-border hover:border-primary/50 hover:bg-primary/10"
           >
             Próxima
           </Button>
@@ -260,19 +260,19 @@ function NotificationLogsList() {
 
   const getNotificationTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      PROJECT_VIEW: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      MEETING_CREATED: 'bg-green-500/20 text-green-400 border-green-500/30',
-      MEETING_CANCELLED: 'bg-red-500/20 text-red-400 border-red-500/30',
-      NEGOTIATION_CREATED: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      NEGOTIATION_CANCELLED: 'bg-red-500/20 text-red-400 border-red-500/30',
-      NEGOTIATION_GO_TO_NEXT_STAGE: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      POKE: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-      SUPPORT_TICKET_REPLY: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-      SUPPORT_TICKET_STATUS_UPDATED: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      SUPPORT_TICKET_CREATED: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-      SUPPORT_TICKET_RECEIVED: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+      PROJECT_VIEW: 'bg-blue-100 text-blue-700 border-blue-300',
+      MEETING_CREATED: 'bg-green-100 text-green-700 border-green-300',
+      MEETING_CANCELLED: 'bg-red-100 text-red-700 border-red-300',
+      NEGOTIATION_CREATED: 'bg-purple-100 text-purple-700 border-purple-300',
+      NEGOTIATION_CANCELLED: 'bg-red-100 text-red-700 border-red-300',
+      NEGOTIATION_GO_TO_NEXT_STAGE: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+      POKE: 'bg-pink-100 text-pink-700 border-pink-300',
+      SUPPORT_TICKET_REPLY: 'bg-cyan-100 text-cyan-700 border-cyan-300',
+      SUPPORT_TICKET_STATUS_UPDATED: 'bg-orange-100 text-orange-700 border-orange-300',
+      SUPPORT_TICKET_CREATED: 'bg-indigo-100 text-indigo-700 border-indigo-300',
+      SUPPORT_TICKET_RECEIVED: 'bg-teal-100 text-teal-700 border-teal-300',
     };
-    return colors[type] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    return colors[type] ?? 'bg-muted text-muted-foreground border-border';
   };
 
   if (isLoading) {
@@ -285,17 +285,17 @@ function NotificationLogsList() {
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-primary">Logs de Notificações</h2>
-          <p className="text-sm text-ui-text/60 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Histórico completo de notificações da plataforma
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-full sm:w-48 bg-white/5 border-white/10 focus:border-primary/50">
-              <Filter className="h-4 w-4 mr-2 text-ui-text/40" />
+            <SelectTrigger className="w-full sm:w-48 bg-background border-border focus:border-primary/50">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Filtrar por tipo" />
             </SelectTrigger>
-            <SelectContent className="bg-card/90 backdrop-blur-sm border-white/10">
+            <SelectContent className="bg-background border-border">
               <SelectItem value="all">Todos os tipos</SelectItem>
               <SelectItem value="PROJECT_VIEW">Visualização de Projeto</SelectItem>
               <SelectItem value="MEETING_CREATED">Reunião Criada</SelectItem>
@@ -315,36 +315,36 @@ function NotificationLogsList() {
             placeholder="Data inicial"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="w-full sm:w-40 bg-white/5 border-white/10 focus:border-primary/50"
+            className="w-full sm:w-40 bg-background border-border focus:border-primary/50"
           />
           <Input
             type="date"
             placeholder="Data final"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="w-full sm:w-40 bg-white/5 border-white/10 focus:border-primary/50"
+            className="w-full sm:w-40 bg-background border-border focus:border-primary/50"
           />
         </div>
       </div>
 
       {/* Table */}
-      <Card className="bg-card/50 backdrop-blur-sm border-white/10 overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="text-ui-text/80 font-medium">Data</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Tipo</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Usuário</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Email</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Tipo de Usuário</TableHead>
-                <TableHead className="text-ui-text/80 font-medium">Status</TableHead>
+              <TableRow className="border-border hover:bg-muted/40">
+                <TableHead className="text-foreground font-medium">Data</TableHead>
+                <TableHead className="text-foreground font-medium">Tipo</TableHead>
+                <TableHead className="text-foreground font-medium">Usuário</TableHead>
+                <TableHead className="text-foreground font-medium">Email</TableHead>
+                <TableHead className="text-foreground font-medium">Tipo de Usuário</TableHead>
+                <TableHead className="text-foreground font-medium">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data?.items.map((notification) => (
-                <TableRow key={notification.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                  <TableCell className="text-ui-text/90 text-sm">
+                <TableRow key={notification.id} className="border-border/50 hover:bg-muted/40 transition-colors">
+                  <TableCell className="text-foreground text-sm">
                     {format(new Date(notification.createdAt), 'dd/MM/yyyy HH:mm')}
                   </TableCell>
                   <TableCell>
@@ -355,11 +355,11 @@ function NotificationLogsList() {
                   <TableCell className="font-medium text-primary">
                     {notification.user.email}
                   </TableCell>
-                  <TableCell className="text-ui-text/70 text-sm">
+                  <TableCell className="text-muted-foreground text-sm">
                     {notification.user.email}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="bg-white/10 text-ui-text/80 border-white/20">
+                    <Badge variant="secondary" className="bg-muted text-foreground border-border">
                       {notification.user.userType}
                     </Badge>
                   </TableCell>
@@ -367,8 +367,8 @@ function NotificationLogsList() {
                     <Badge
                       variant={notification.read ? "default" : "destructive"}
                       className={notification.read
-                        ? "bg-green-500/20 text-green-400 border-green-500/30"
-                        : "bg-red-500/20 text-red-400 border-red-500/30"
+                        ? "bg-green-100 text-green-700 border-green-300"
+                        : "bg-red-100 text-red-700 border-red-300"
                       }
                     >
                       {notification.read ? "Lida" : "Não lida"}
@@ -383,7 +383,7 @@ function NotificationLogsList() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-sm text-ui-text/60">
+        <div className="text-sm text-muted-foreground">
           Mostrando {((page - 1) * 20) + 1} a {Math.min(page * 20, data?.total ?? 0)} de {data?.total ?? 0} resultados
         </div>
         <div className="flex items-center gap-2">
@@ -392,11 +392,11 @@ function NotificationLogsList() {
             size="sm"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+            className="border-border hover:border-primary/50 hover:bg-primary/10"
           >
             Anterior
           </Button>
-          <div className="text-sm text-ui-text/80 px-3 py-1 bg-white/5 rounded-md">
+          <div className="text-sm text-foreground px-3 py-1 bg-muted rounded-md">
             Página {page} de {data?.pages ?? 1}
           </div>
           <Button
@@ -404,7 +404,7 @@ function NotificationLogsList() {
             size="sm"
             onClick={() => setPage((p) => (p < (data?.pages ?? 0) ? p + 1 : p))}
             disabled={page >= (data?.pages ?? 0)}
-            className="border-white/20 hover:border-primary/50 hover:bg-primary/10"
+            className="border-border hover:border-primary/50 hover:bg-primary/10"
           >
             Próxima
           </Button>
@@ -418,10 +418,10 @@ function TableSkeleton({ columns }: { columns: number }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i} className="border-white/5">
+        <TableRow key={i} className="border-border/50">
           {Array.from({ length: columns }).map((_, j) => (
             <TableCell key={j}>
-              <Skeleton className="h-4 w-[100px] bg-white/10" />
+              <Skeleton className="h-4 w-[100px] bg-muted" />
             </TableCell>
           ))}
         </TableRow>
@@ -440,11 +440,11 @@ export default function ProjectViewsPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-primary">
               Home de Atividade
             </h1>
-            <p className="text-ui-text/70 text-lg max-w-2xl">
+            <p className="text-muted-foreground text-lg max-w-2xl">
               Monitoramento completo da movimentação da plataforma com insights detalhados sobre visualizações, notificações e atividades dos usuários.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-ui-text/60">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Activity className="h-5 w-5" />
             <span className="text-sm">Painel Administrativo</span>
           </div>
@@ -454,9 +454,9 @@ export default function ProjectViewsPage() {
         <ActivitySummary />
 
         {/* Tables Section with Simple Tab Switch */}
-        <Card className="bg-card/30 backdrop-blur-sm border-white/10">
+        <Card className="bg-card border-border">
           <Tabs defaultValue="project-views" className="w-full">
-            <div className="border-b border-white/10">
+            <div className="border-b border-border">
               <TabsList className="grid w-full grid-cols-2 bg-transparent border-0 p-0 h-auto">
                 <TabsTrigger
                   value="project-views"
