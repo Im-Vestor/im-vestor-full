@@ -16,30 +16,25 @@ const participantSelect = {
 export const moderationRouter = createTRPCRouter({
   // ─── Banned Words ────────────────────────────────────────────────────────
 
-  // NOTE: ctx.db.bannedWord will be available after `npm run db:generate`
   getBannedWords: adminProcedure.query(async ({ ctx }) => {
-    // @ts-expect-error – BannedWord model will exist after db:generate
-    return ctx.db.bannedWord.findMany({ orderBy: { createdAt: 'desc' } }) as Promise<{ id: string; word: string; createdAt: Date; createdBy: string }[]>;
+    return ctx.db.bannedWord.findMany({ orderBy: { createdAt: 'desc' } });
   }),
 
   addBannedWord: adminProcedure
     .input(z.object({ word: z.string().min(1).max(100).trim().toLowerCase() }))
     .mutation(async ({ ctx, input }) => {
-      // @ts-expect-error – BannedWord model will exist after db:generate
-      const existing = (await ctx.db.bannedWord.findUnique({ where: { word: input.word } })) as { id: string } | null;
+      const existing = await ctx.db.bannedWord.findUnique({ where: { word: input.word } });
       if (existing) {
         throw new TRPCError({ code: 'CONFLICT', message: 'Word already banned' });
       }
-      // @ts-expect-error – BannedWord model will exist after db:generate
       return ctx.db.bannedWord.create({
         data: { word: input.word, createdBy: ctx.auth.userId },
-      }) as Promise<{ id: string; word: string; createdAt: Date; createdBy: string }>;
+      });
     }),
 
   removeBannedWord: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // @ts-expect-error – BannedWord model will exist after db:generate
       await ctx.db.bannedWord.delete({ where: { id: input.id } });
     }),
 

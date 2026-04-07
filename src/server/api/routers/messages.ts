@@ -184,7 +184,6 @@ export const messagesRouter = createTRPCRouter({
           where: { id: conversationId, participants: { some: { id: userId } } },
           include: { participants: { select: { id: true } } },
         }),
-        // @ts-expect-error – BannedWord model will exist after db:generate
         ctx.db.bannedWord.findMany({ select: { word: true } }) as Promise<{ word: string }[]>,
       ]);
 

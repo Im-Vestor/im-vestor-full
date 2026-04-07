@@ -68,19 +68,19 @@ export const negotiationRouter = createTRPCRouter({
 
       const negotiation = isFirstMeeting
         ? await ctx.db.negotiation.create({
-            data: {
-              projectId: input.projectId,
-              stage: NegotiationStage.PITCH,
-              ...(input.investorId && { investorId: input.investorId }),
-              ...(input.vcGroupId && { vcGroupId: input.vcGroupId }),
-              entrepreneurActionNeeded: true,
-              investorActionNeeded: true,
-            },
-          })
+          data: {
+            projectId: input.projectId,
+            stage: NegotiationStage.PITCH,
+            ...(input.investorId && { investorId: input.investorId }),
+            ...(input.vcGroupId && { vcGroupId: input.vcGroupId }),
+            entrepreneurActionNeeded: true,
+            investorActionNeeded: true,
+          },
+        })
         : await ctx.db.negotiation.update({
-            where: { id: existingNegotiation.id },
-            data: { entrepreneurActionNeeded: true, investorActionNeeded: true },
-          });
+          where: { id: existingNegotiation.id },
+          data: { entrepreneurActionNeeded: true, investorActionNeeded: true },
+        });
 
       const meetingDetailsPromise = scheduleMeeting(
         ctx.db,
@@ -96,27 +96,27 @@ export const negotiationRouter = createTRPCRouter({
       const [investor, vcGroup, entrepreneur, incubator, resolvedMeeting] = await Promise.all([
         input.investorId
           ? ctx.db.investor.findUnique({
-              where: { id: input.investorId },
-              select: { userId: true, firstName: true, user: { select: { email: true } } },
-            })
+            where: { id: input.investorId },
+            select: { userId: true, firstName: true, user: { select: { email: true } } },
+          })
           : null,
         input.vcGroupId
           ? ctx.db.vcGroup.findUnique({
-              where: { id: input.vcGroupId },
-              select: { userId: true, name: true, user: { select: { email: true } } },
-            })
+            where: { id: input.vcGroupId },
+            select: { userId: true, name: true, user: { select: { email: true } } },
+          })
           : null,
         input.entrepreneurId
           ? ctx.db.entrepreneur.findUnique({
-              where: { id: input.entrepreneurId },
-              select: { userId: true, firstName: true, user: { select: { email: true } } },
-            })
+            where: { id: input.entrepreneurId },
+            select: { userId: true, firstName: true, user: { select: { email: true } } },
+          })
           : null,
         input.incubatorId
           ? ctx.db.incubator.findUnique({
-              where: { id: input.incubatorId },
-              select: { userId: true, name: true, email: true },
-            })
+            where: { id: input.incubatorId },
+            select: { userId: true, name: true, email: true },
+          })
           : null,
         meetingDetailsPromise,
       ]);
@@ -993,7 +993,6 @@ export const negotiationRouter = createTRPCRouter({
       const vcGroup = negotiation.VcGroup;
 
       const entrepreneurName = entrepreneur?.firstName ?? 'Entrepreneur';
-      const investorName = investor?.firstName ?? vcGroup?.name ?? 'Investor';
 
       // Email to investor
       if (investor && entrepreneur) {
@@ -1409,13 +1408,6 @@ export const negotiationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify user is admin (will add adminProcedure later)
-      const user = await ctx.db.user.findUnique({
-        where: { id: ctx.auth.userId },
-      });
-
-      // For now, allow any authenticated user (will restrict to admin in production)
-      // TODO: Add adminProcedure check
 
       // Get negotiation
       const negotiation = await ctx.db.negotiation.findUniqueOrThrow({
